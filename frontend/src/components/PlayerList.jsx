@@ -50,8 +50,23 @@ class PlayerList extends Component {
             this.fetchPlayers();  // Refresh the player list
         } catch (error) {
             console.error("Error uploading file:", error);
+            let errorMessage = "Failed to import players. Please try again later.";
+
+            // Check if there is a custom error message from the server
+            if (error.response && error.response.status === 422 && error.response.data) {
+                const formattedErrors = error.response.data.split("\n").map((line, index) => (
+                    <li key={index} className="text-sm text-red-600">{line}</li>
+                ));
+                errorMessage = (
+                    <div className="text-left">
+                        <p className="text-red-500 font-bold">Import error:</p>
+                        <ul className="list-disc pl-5">{formattedErrors}</ul>
+                    </div>
+                );
+            }
+
             this.setState({
-                error: "Failed to import players. Please try again later.",
+                error: errorMessage,
                 successMessage: null,
             });
         }
@@ -81,7 +96,7 @@ class PlayerList extends Component {
 
                 {/* Success and error messages */}
                 {successMessage && <p className="text-green-600 mb-2">{successMessage}</p>}
-                {error && <p className="text-red-500 mb-2">{error}</p>}
+                {error && <div className="mb-4">{error}</div>}
 
                 {/* File upload button */}
                 <div className="mb-4">

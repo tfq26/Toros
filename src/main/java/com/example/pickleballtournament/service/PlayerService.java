@@ -19,20 +19,59 @@ public class PlayerService {
         Sheet sheet = workbook.getSheetAt(0);
         playerList.clear(); // Clear existing list to avoid duplicates on new import
 
-        int idCounter = 1; // Track unique ID for each player
+        List<String> errors = new ArrayList<>(); // Collect errors for missing or incorrect data
 
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue; // Skip header row
-            String name = row.getCell(0).getStringCellValue();
-            int teamNumber = (int) row.getCell(1).getNumericCellValue();
-            String clubName = row.getCell(2).getStringCellValue();
-            int placement = (int) row.getCell(3).getNumericCellValue();
-            Player player = new Player(idCounter++, name, teamNumber, clubName, placement);
-            playerList.add(player);
+
+            String name = getCellValue(row.getCell(0), "name", errors, row.getRowNum());
+            Integer teamNumber = getNumericCellValue(row.getCell(1), "teamNumber", errors, row.getRowNum());
+            String clubName = getCellValue(row.getCell(2), "clubName", errors, row.getRowNum());
+            Integer placement = getNumericCellValue(row.getCell(3), "placement", errors, row.getRowNum());
+
+            if (name != null && teamNumber != null && clubName != null && placement != null) {
+                Player player = new Player();
+                player.setName(name);
+                player.setTeamNumber(teamNumber);
+                player.setClubName(clubName);
+                player.setPlacement(placement);
+                playerList.add(player);
+            }
         }
 
         workbook.close();
+
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException("Errors in Excel file:\n" + String.join("\n", errors));
+        }
+
         return playerList;
+    }
+
+    private String getCellValue(Cell cell, String fieldName, List<String> errors, int rowNum) {
+        try {
+            if (cell == null || cell.getCellType() != CellType.STRING) {
+                errors.add("Row " + (rowNum + 1) + ": Missing or invalid value for " + fieldName);
+                return null;
+            }
+            return cell.getStringCellValue();
+        } catch (Exception e) {
+            errors.add("Row " + (rowNum + 1) + ": Error reading " + fieldName + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Integer getNumericCellValue(Cell cell, String fieldName, List<String> errors, int rowNum) {
+        try {
+            if (cell == null || cell.getCellType() != CellType.NUMERIC) {
+                errors.add("Row " + (rowNum + 1) + ": Missing or invalid value for " + fieldName);
+                return null;
+            }
+            return (int) cell.getNumericCellValue();
+        } catch (Exception e) {
+            errors.add("Row " + (rowNum + 1) + ": Error reading " + fieldName + ": " + e.getMessage());
+            return null;
+        }
     }
 
     public List<Player> getAllPlayers() {
@@ -49,5 +88,3 @@ public class PlayerService {
         return filteredList;
     }
 }
-
-

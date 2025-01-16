@@ -1,9 +1,16 @@
 package com.example.pickleballtournament.controller;
+
 import com.example.pickleballtournament.model.Player;
 import com.example.pickleballtournament.service.PlayerService;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -17,11 +24,19 @@ public class PlayerController {
     }
 
     @PostMapping("/import")
-    public List<Player> importPlayers(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<String> importPlayers(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
-            throw new RuntimeException("File is empty");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The uploaded file is empty. Please upload a valid Excel file.");
         }
-        return playerService.importPlayersFromExcel(file.getInputStream());
+
+        try (InputStream inputStream = file.getInputStream()) {
+            List<Player> players = playerService.importPlayersFromExcel(inputStream);
+            return ResponseEntity.ok("Players imported and saved to MongoDB successfully! Number of players: " + players.size());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Validation Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
     }
 
     @GetMapping("/all")
@@ -39,4 +54,3 @@ public class PlayerController {
         return "Welcome to the Pickleball Player Management System! Upload your Excel file at /import.";
     }
 }
-

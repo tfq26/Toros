@@ -12,7 +12,7 @@ const ErrorPage = () => {
             <h1 className="text-4xl font-bold text-red-500">Error {statusCode}</h1>
             <p className="text-lg mt-4">{message}</p>
             <button
-                className="mt-6 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                className="mt-6 px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-blue-600"
                 onClick={() => navigate("/")}
             >
                 Back to Home
