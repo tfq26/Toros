@@ -2,15 +2,12 @@ package com.example.pickleballtournament.controller;
 
 import com.example.pickleballtournament.model.Player;
 import com.example.pickleballtournament.service.PlayerService;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
