@@ -25,7 +25,7 @@ export default {
 
       backgroundImage: {
         hero_gradient: 'radial-gradient(circle at left, #59b39a, #99f2c8)',
-        },
+      },
 
       backgroundColor: {
       },

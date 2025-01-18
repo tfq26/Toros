@@ -1,20 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const TournamentSetup = ({ onSetupComplete }) => {
+    const [teams, setTeams] = useState([]);
     const [numCourts, setNumCourts] = useState("");
     const [gamesPerTeam, setGamesPerTeam] = useState("");
     const [useExistingPlayers, setUseExistingPlayers] = useState(false);
     const [tiered, setTiered] = useState(false);
+    const [startTime, setStartTime] = useState("");
+    const [matchDuration, setMatchDuration] = useState("");
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchPlayersAndGenerateTeams = async () => {
+            try {
+                const response = await axios.get("http://localhost:8080/api/players/all");
+                if (Array.isArray(response.data)) {
+                    // Group players by teamNumber
+                    const groupedPlayers = response.data.reduce((acc, player) => {
+                        if (player.teamNumber !== null) {
+                            if (!acc[player.teamNumber]) {
+                                acc[player.teamNumber] = [];
+                            }
+                            acc[player.teamNumber].push(player);
+                        }
+                        return acc;
+                    }, {});
+
+                    // Filter valid teams (only pairs of two players)
+                    const validTeams = Object.values(groupedPlayers).filter(
+                        (team) => team.length === 2
+                    );
+                    setTeams(validTeams);
+                } else {
+                    console.error("Unexpected response format:", response.data);
+                    setTeams([]);
+                }
+            } catch (err) {
+                console.error("Error fetching players:", err.message || err);
+                setError("Failed to fetch players. Please try again.");
+            }
+        };
+
+        fetchPlayersAndGenerateTeams();
+    }, []);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!numCourts || !gamesPerTeam) {
+        if (!numCourts || !gamesPerTeam || !startTime || !matchDuration) {
             setError("Please fill in all fields.");
+            return;
+        }
+
+        if (teams.length === 0) {
+            setError("No valid teams available. Please ensure players are correctly paired.");
             return;
         }
 
@@ -22,17 +65,19 @@ const TournamentSetup = ({ onSetupComplete }) => {
             const response = await axios.post("http://localhost:8080/api/tournament/setup", {
                 numCourts: parseInt(numCourts, 10),
                 gamesPerTeam: parseInt(gamesPerTeam, 10),
+                startTime,
+                matchDuration: parseInt(matchDuration, 10),
                 useExistingPlayers,
                 tiered,
             });
 
             if (response.status === 200) {
                 alert("Tournament setup complete!");
-                onSetupComplete(); // Notify parent component
+                onSetupComplete();
                 navigate("/tournament/live");
             }
         } catch (err) {
-            console.error("Error setting up tournament:", err);
+            console.error("Error setting up tournament:", err.response?.data || err.message);
             setError("Failed to set up tournament. Please try again.");
         }
     };
@@ -51,6 +96,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                         value={numCourts}
                         onChange={(e) => setNumCourts(e.target.value)}
                         className="border rounded w-full py-2 px-3"
+                        placeholder="Enter number of courts"
                     />
                 </div>
                 <div className="mb-4">
@@ -60,6 +106,26 @@ const TournamentSetup = ({ onSetupComplete }) => {
                         value={gamesPerTeam}
                         onChange={(e) => setGamesPerTeam(e.target.value)}
                         className="border rounded w-full py-2 px-3"
+                        placeholder="Enter games per team"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">Start Time</label>
+                    <input
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="border rounded w-full py-2 px-3"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-gray-700 font-bold mb-2">Match Duration (minutes)</label>
+                    <input
+                        type="number"
+                        value={matchDuration}
+                        onChange={(e) => setMatchDuration(e.target.value)}
+                        className="border rounded w-full py-2 px-3"
+                        placeholder="Enter match duration"
                     />
                 </div>
                 <div className="mb-4">
@@ -91,6 +157,23 @@ const TournamentSetup = ({ onSetupComplete }) => {
                     Start Tournament
                 </button>
             </form>
+
+            <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Available Teams</h3>
+                {teams.length > 0 ? (
+                    <ul className="list-disc pl-5">
+                        {teams.map((team, index) => (
+                            <li key={index}>
+                                <strong>
+                                    {team[0].name} & {team[1].name}
+                                </strong>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No valid teams available. Ensure players are correctly paired in the database.</p>
+                )}
+            </div>
         </div>
     );
 };

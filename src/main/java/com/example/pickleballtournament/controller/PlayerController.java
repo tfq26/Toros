@@ -27,7 +27,9 @@ public class PlayerController {
         }
 
         try (InputStream inputStream = file.getInputStream()) {
+            // Import players and save directly to the MongoDB cluster
             List<Player> players = playerService.importPlayersFromExcel(inputStream);
+            playerService.savePlayers(players);
             return ResponseEntity.ok("Players imported and saved to MongoDB successfully! Number of players: " + players.size());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Validation Error: " + e.getMessage());
@@ -46,7 +48,12 @@ public class PlayerController {
         return playerService.getPlayersByTeamNumber(teamNumber);
     }
 
-    @GetMapping
+    @GetMapping("/teamNumbers")
+    public List<Integer> getTeamNumbers() {
+        return playerService.getAllTeamNumbers();
+    }
+
+    @GetMapping("/welcome")
     public String welcome() {
         return "Welcome to the Pickleball Player Management System! Upload your Excel file at /import.";
     }
