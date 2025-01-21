@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.3</version> <!-- Updated to a stable version compatible with dependencies -->
+        <version>3.1.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
@@ -16,7 +16,6 @@
     <description>Pickleball Tournament Application</description>
     <properties>
         <java.version>17</java.version>
-        <spring-boot.version>3.1.3</spring-boot.version>
     </properties>
 
     <dependencies>
@@ -31,25 +30,24 @@
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.3</version>
         </dependency>
+
         <!-- Spring Boot Web for REST APIs -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
-        </dependency>
-
-
         <!-- Spring Boot Starter for MongoDB (includes necessary driver dependencies) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+
+        <!-- Apache Commons Lang -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
         </dependency>
 
         <!-- Lombok for reducing boilerplate code -->
@@ -95,5 +93,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
