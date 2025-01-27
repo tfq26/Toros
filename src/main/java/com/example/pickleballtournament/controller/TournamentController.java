@@ -137,12 +137,19 @@ public class TournamentController {
     public ResponseEntity<String> endTournament() {
         try {
             logger.info("Ending tournament...");
+
+            // Call the service to end the tournament
             tournamentService.endTournament();
-            logger.info("Tournament ended successfully.");
-            return ResponseEntity.ok("Tournament ended successfully.");
+
+            // Call the service to clear all matches
+            tournamentService.clearAllMatches();
+
+            logger.info("Tournament ended and all matches cleared successfully.");
+            return ResponseEntity.ok("Tournament ended and all matches cleared successfully.");
         } catch (Exception e) {
             logger.error("Error ending tournament: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to end the tournament: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to end the tournament: " + e.getMessage());
         }
     }
 

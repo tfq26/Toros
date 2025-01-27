@@ -1,0 +1,83 @@
+import axios from "axios";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+// Fetch team standings
+export const fetchStandings = async () => {
+    try {
+        const response = await axios.get("http://localhost:8080/api/teams/standings");
+        const validTeams = response.data.filter(
+            (team) => team.name && team.name.includes(" & ")
+        );
+        return validTeams;
+    } catch (error) {
+        throw new Error("Failed to fetch standings. Please try again later.");
+    }
+};
+
+// Fetch all matches for bracket data
+export const fetchAllMatches = async () => {
+    try {
+        const response = await axios.get("http://localhost:8080/api/tournament/live");
+        return response.data || [];
+    } catch (error) {
+        throw new Error("Failed to fetch matches for the bracket.");
+    }
+};
+
+// Clear all standings
+export const clearStandings = async () => {
+    try {
+        const response = await axios.delete("http://localhost:8080/api/teams/reset");
+        if (response.status === 200) {
+            return "Standings reset successfully!";
+        }
+        return "Failed to reset standings.";
+    } catch (error) {
+        throw new Error("Failed to reset standings. Please try again later.");
+    }
+};
+
+// Export standings to Excel
+export const exportToExcel = (teams) => {
+    const data = teams.map((team) => ({
+        "Team Name": team.name,
+        "Team ID": team.id,
+        Wins: team.wins,
+        Losses: team.losses,
+        "Matches Played": team.matchesPlayed,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Team Standings");
+    XLSX.writeFile(workbook, "team_standings.xlsx");
+};
+
+// Export standings to PDF
+export const exportToPDF = (teams) => {
+    const doc = new jsPDF();
+    doc.text("Team Standings", 20, 10);
+    const tableData = teams.map((team) => [
+        team.name,
+        team.id,
+        team.wins,
+        team.losses,
+        team.matchesPlayed,
+    ]);
+    autoTable(doc, {
+        head: [["Team Name", "Team ID", "Wins", "Losses", "Matches Played"]],
+        body: tableData,
+    });
+    doc.save("team_standings.pdf");
+};
+
+// Fetch matches for a specific team
+export const fetchTeamMatches = async (teamName) => {
+    try {
+        const response = await axios.get(`http://localhost:8080/api/tournament/teamMatchesByName/${encodeURIComponent(teamName)}`);
+        return response.data;
+    } catch (error) {
+        throw new Error("Failed to retrieve matches for the selected team.");
+    }
+};

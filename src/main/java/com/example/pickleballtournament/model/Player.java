@@ -15,6 +15,9 @@ public class Player {
     @Id
     private String id;
     private String name;
+    private int age;
+    private String email;
+    private String phone;
     private Integer teamNumber;
     private String clubName;
     private Integer placement;

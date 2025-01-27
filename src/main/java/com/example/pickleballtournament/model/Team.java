@@ -9,108 +9,129 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @Document(collection = "teams")
 public class Team {
+
     @Id
     private String id;
-    private String name;
+
+    private String teamName;
+    private Player player1;
+    private Player player2;
+    private int teamScore;
     private int wins;
     private int losses;
     private int matchesPlayed;
-    private int score;
-    private Integer placement; // New field for placement (e.g., "Beginner", "Intermediate", "Advanced")
-    private Player player1;
-    private Player player2;
+    private String skillLevel; // e.g., "Beginner", "Intermediate", "Advanced"
+    private Integer placement;
 
     // Constructors
     public Team() {}
 
-    public Team(String name) {
-        this.name = name;
+    public Team(String teamName, Player player1, Player player2) {
+        this.teamName = teamName;
+        this.player1 = player1;
+        this.player2 = player2;
+        this.teamScore = 0;
         this.wins = 0;
         this.losses = 0;
         this.matchesPlayed = 0;
-        this.score = 0;
-        this.placement = 0; // Default placement
-        this.player1 = null;
-        this.player2 = null;
-    }
-
-    public Team(String id, String name, int matchesPlayed, int wins, int losses, int placement) {
-        this.id = id;
-        this.name = name;
-        this.matchesPlayed = matchesPlayed;
-        this.wins = wins;
-        this.losses = losses;
-        this.score = 0;
-        this.placement = placement;
-        this.player1 = null;
-        this.player2 = null;
-    }
-
-    public void setPlayers(Player player1, Player player2) {
-        this.player1 = player1;
-        this.player2 = player2;
-    }
-
-    private int calculateTeamPlacement(int player1Placement, int player2Placement) {
-        // Step 1: Calculate the average placement
-        double averagePlacement = (player1Placement + player2Placement) / 2.0;
-
-        // Step 2: Adjust for imbalance
-        double adjustmentFactor = 0.0;
-        if (Math.abs(player1Placement - player2Placement) > 1) {
-            adjustmentFactor = 0.5 * (player2Placement - player1Placement);
-        }
-        double finalPlacement = averagePlacement - adjustmentFactor;
-
-        // Step 3: Clamp the result to the range [1, 3] and round
-        return (int) Math.max(1, Math.min(3, Math.round(finalPlacement)));
-    }
-
-    public void getTeamPlacement() {
-        this.placement = calculateTeamPlacement(player1.getPlacement(), player2.getPlacement());
+        this.skillLevel = calculateSkillLevel(player1.getPlacement(), player2.getPlacement());
     }
 
     // Methods
+
+    /**
+     * Calculate the team's skill level based on the players' placements.
+     *
+     * @param player1Placement The placement of the first player.
+     * @param player2Placement The placement of the second player.
+     * @return A string representing the team's skill level.
+     */
+    private String calculateSkillLevel(int player1Placement, int player2Placement) {
+        double averagePlacement = (player1Placement + player2Placement) / 2.0;
+
+        if (averagePlacement <= 1.5) {
+            return "Beginner";
+        } else if (averagePlacement <= 2.5) {
+            return "Intermediate";
+        } else {
+            return "Advanced";
+        }
+    }
+
+    /**
+     * Get the calculated placement level based on player placements.
+     *
+     * @return The numerical placement level (1 = Beginner, 2 = Intermediate, 3 = Advanced).
+     */
+//    public int getPlacement() {
+//        int player1Placement = player1 != null ? player1.getPlacement() : 0;
+//        int player2Placement = player2 != null ? player2.getPlacement() : 0;
+//
+//        double averagePlacement = (player1Placement + player2Placement) / 2.0;
+//
+//        if (averagePlacement <= 1.5) {
+//            return 1;
+//        } else if (averagePlacement <= 2.5) {
+//            return 2;
+//        } else {
+//            return 3;
+//        }
+//    }
+
+    /**
+     * Increment the team's win count and update the skill level if necessary.
+     */
     public void incrementWins() {
         this.wins++;
-        updatePlacement(); // Update placement on wins
+        this.matchesPlayed++;
+        updateSkillLevel();
     }
 
+    /**
+     * Increment the team's loss count.
+     */
     public void incrementLosses() {
         this.losses++;
-        updatePlacement(); // Update placement on losses
-    }
-
-    public void incrementMatchesPlayed() {
         this.matchesPlayed++;
     }
 
     /**
-     * Update placement based on performance.
-     * For example:
-     * - 0-3 wins: Beginner
-     * - 4-7 wins: Intermediate
-     * - 8+ wins: Advanced
+     * Update the team's skill level dynamically based on their performance.
      */
-    public void updatePlacement() {
+    private void updateSkillLevel() {
         if (wins >= 8) {
-            this.placement = 3;
+            this.skillLevel = "Advanced";
         } else if (wins >= 4) {
-            this.placement = 2;
+            this.skillLevel = "Intermediate";
         } else {
-            this.placement = 1;
+            this.skillLevel = "Beginner";
         }
+    }
+
+    /**
+     * Set players for the team and recalculate the skill level.
+     *
+     * @param player1 The first player.
+     * @param player2 The second player.
+     */
+    public void setPlayers(Player player1, Player player2) {
+        this.player1 = player1;
+        this.player2 = player2;
+        this.skillLevel = calculateSkillLevel(player1.getPlacement(), player2.getPlacement());
     }
 
     @Override
     public String toString() {
         return "Team{" +
                 "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", matchesPlayed=" + matchesPlayed +
+                ", teamName='" + teamName + '\'' +
+                ", player1=" + player1 +
+                ", player2=" + player2 +
+                ", teamScore=" + teamScore +
                 ", wins=" + wins +
                 ", losses=" + losses +
-                ", placement='" + placement + '\'' +
+                ", matchesPlayed=" + matchesPlayed +
+                ", skillLevel='" + skillLevel + '\'' +
                 '}';
     }
 }
