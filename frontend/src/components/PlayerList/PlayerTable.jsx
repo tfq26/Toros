@@ -1,12 +1,12 @@
 import React from "react";
+import * as PropTypes from "prop-types";
 
-const PlayerTable = ({ players, error, convertLevel }) => {
-    return (
-        <div className="flex-grow">
-            <h2 className="text-2xl font-bold mb-4">Player List</h2>
-            {error ? (
-                <p className="text-red-500">{error}</p>
-            ) : (
+class PlayerTable extends React.Component {
+    render() {
+        let {players, error, convertLevel} = this.props;
+        return (
+            <div className="flex-grow">
+                <h2 className="text-2xl font-bold mb-4">Player List</h2>
                 <table className="table-auto w-full border border-gray-300">
                     <thead>
                     <tr className="bg-emerald-500">
@@ -55,9 +55,16 @@ const PlayerTable = ({ players, error, convertLevel }) => {
                     )}
                     </tbody>
                 </table>
-            )}
-        </div>
-    );
-};
+            </div>
+
+        );
+    }
+}
+
+PlayerTable.propTypes = {
+    players: PropTypes.any,
+    error: PropTypes.any,
+    convertLevel: PropTypes.any
+}
 
 export default PlayerTable;

@@ -1,11 +1,9 @@
 package com.example.pickleballtournament.service;
 
 import com.example.pickleballtournament.model.Match;
-import com.example.pickleballtournament.model.Player;
 import com.example.pickleballtournament.model.Team;
 import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.repository.MatchRepository;
-import com.example.pickleballtournament.repository.PlayerRepository;
 import com.example.pickleballtournament.repository.TeamRepository;
 import com.example.pickleballtournament.repository.TournamentRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -16,265 +14,134 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.function.BiConsumer;
 
 @Slf4j
 @Service
 public class TournamentService {
 
-    private final PlayerRepository playerRepository;
     private final MatchRepository matchRepository;
     private final TeamRepository teamRepository;
-    private final TeamService teamService;
     private final TournamentRepository tournamentRepository;
+    private final TeamService teamService;
 
-    public TournamentService(PlayerRepository playerRepository, MatchRepository matchRepository, TeamRepository teamRepository, TeamService teamService, TournamentRepository tournamentRepository) {
-        this.playerRepository = playerRepository;
+    public TournamentService(MatchRepository matchRepository, TeamRepository teamRepository, TournamentRepository tournamentRepository, TeamService teamService) {
         this.matchRepository = matchRepository;
         this.teamRepository = teamRepository;
         this.tournamentRepository = tournamentRepository;
         this.teamService = teamService;
     }
 
+    /** ✅ Setup the Tournament */
     @Transactional
     public void setupTournament(int numCourts, int gamesPerTeam, boolean useExistingPlayers, boolean tiered, LocalTime startTime, int matchDuration) {
-        // Clear all existing matches
+        log.info("Initializing tournament setup...");
+
         matchRepository.deleteAll();
-        log.info("All existing matches have been deleted.");
-
-        // Clear all existing teams
         teamRepository.deleteAll();
-        log.info("All existing teams have been deleted.");
+        log.info("Cleared all existing matches and teams.");
 
-        // Generate or retrieve teams
         List<Team> teams = setupAndGenerateTeams();
-
         if (teams.isEmpty()) {
-            throw new IllegalArgumentException("No teams available for the tournament.");
+            throw new IllegalStateException("No teams available for the tournament.");
         }
 
-        // Fetch standings from TeamService
-        List<Team> standings = teamService.getStandings();
-
-        // Use standings to generate matches
-        List<Match> matches = generateMatches(standings, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
-
-        if (matches.isEmpty()) {
-            throw new IllegalStateException("No matches generated. Please check the input parameters.");
-        }
-
-        // Save matches
+        List<Match> matches = generateMatches(teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
         matchRepository.saveAll(matches);
-        log.info("Saved {} matches to the database.", matches.size());
+        log.info("Saved {} matches.", matches.size());
     }
-
-    @Transactional
-    public List<Team> setupAndGenerateTeams() {
-        // Clear all existing teams from the repository
-        teamRepository.deleteAll();
-        log.info("Cleared all existing teams from the repository.");
-
-        // Fetch all players from the repository
-        List<Player> players = playerRepository.findAll();
-        if (players.isEmpty()) {
-            throw new IllegalStateException("No players found in the repository. Cannot create teams.");
-        }
-
-        // Group players by their teamNumber
-        Map<Integer, List<Player>> groupedPlayers = players.stream()
-                .filter(player -> player.getTeamNumber() != null) // Only include players with a valid teamNumber
-                .collect(Collectors.groupingBy(Player::getTeamNumber));
-
-        List<Team> teams = new ArrayList<>();
-
-        // Create teams from grouped players
-        for (Map.Entry<Integer, List<Player>> entry : groupedPlayers.entrySet()) {
-            List<Player> teamPlayers = entry.getValue();
-
-            if (teamPlayers.size() == 2) { // Only create teams with exactly 2 players
-                Player player1 = teamPlayers.get(0);
-                Player player2 = teamPlayers.get(1);
-
-                // Generate the team name
-                String teamName = player1.getName() + " & " + player2.getName();
-
-                // Create and configure the team
-                Team team = new Team();
-                team.setTeamName(teamName);
-                team.setPlayers(player1, player2);
-                team.getPlacement();
-
-                teams.add(team);
-                log.info("Created team: {}", teamName);
-            } else {
-                // Log a warning for invalid team sizes
-                log.warn("Invalid team size for teamNumber {}: {} players found.", entry.getKey(), teamPlayers.size());
-            }
-        }
-
-        // Save valid teams to the repository
-        teamRepository.saveAll(teams);
-        log.info("Successfully created and saved {} teams.", teams.size());
-
-        // Throw an exception if no valid teams were created
-        if (teams.isEmpty()) {
-            throw new IllegalStateException("No valid teams were created. Ensure players are paired correctly by teamNumber.");
-        }
-
-        return teams;
-    }
-
 
     private List<Match> generateMatches(List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered, LocalTime startTime, int matchDuration) {
-        Map<Integer, List<Match>> courtAssignments = assignPlayersToCourts(teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration, 1);
+        log.info("Generating matches for {} teams with {} courts.", teams.size(), numCourts);
 
-        List<Match> matches = courtAssignments.values().stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        if (teams.size() < 2) {
+            throw new IllegalStateException("Not enough teams to generate matches.");
+        }
 
-        // Assign custom IDs to matches
-        matches.forEach(Match::generateCustomId);
+        List<Match> matches = new ArrayList<>();
+        Map<Integer, List<Team>> groupedTeams;
+
+        // **1️⃣ Group teams based on tiers if tiered play is enabled**
+        if (tiered) {
+            groupedTeams = teams.stream()
+                    .collect(Collectors.groupingBy(team -> team.getPlacement() != null ? team.getPlacement() : 0)); // Default placement for null
+        } else {
+            groupedTeams = new HashMap<>();
+            groupedTeams.put(0, teams); // All teams in one group
+        }
+
+        AtomicInteger courtNumber = new AtomicInteger(1);
+        Map<Integer, LocalTime> courtTimes = new HashMap<>();
+        for (int i = 1; i <= numCourts; i++) {
+            courtTimes.put(i, startTime);
+        }
+
+        // **2️⃣ Generate matches for each tier/group**
+        for (List<Team> group : groupedTeams.values()) {
+            Collections.shuffle(group); // Shuffle teams for fairness
+
+            for (int i = 0; i < group.size(); i++) {
+                for (int j = i + 1; j < group.size(); j++) {
+                    if (matches.size() >= gamesPerTeam * teams.size() / 2) {
+                        break; // Stop once we've reached the required number of games per team
+                    }
+
+                    Team team1 = group.get(i);
+                    Team team2 = group.get(j);
+
+                    // **3️⃣ Assign court and schedule times**
+                    int assignedCourt = courtNumber.get();
+                    LocalTime matchStartTime = courtTimes.get(assignedCourt);
+                    LocalTime matchEndTime = matchStartTime.plusMinutes(matchDuration);
+
+                    // **4️⃣ Create match**
+                    Match match = new Match();
+                    match.setTeam1(team1);
+                    match.setTeam2(team2);
+                    match.setTeam1Score(0);
+                    match.setTeam2Score(0);
+                    match.setStatus("Scheduled");
+                    match.setCourtNumber(assignedCourt);
+                    match.setStartTime(matchStartTime);
+                    match.setEndTime(matchEndTime);
+                    match.generateCustomId();
+
+                    matches.add(match);
+
+                    // **5️⃣ Update court schedules**
+                    courtTimes.put(assignedCourt, matchEndTime);
+                    courtNumber.set((courtNumber.get() % numCourts) + 1); // Rotate courts
+                }
+            }
+        }
 
         log.info("Generated {} matches.", matches.size());
         return matches;
     }
 
-    private Map<Integer, List<Match>> assignPlayersToCourts(
-            List<Team> teams,
-            int numCourts,
-            int gamesPerTeam,
-            boolean tiered,
-            LocalTime startTime,
-            int matchDuration,
-            int prioritizedPlacement // New parameter for prioritized placement
-    ) {
-        Map<Integer, List<Match>> courtAssignments = new HashMap<>();
-        for (int i = 1; i <= numCourts; i++) {
-            courtAssignments.put(i, new ArrayList<>());
-        }
 
-        // Group teams by placement if tiered is enabled, handling null placements
-        Map<Integer, List<Team>> groupedTeams = tiered
-                ? teams.stream().collect(Collectors.groupingBy(team ->
-                team.getPlacement() != null ? team.getPlacement() : 0)) // Default placement for null
-                : Collections.singletonMap(0, teams);
+    /** ✅ Generate Teams */
+    @Transactional
+    public List<Team> setupAndGenerateTeams() {
+        log.info("Generating teams...");
+        teamRepository.deleteAll();
 
-        // Extract the prioritized group and process it first
-        List<Team> prioritizedGroup = groupedTeams.getOrDefault(prioritizedPlacement, new ArrayList<>());
-        groupedTeams.remove(prioritizedPlacement); // Remove prioritized group from the main group map
+        List<Team> teams = teamService.generateTeams();
+        teamRepository.saveAll(teams);
+        log.info("Successfully saved {} teams.", teams.size());
 
-        // Initialize court schedules and state
-        Map<Integer, LocalTime> courtTimes = new HashMap<>();
-        for (int i = 1; i <= numCourts; i++) {
-            courtTimes.put(i, startTime);
-        }
-        AtomicInteger courtNumber = new AtomicInteger(1);
-
-        // Function to generate matches for a specific group
-        BiConsumer<List<Team>, Integer> generateMatchesForGroup = (group, groupGamesPerTeam) -> {
-            Collections.shuffle(group); // Randomize team order
-
-            for (int game = 0; game < groupGamesPerTeam; game++) {
-                for (int i = 0; i < group.size(); i++) {
-                    for (int j = i + 1; j < group.size(); j++) {
-                        Team team1 = group.get(i);
-                        Team team2 = group.get(j);
-
-                        Match match = new Match();
-                        match.setTeam1(team1);
-                        match.setTeam2(team2);
-                        match.setTeam1Score(0);
-                        match.setTeam2Score(0);
-                        match.setStatus("Scheduled");
-
-                        // Assign match to the current court
-                        int currentCourt = courtNumber.get();
-                        match.setCourtNumber(currentCourt);
-
-                        // Set match start and end times based on the court's schedule
-                        LocalTime currentStartTime = courtTimes.get(currentCourt);
-                        LocalTime currentEndTime = currentStartTime.plusMinutes(matchDuration);
-
-                        match.setStartTime(currentStartTime);
-                        match.setEndTime(currentEndTime);
-
-                        // Update court's next available time and assignments
-                        courtTimes.put(currentCourt, currentEndTime);
-                        courtAssignments.get(currentCourt).add(match);
-
-                        // Rotate to the next court
-                        courtNumber.set((currentCourt % numCourts) + 1);
-                    }
-                }
-            }
-        };
-
-        // Generate matches for the prioritized group
-        if (!prioritizedGroup.isEmpty()) {
-            generateMatchesForGroup.accept(prioritizedGroup, gamesPerTeam);
-        }
-
-        // Generate matches for the remaining groups
-        for (List<Team> group : groupedTeams.values()) {
-            generateMatchesForGroup.accept(group, gamesPerTeam);
-        }
-
-        return courtAssignments;
+        return teams;
     }
 
-
-    // Save a live tournament
-    public Tournament saveTournament(Tournament tournament) {
-        tournament.setStatus("LIVE");
-        log.info("Saving live tournament: {}", tournament.getName());
-        return tournamentRepository.save(tournament);
+    /** ✅ Retrieve All Matches */
+    public List<Match> getAllMatches() {
+        return matchRepository.findAll();
     }
 
-    public void clearAllMatches() {
-        matchRepository.deleteAll(); // Deletes all match entries from the database
-        log.info("All matches have been cleared from the database.");
-    }
-
-
-    // Retrieve the live tournament
-    public Optional<Tournament> getLiveTournament() {
-        return tournamentRepository.findByStatus("LIVE");
-    }
-
-    // End a tournament
-    public void endTournament() {
-        Optional<Tournament> liveTournament = tournamentRepository.findByStatus("LIVE");
-        if (liveTournament.isPresent()) {
-            Tournament tournament = liveTournament.get();
-            tournament.setStatus("COMPLETED");
-            tournamentRepository.save(tournament);
-            log.info("Tournament {} marked as COMPLETED.", tournament.getName());
-        } else {
-            log.warn("No live tournament to end.");
-        }
-    }
-
-    // Custom ID generator
-    private String generateCustomId() {
-        return "MATCH-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-    }
-
-    public List<Match> getMatchesByTeam(String teamId) {
-        if (!teamRepository.existsById(teamId)) {
-            throw new IllegalArgumentException("Team not found with ID: " + teamId);
-        }
-        System.out.print("Team ID: " + teamId + "\n");
-        return matchRepository.findByTeamId(teamId);
-    }
-
-    public List<Team> getStandings() {
-        return teamService.getStandings();
-    }
-
+    /** ✅ Update Match Results */
     @Transactional
     public void updateMatchStatus(String matchId, int team1Score, int team2Score, String status) {
         Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new IllegalArgumentException("Match not found with ID: " + matchId));
+                .orElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId));
 
         match.setTeam1Score(team1Score);
         match.setTeam2Score(team2Score);
@@ -286,16 +153,12 @@ public class TournamentService {
 
             if (team1Score > team2Score) {
                 match.setWinner(team1.getTeamName());
-                match.setLoser(team2.getTeamName());
                 team1.incrementWins();
                 team2.incrementLosses();
-            } else if (team2Score > team1Score) {
+            } else {
                 match.setWinner(team2.getTeamName());
-                match.setLoser(team1.getTeamName());
                 team2.incrementWins();
                 team1.incrementLosses();
-            } else {
-                throw new IllegalArgumentException("A match cannot be completed with tied scores.");
             }
 
             teamRepository.save(team1);
@@ -305,70 +168,78 @@ public class TournamentService {
         matchRepository.save(match);
     }
 
-
-
-    public List<Match> getAllMatches() {
-        log.info("Fetching all matches from the repository.");
-        List<Match> matches = matchRepository.findAll();
-
-        if (matches.isEmpty()) {
-            log.warn("No matches found in the repository.");
-        } else {
-            log.info("Retrieved {} matches from the repository.", matches.size());
-        }
-
-        return matches;
+    /** ✅ End Tournament */
+    @Transactional
+    public void endTournament() {
+        Optional<Tournament> liveTournament = tournamentRepository.findByStatus("LIVE");
+        liveTournament.ifPresent(tournament -> {
+            tournament.setStatus("COMPLETED");
+            tournamentRepository.save(tournament);
+            log.info("Tournament {} marked as COMPLETED.", tournament.getName());
+        });
     }
 
+    /** ✅ Clear All Matches */
+    @Transactional
+    public void clearAllMatches() {
+        matchRepository.deleteAll();
+        log.info("All matches have been cleared from the database.");
+    }
+
+    /** ✅ Get Team Standings */
+    public List<Team> getStandings() {
+        List<Team> teams = teamRepository.findAll();
+        return teams.stream()
+                .sorted(Comparator.comparingInt(Team::getWins).reversed()
+                        .thenComparingInt(Team::getLosses))
+                .collect(Collectors.toList());
+    }
+
+    /** ✅ Get Matches by Team ID */
+    public List<Match> getMatchesByTeam(String teamId) {
+        if (!teamRepository.existsById(teamId)) {
+            throw new IllegalArgumentException("Team not found with ID: " + teamId);
+        }
+        return matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId);
+    }
+
+    /** ✅ Get Matches by Team Name */
     public List<Match> getMatchesByTeamName(String teamName) {
-        if (teamName == null || teamName.isEmpty()) {
-            throw new IllegalArgumentException("Team name must not be null or empty.");
+        List<Team> teams = teamRepository.findAllByTeamName(teamName);
+        List<String> teamIds = teams.stream().map(Team::getId).collect(Collectors.toList());
+
+        List<Match> matches = new ArrayList<>();
+        for (String teamId : teamIds) {
+            matches.addAll(matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId));
         }
-
-        List<Match> matches = matchRepository.findByTeamName(teamName);
-
-        if (matches.isEmpty()) {
-            log.warn("No matches found for team name: {}", teamName);
-        } else {
-            log.info("Found {} matches for team name: {}", matches.size(), teamName);
-        }
-
         return matches;
     }
 
+    /** ✅ Create Knockout Matches */
     @Transactional
     public void createKnockoutMatches(List<Team> teams) {
         if (teams.size() < 2) throw new IllegalArgumentException("Not enough teams for knockout.");
 
-        int round = 1;
         Queue<Match> queue = new LinkedList<>();
-
-        // Create initial matches
         for (int i = 0; i < teams.size(); i += 2) {
             Match match = new Match();
             match.setTeam1(teams.get(i));
-            match.setTeam2(i + 1 < teams.size() ? teams.get(i + 1) : null); // Handle odd teams
+            match.setTeam2(i + 1 < teams.size() ? teams.get(i + 1) : null);
             match.setStatus("Scheduled");
-            match.setRound(round);
             matchRepository.save(match);
             queue.add(match);
         }
 
-        // Create knockout brackets
         while (queue.size() > 1) {
             List<Match> currentRound = new ArrayList<>();
             while (!queue.isEmpty()) {
                 Match match1 = queue.poll();
                 Match match2 = queue.poll();
-
                 Match nextMatch = new Match();
                 nextMatch.setStatus("Scheduled");
-                nextMatch.setRound(++round);
 
                 match1.setNextMatchId(nextMatch.getId());
-                if (match2 != null) {
-                    match2.setNextMatchId(nextMatch.getId());
-                }
+                if (match2 != null) match2.setNextMatchId(nextMatch.getId());
 
                 currentRound.add(nextMatch);
                 matchRepository.save(match1);
@@ -378,21 +249,18 @@ public class TournamentService {
         }
     }
 
+    /** ✅ Advance a Winner in Knockout Matches */
     @Transactional
     public void advanceWinner(String matchId, String winnerTeamId) {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId));
-
-        if (!"Complete".equalsIgnoreCase(match.getStatus())) {
-            throw new IllegalStateException("Match is not completed yet.");
-        }
 
         Match nextMatch = matchRepository.findById(match.getNextMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Next match not found."));
 
         if (nextMatch.getTeam1() == null) {
             nextMatch.setTeam1(teamRepository.findById(winnerTeamId).orElseThrow());
-        } else if (nextMatch.getTeam2() == null) {
+        } else {
             nextMatch.setTeam2(teamRepository.findById(winnerTeamId).orElseThrow());
         }
 

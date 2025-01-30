@@ -9,10 +9,11 @@ import java.util.List;
 
 @Repository
 public interface MatchRepository extends MongoRepository<Match, String> {
-    // Find matches by team1 or team2
+
+    // Find matches where the team ID matches either team1 or team2
     @Query("{ '$or': [ { 'team1.id': ?0 }, { 'team2.id': ?0 } ] }")
     List<Match> findByTeamId(String teamId);
 
-    @Query("{ '$or': [ { 'team1.name': ?0 }, { 'team2.name': ?0 } ] }")
-    List<Match> findByTeamName(String teamName);
+    // Alternative method using Spring Data naming convention
+    List<Match> findByTeam1_IdOrTeam2_Id(String teamId1, String teamId2);
 }

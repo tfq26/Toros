@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import  { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import InputField from "./InputField";
 import CheckboxField from "./CheckboxField";
@@ -7,6 +6,7 @@ import TeamsList from "./TeamsList";
 import ErrorMessage from "../Error";
 import { fetchPlayersAndGenerateTeams, handleTournamentSetup } from "../utils/SetupFunctions";
 
+// eslint-disable-next-line react/prop-types
 const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
         numCourts: "",

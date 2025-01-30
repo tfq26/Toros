@@ -25,6 +25,7 @@ const PlayerList = () => {
         } catch (err) {
             console.error("Error fetching players:", err);
             setError("Failed to load player data. Please try again later.");
+            setPlayers([]); // Ensure players list is empty if there's an error
         } finally {
             setIsLoading(false); // Hide the loading modal
         }
@@ -65,9 +66,18 @@ const PlayerList = () => {
 
             <FileUploader isLoading={isLoading} onFileUpload={handleFileUpload} />
 
+            {/* Show message if there was an error */}
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                    {error}
+                </div>
+            )}
+
             <div className="flex gap-4">
                 <PlayerTable players={players} error={error} convertLevel={convertLevel} />
-                <PlayerStats stats={stats} />
+
+                {/* Show PlayerStats only if players are successfully loaded */}
+                {players.length > 0 && !error && <PlayerStats stats={stats} />}
             </div>
         </div>
     );

@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 function Home() {
     const [images, setImages] = useState([]);
 
-    // Dynamically import images
     useEffect(() => {
         const importImages = () => {
             const importedImages = [
                 "/img_1.jpg",
                 "/img_2.jpg",
                 "/img_3.jpg",
-                "/img_4", // Ensure the image has the correct extension, like .jpg or .png
+                "/img_4", // Ensure file extensions are correct
             ];
             setImages(importedImages);
         };
@@ -19,23 +19,63 @@ function Home() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-hero_gradient text-gray-800">
-            <h1 className="text-9xl font-bold text-center mb-4 text-amber-100">
-                Welcome to Taurus, the Pickleball App!
-            </h1>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-emerald-700 to-emerald-500 text-gray-800 px-6">
+            {/* Animated Title */}
+            <motion.h1
+                className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-center mb-6 text-amber-100 drop-shadow-lg"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: "easeOut" }}
+            >
+                Welcome to <span className="text-amber-300">Taurus</span>
+            </motion.h1>
 
-            {/* Image Row */}
-            <div className="flex space-x-4 overflow-x-auto w-full max-w-[100rem] mb-10">
-                {images.map((image, index) => (
-                    <div key={index} className="flex justify-center">
-                        <img
-                            src={image}
-                            alt={`Image ${index + 1}`}
-                            className="w-96 h-auto rounded-lg" // Increase the width to make the images larger
-                        />
-                    </div>
-                ))}
+            {/* Subtitle */}
+            <motion.p
+                className="text-xl sm:text-2xl md:text-3xl text-center text-white mb-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1.2, delay: 0.5 }}
+            >
+                The Ultimate Pickleball Tournament Experience
+            </motion.p>
+
+            {/* Image Grid - Fixed Clipping Issue */}
+            <div className="w-full max-w-7xl px-4 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {images.map((image, index) => (
+                        <motion.div
+                            key={index}
+                            className="relative overflow-hidden rounded-xl shadow-lg"
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <img
+                                src={image}
+                                alt={`Pickleball ${index + 1}`}
+                                className="w-full h-60 object-cover rounded-xl"
+                            />
+                        </motion.div>
+                    ))}
+                </div>
             </div>
+
+            {/* Fun CTA Button */}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 1 }}
+            >
+                <Link to="/tournament/setup">
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="bg-amber-400 hover:bg-amber-500 text-white text-xl font-semibold py-3 px-8 rounded-full shadow-lg transition-all"
+                    >
+                        Start Your Tournament 🏅
+                    </motion.button>
+                </Link>
+            </motion.div>
         </div>
     );
 }

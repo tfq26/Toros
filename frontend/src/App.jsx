@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Home from "./components/Home.jsx";
@@ -17,8 +17,8 @@ const App = () => {
 
     return (
         <Router>
-            <div className="flex flex-col h-screen">
-                {/* Pass props to Navbar */}
+            <div className="flex h-screen">
+                {/* Sidebar Navbar - Fixed Position */}
                 <Navbar
                     tournamentSetupComplete={tournamentSetupComplete}
                     user={authToken ? { name: "John Doe" } : null} // Replace with actual user data
@@ -28,8 +28,8 @@ const App = () => {
                     }}
                 />
 
-                {/* Main Content */}
-                <div className="flex-1">
+                {/* Main Content Wrapper - Ensures No Clipping */}
+                <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-gray-100">
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/players" element={<PlayerList />} />
