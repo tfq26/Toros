@@ -3,15 +3,22 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+// Helper function to get the token from localStorage
+const getAuthHeaders = () => {
+    const token = localStorage.getItem("authToken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // Fetch team standings
 export const fetchStandings = async () => {
     try {
-        const response = await axios.get("http://localhost:8080/api/teams/standings");
-        const validTeams = response.data.filter(
-            (team) => team.name && team.name.includes(" & ")
-        );
+        const response = await axios.get("http://localhost:8080/api/teams/standings", {
+            headers: getAuthHeaders(),
+        });
+        const validTeams = response.data.filter((team) => team.name && team.name.includes(" & "));
         return validTeams;
     } catch (error) {
+        console.error("Error fetching standings:", error);
         throw new Error("Failed to fetch standings. Please try again later.");
     }
 };
@@ -19,9 +26,12 @@ export const fetchStandings = async () => {
 // Fetch all matches for bracket data
 export const fetchAllMatches = async () => {
     try {
-        const response = await axios.get("http://localhost:8080/api/tournament/live");
+        const response = await axios.get("http://localhost:8080/api/tournament/live", {
+            headers: getAuthHeaders(),
+        });
         return response.data || [];
     } catch (error) {
+        console.error("Error fetching matches:", error);
         throw new Error("Failed to fetch matches for the bracket.");
     }
 };
@@ -29,12 +39,15 @@ export const fetchAllMatches = async () => {
 // Clear all standings
 export const clearStandings = async () => {
     try {
-        const response = await axios.delete("http://localhost:8080/api/teams/reset");
+        const response = await axios.delete("http://localhost:8080/api/teams/reset", {
+            headers: getAuthHeaders(),
+        });
         if (response.status === 200) {
             return "Standings reset successfully!";
         }
         return "Failed to reset standings.";
     } catch (error) {
+        console.error("Error resetting standings:", error);
         throw new Error("Failed to reset standings. Please try again later.");
     }
 };
@@ -75,9 +88,15 @@ export const exportToPDF = (teams) => {
 // Fetch matches for a specific team
 export const fetchTeamMatches = async (teamName) => {
     try {
-        const response = await axios.get(`http://localhost:8080/api/tournament/teamMatchesByName/${encodeURIComponent(teamName)}`);
+        const response = await axios.get(
+            `http://localhost:8080/api/tournament/teamMatchesByName/${encodeURIComponent(teamName)}`,
+            {
+                headers: getAuthHeaders(),
+            }
+        );
         return response.data;
     } catch (error) {
+        console.error("Error fetching team matches:", error);
         throw new Error("Failed to retrieve matches for the selected team.");
     }
 };

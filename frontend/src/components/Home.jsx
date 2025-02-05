@@ -27,7 +27,7 @@ function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, ease: "easeOut" }}
             >
-                Welcome to <span className="text-amber-300">Taurus</span>
+                Welcome to <span className="text-amber-300">Toros</span>
             </motion.h1>
 
             {/* Subtitle */}

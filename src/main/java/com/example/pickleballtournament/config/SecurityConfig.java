@@ -3,6 +3,7 @@ package com.example.pickleballtournament.config;
 import com.example.pickleballtournament.security.JwtAuthenticationFilter;
 import com.example.pickleballtournament.service.CustomUserDetailsService;
 import com.example.pickleballtournament.utility.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +21,9 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
+    @Value("${spring.profiles.active:prod}") // Default to "prod" if not set
+    private String activeProfile;
+
     public SecurityConfig(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
@@ -27,15 +31,29 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Allow /auth endpoints without authentication
-                        .anyRequest().authenticated()           // All other endpoints require authentication
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless for JWT
-                )
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class); // Add JWT filter
+        if ("dev".equals(activeProfile)) {
+            // Allow all routes in development mode
+            http.csrf(csrf -> csrf.disable())
+                    .authorizeHttpRequests(auth -> auth
+                            .anyRequest().permitAll()
+                    );
+        } else {
+            // Secure endpoints in production
+            http.csrf(csrf -> csrf.disable())
+                    .authorizeHttpRequests(auth -> auth
+                            .requestMatchers("/auth/**").permitAll()
+                            .requestMatchers("/api/tournament/**").permitAll() // Require authentication for tournament APIs
+                            .requestMatchers("/api/bracket/**").permitAll()
+                            .requestMatchers("/api/players/**").permitAll()
+                            // Require authentication for tournament APIs
+                            .anyRequest().authenticated()
+                    )
+                    .sessionManagement(session -> session
+                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    )
+                    .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        }
+
         return http.build();
     }
 
@@ -54,5 +72,3 @@ public class SecurityConfig {
         return new JwtAuthenticationFilter(jwtUtil, userDetailsService);
     }
 }
-
-
