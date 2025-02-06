@@ -41,11 +41,10 @@ public class SecurityConfig {
             // Secure endpoints in production
             http.csrf(csrf -> csrf.disable())
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/auth/**").permitAll()
+                            .requestMatchers("/api/auth/**").permitAll()
                             .requestMatchers("/api/tournament/**").permitAll() // Require authentication for tournament APIs
-                            .requestMatchers("/api/bracket/**").permitAll()
-                            .requestMatchers("/api/players/**").permitAll()
-                            // Require authentication for tournament APIs
+                            .requestMatchers("/api/bracket/**").permitAll() // Require authentication for players APIs
+                            .requestMatchers("/api/players/**").permitAll()// Require authentication for players APIs
                             .anyRequest().authenticated()
                     )
                     .sessionManagement(session -> session

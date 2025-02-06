@@ -25,7 +25,6 @@ const MatchTable = ({ matches, updateMatch }) => {
             <table className="table-auto w-full border-collapse border border-gray-200">
                 <thead>
                 <tr className="bg-gray-200">
-                    <th className="border border-gray-300 px-4 py-2">Match ID</th>
                     <th className="border border-gray-300 px-4 py-2">Team 1</th>
                     <th className="border border-gray-300 px-4 py-2">Team 2</th>
                     <th className="border border-gray-300 px-4 py-2">Status</th>
@@ -36,7 +35,6 @@ const MatchTable = ({ matches, updateMatch }) => {
                 {matches.length > 0 ? (
                     matches.map((match) => (
                         <tr key={match.id}>
-                            <td className="border border-gray-300 px-4 py-2">{match.id}</td>
                             <td className="border border-gray-300 px-4 py-2">{match.team1?.name || "N/A"}</td>
                             <td className="border border-gray-300 px-4 py-2">{match.team2?.name || "N/A"}</td>
                             <td className="border border-gray-300 px-4 py-2">
@@ -58,7 +56,7 @@ const MatchTable = ({ matches, updateMatch }) => {
                     ))
                 ) : (
                     <tr>
-                        <td className="border border-gray-300 px-4 py-2 text-center" colSpan={5}>
+                        <td className="border border-gray-300 px-4 py-2 text-center" colSpan={4}>
                             No matches available.
                         </td>
                     </tr>

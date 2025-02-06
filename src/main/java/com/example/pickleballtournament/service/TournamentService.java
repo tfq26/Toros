@@ -60,7 +60,7 @@ public class TournamentService {
         List<Match> matches = new ArrayList<>();
         Map<Integer, List<Team>> groupedTeams;
 
-        // **1️⃣ Group teams based on tiers if tiered play is enabled**
+        // Group teams based on tiers if tiered play is enabled
         if (tiered) {
             groupedTeams = teams.stream()
                     .collect(Collectors.groupingBy(team -> team.getPlacement() != null ? team.getPlacement() : 0)); // Default placement for null
