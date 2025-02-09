@@ -4,7 +4,7 @@ import {
     AiOutlineTeam,
 } from "react-icons/ai";
 import { TbTournament } from "react-icons/tb";
-import { IoPodiumOutline, IoLogInOutline, IoLogOutOutline } from "react-icons/io5"; // Add IoLogOutOutline
+import { IoPodiumOutline, IoLogInOutline, IoLogOutOutline } from "react-icons/io5";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
@@ -24,26 +24,24 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
                 <img
                     src="/bull-svgrepo-com.svg" // Replace with your actual image path
                     alt="Home Icon"
-                    className="w-12 h-12" // Increase image size
+                    className="w-12 h-12"
                 />
             ),
         },
         { label: "Players", path: "/players", Icon: AiOutlineTeam },
         { label: "Tournaments", path: "/tournament/setup", Icon: AiOutlineTrophy },
-        { label: "Bracket", path: "/bracket", Icon: IoPodiumOutline },
     ];
 
+    // Conditionally add Bracket and Live Tournament links after setup
     if (tournamentSetupComplete) {
-        links.push({
-            label: "Live Tournament",
-            path: "/tournament/live",
-            Icon: TbTournament,
-        });
+        links.push(
+            { label: "Bracket", path: "/bracket", Icon: IoPodiumOutline },
+            { label: "Live Tournament", path: "/tournament/live", Icon: TbTournament }
+        );
     }
 
     return (
         <div className="fixed top-0 left-0 h-screen w-20 flex flex-col bg-red-900 text-white shadow-md">
-            {/* Map through the main links */}
             {links.map((link, idx) => (
                 <Link
                     key={idx}
@@ -57,7 +55,6 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
                 </Link>
             ))}
 
-            {/* Conditionally show login/logout links */}
             {user ? (
                 <button
                     onClick={handleLogout}
