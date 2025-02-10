@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,9 +15,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 public class SecurityConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
@@ -31,20 +36,22 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        logger.info("SecurityConfig - Active Profile: {}", activeProfile);
+
         if ("dev".equals(activeProfile)) {
-            // Allow all routes in development mode
+            logger.info("Running in DEV mode - Allowing all requests.");
             http.csrf(csrf -> csrf.disable())
                     .authorizeHttpRequests(auth -> auth
                             .anyRequest().permitAll()
                     );
         } else {
-            // Secure endpoints in production
+            logger.info("Running in PROD mode - Enforcing authentication.");
             http.csrf(csrf -> csrf.disable())
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/api/auth/**").permitAll()
-                            .requestMatchers("/api/tournament/**").permitAll() // Require authentication for tournament APIs
-                            .requestMatchers("/api/bracket/**").permitAll() // Require authentication for players APIs
-                            .requestMatchers("/api/players/**").permitAll()// Require authentication for players APIs
+                            .requestMatchers("/auth/**").permitAll()  // ✅ Allow authentication routes
+                            .requestMatchers("/api/tournament/**").authenticated()
+                            .requestMatchers("/api/bracket/**").authenticated()
+                            .requestMatchers("/api/players/**").authenticated()
                             .anyRequest().authenticated()
                     )
                     .sessionManagement(session -> session
@@ -63,11 +70,11 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+        return authConfig.getAuthenticationManager(); // ✅ Uses Spring’s built-in authentication manager
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtil, userDetailsService);
+        return new JwtAuthenticationFilter(jwtUtil, userDetailsService); // ✅ Removed authenticationManager from constructor
     }
 }

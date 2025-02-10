@@ -7,10 +7,10 @@ const ErrorPage = () => {
 
     // Destructure error details from state or use defaults
     const {
-        statusCode = 500,
+        city = "Unknown", // Custom city name for error tracking
         message = "An unexpected error occurred.",
         detailedMessage = null,
-        errorMessages = [], // Array of error messages for detailed display
+        errorMessages = [],
     } = location.state || {};
 
     return (
@@ -24,7 +24,8 @@ const ErrorPage = () => {
                 />
             </div>
 
-            <h1 className="text-4xl font-bold text-red-500">Error {statusCode}</h1>
+            {/* Display custom error name based on city */}
+            <h1 className="text-4xl font-bold text-red-500">Error {city}</h1>
 
             {/* Display standard message */}
             <p className="text-lg mt-4">{message}</p>
@@ -37,19 +38,19 @@ const ErrorPage = () => {
                 </div>
             )}
 
-            {/* Display list of error messages if provided */}
-            {errorMessages.length > 0 && (
-                <div className="mt-4 text-left max-w-lg mx-auto">
-                    <h2 className="text-lg font-semibold text-gray-700">Error Details:</h2>
-                    <ul className="list-disc pl-5">
-                        {errorMessages.map((err, index) => (
-                            <li key={index} className="text-sm text-gray-600">
-                                {err}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+            {/*/!* Display list of error messages if provided *!/*/}
+            {/*{errorMessages.length > 0 && (*/}
+            {/*    <div className="mt-4 text-left max-w-lg mx-auto">*/}
+            {/*        <h2 className="text-lg font-semibold text-gray-700">Error Details:</h2>*/}
+            {/*        <ul className="list-disc pl-5">*/}
+            {/*            {errorMessages.map((err, index) => (*/}
+            {/*                <li key={index} className="text-sm text-gray-600">*/}
+            {/*                    {err}*/}
+            {/*                </li>*/}
+            {/*            ))}*/}
+            {/*        </ul>*/}
+            {/*    </div>*/}
+            {/*)}*/}
 
             {/* Back to Home Button */}
             <button

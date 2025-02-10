@@ -27,7 +27,14 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @PostMapping("/login")  // Fixing the incorrect endpoint
+    // ✅ Fix: Handle GET requests for /auth/login (to prevent 405 errors)
+    @GetMapping("/login")
+    public ResponseEntity<String> loginInfo() {
+        return ResponseEntity.ok("Please use a POST request to log in.");
+    }
+
+    // ✅ POST method for authentication
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         logger.info("Login attempt for user: {}", authRequest.getUsername());
 

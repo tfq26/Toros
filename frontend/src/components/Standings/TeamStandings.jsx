@@ -35,7 +35,7 @@ function TeamStandings() {
             // Navigate to the ErrorPage with detailed error message
             navigate("/error", {
                 state: {
-                    statusCode: 500,
+                    city: "Tokyo",
                     message: "Failed to load standings.",
                     detailedMessage: error.message || "An unknown error occurred while fetching standings.",
                     errorMessages: [error.message] // Pass the error messages array
