@@ -3,73 +3,48 @@ package com.example.pickleballtournament.utility;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
-@Component
+@Component // ✅ Ensure JwtUtil is managed by Spring
 public class JwtUtil {
 
-    private final String SECRET_KEY = "your_secret_key"; // Replace with a strong secret key
-    private final long JWT_EXPIRATION = 1000 * 60 * 60 * 10; // 10 hours (in milliseconds)
+    @Value("${jwt.secret}")  // ✅ Inject secret key from properties file
+    private String SECRET_KEY;
 
-    /**
-     * Extract username from the token.
-     */
+    private final long JWT_EXPIRATION = 1000 * 60 * 60 * 10; // 10 hours
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    /**
-     * Extract expiration date from the token.
-     */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    /**
-     * Extract a specific claim from the token.
-     */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    /**
-     * Generate a token for the user.
-     */
     public String generateToken(String username) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return createToken(username);
     }
 
-    /**
-     * Validate the token.
-     */
-    public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public boolean validateToken(String token, String username) {
+        final String extractedUsername = extractUsername(token);
+        return extractedUsername.equals(username) && !isTokenExpired(token);
     }
 
-    // Private helper methods
-
-    /**
-     * Check if the token has expired.
-     */
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    /**
-     * Create a JWT token.
-     */
-    private String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(String subject) {
         return Jwts.builder()
-                .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
@@ -77,9 +52,6 @@ public class JwtUtil {
                 .compact();
     }
 
-    /**
-     * Extract all claims from the token.
-     */
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(SECRET_KEY)

@@ -13,7 +13,7 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
 
     const handleLogout = () => {
         onLogout();
-        navigate("/auth"); // Redirect to the login page on logout
+        navigate("/auth/login"); // Redirect to the login page on logout
     };
 
     const links = [
@@ -21,11 +21,13 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
             label: "Home",
             path: "/",
             Icon: () => (
-                <img
-                    src="/bull-svgrepo-com.svg" // Replace with your actual image path
-                    alt="Home Icon"
-                    className="w-12 h-12"
-                />
+                <div className="w-full flex justify-center py-4">
+                    <img
+                        src="/bull-svgrepo-com.svg"
+                        alt="Home Icon"
+                        className="w-12 h-12"
+                    />
+                </div>
             ),
         },
         { label: "Players", path: "/players", Icon: AiOutlineTeam },
@@ -50,7 +52,13 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
                         location.pathname === link.path ? "bg-red-700" : ""
                     }`}
                 >
-                    <link.Icon className="text-3xl" />
+                    {idx === 0 ? ( // Check if it's the Home link
+                        <link.Icon />
+                    ) : (
+                        <div className="flex flex-col justify-center items-center">
+                            <link.Icon className="text-3xl" />
+                        </div>
+                    )}
                     <span className="sr-only">{link.label}</span>
                 </Link>
             ))}
@@ -65,7 +73,7 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
                 </button>
             ) : (
                 <Link
-                    to="/auth/login"
+                    to="/auth"
                     className="flex flex-col justify-center items-center w-full h-20 hover:bg-red-700 transition"
                 >
                     <IoLogInOutline className="text-3xl" />

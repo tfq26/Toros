@@ -1,13 +1,12 @@
 package com.example.pickleballtournament.config;
 
+import com.example.pickleballtournament.repository.UserRepository;
 import com.example.pickleballtournament.security.JwtAuthenticationFilter;
-import com.example.pickleballtournament.service.CustomUserDetailsService;
 import com.example.pickleballtournament.utility.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,14 +23,14 @@ public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final JwtUtil jwtUtil;
-    private final CustomUserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
     @Value("${spring.profiles.active:prod}") // Default to "prod" if not set
     private String activeProfile;
 
-    public SecurityConfig(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(JwtUtil jwtUtil, UserRepository userRepository) { // ✅ Correct constructor injection
         this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
 
     @Bean
@@ -48,7 +47,7 @@ public class SecurityConfig {
             logger.info("Running in PROD mode - Enforcing authentication.");
             http.csrf(csrf -> csrf.disable())
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/auth/**").permitAll()  // ✅ Allow authentication routes
+                            .requestMatchers("/auth/**").permitAll()
                             .requestMatchers("/api/tournament/**").authenticated()
                             .requestMatchers("/api/bracket/**").authenticated()
                             .requestMatchers("/api/players/**").authenticated()
@@ -70,11 +69,11 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager(); // ✅ Uses Spring’s built-in authentication manager
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtil, userDetailsService); // ✅ Removed authenticationManager from constructor
+        return new JwtAuthenticationFilter(jwtUtil, userRepository);
     }
 }

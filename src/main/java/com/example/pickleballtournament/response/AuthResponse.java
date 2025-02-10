@@ -1,4 +1,4 @@
-package com.example.pickleballtournament.Response;
+package com.example.pickleballtournament.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
