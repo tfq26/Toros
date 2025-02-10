@@ -13,7 +13,7 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
 
     const handleLogout = () => {
         onLogout();
-        navigate("/auth/login"); // Redirect to the login page on logout
+        navigate("/auth"); // Redirect to the login page on logout
     };
 
     const links = [
@@ -73,11 +73,11 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
                 </button>
             ) : (
                 <Link
-                    to="/auth"
+                    to="/auth/signup" // ✅ Updated to point to the Signup page
                     className="flex flex-col justify-center items-center w-full h-20 hover:bg-red-700 transition"
                 >
                     <IoLogInOutline className="text-3xl" />
-                    <span className="sr-only">Login</span>
+                    <span className="sr-only">Signup</span>
                 </Link>
             )}
         </div>
