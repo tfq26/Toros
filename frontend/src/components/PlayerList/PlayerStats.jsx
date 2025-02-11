@@ -5,10 +5,10 @@ const PlayerStats = ({ stats }) => {
     const { totalPlayers, totalTeams, rankCounts, clubCounts } = stats;
 
     return (
-        <aside className="w-fit bg-red-900 p-4 rounded shadow-md h-fit border-gray-300">
+        <aside className="w-full bg-red-900 p-4 rounded shadow-md h-fit border-gray-300">
             <h3 className="text-xl text-orange-200 font-bold mb-4 text-center">Player Stats</h3>
-            <p className="text-orange-300"><strong>Total Players:</strong> {totalPlayers}</p>
-            <p className="text-orange-300"><strong>Total Teams:</strong> {totalTeams}</p>
+            <p className="text-orange-300 text-center"><strong>Total Players:</strong> {totalPlayers}</p>
+            <p className="text-orange-300 text-center"><strong>Total Teams:</strong> {totalTeams}</p>
             <div className="text-gray-100">
                 <strong>Players by Rank:</strong>
                 <ul className="pl-4 list-none">

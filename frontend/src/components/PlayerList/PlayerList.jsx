@@ -84,50 +84,52 @@ const PlayerList = () => {
     const levels = [...new Set(players.map((player) => convertLevel(player.placement)))];
 
     return (
-        <div className="w-screen px-6 py-6">
-            {/* ✅ Display Success/Error Messages */}
-            {error && <div className="mb-4 p-3 bg-red-100 text-red-800 border border-red-400 rounded">{error}</div>}
+        <div className="bg-orange-50 h-screen">
+            <div className="w-full px-6 py-6"> {/* ✅ Ensures full width */}
+                {/* ✅ Display Success/Error Messages */}
+                {error && <div className="mb-4 p-3 bg-red-100 text-red-800 border border-red-400 rounded">{error}</div>}
 
-            {successMessage && (
-                <div className="mb-4 p-3 bg-green-100 text-green-800 border border-green-400 rounded">
-                    {successMessage}
-                </div>
-            )}
-
-            {/* 📌 Layout: Settings (Left) - Table (Center) - Stats (Right) */}
-            <div className="flex flex-col lg:flex-row gap-6 min-w-full">
-                {/* 📌 PlayerList Settings (Left Side) */}
-                <div className="w-full lg:w-fit">
-                    <PlayerListSettings
-                        isLoading={isLoading}
-                        onFileSelect={handleFileUpload}
-                        clubs={clubs}
-                        levels={levels}
-                        selectedClub={selectedClub}
-                        selectedLevel={selectedLevel}
-                        onFilterChange={(type, value) => {
-                            if (type === "club") setSelectedClub(value);
-                            if (type === "level") setSelectedLevel(value);
-                        }}
-                    />
-                </div>
-
-                {/* 📌 Player Table (Center) - Takes Most Space */}
-                <div className="relative flex-[3] min-w-0">  {/* ✅ Relative positioning for Loading Modal */}
-                    {isLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
-                            <LoadingModal message="Loading Player List" description="Please wait..." />
-                        </div>
-                    )}
-                    <PlayerTable players={filteredPlayers} error={error} convertLevel={convertLevel} />
-                </div>
-
-                {/* 📌 Player Stats (Right Side) */}
-                {filteredPlayers.length > 0 && !error && (
-                    <div className="w-full lg:w-2/12">
-                        <PlayerStats stats={stats} />
+                {successMessage && (
+                    <div className="mb-4 p-3 bg-green-100 text-green-800 border border-green-400 rounded">
+                        {successMessage}
                     </div>
                 )}
+
+                {/* 📌 Layout: Settings (Left) - Table (Center) - Stats (Right) */}
+                <div className="flex flex-col lg:flex-row gap-6 w-full"> {/* ✅ Ensures child components take full width */}
+                    {/* 📌 PlayerList Settings (Left Side) */}
+                    <div className="w-full lg:w-2/12">
+                        <PlayerListSettings
+                            isLoading={isLoading}
+                            onFileSelect={handleFileUpload}
+                            clubs={clubs}
+                            levels={levels}
+                            selectedClub={selectedClub}
+                            selectedLevel={selectedLevel}
+                            onFilterChange={(type, value) => {
+                                if (type === "club") setSelectedClub(value);
+                                if (type === "level") setSelectedLevel(value);
+                            }}
+                        />
+                    </div>
+
+                    {/* 📌 Player Table (Center) */}
+                    <div className="relative flex-1 min-w-0"> {/* ✅ Ensures the table takes available space */}
+                        {isLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
+                                <LoadingModal message="Loading Player List" description="Please wait..." />
+                            </div>
+                        )}
+                        <PlayerTable players={filteredPlayers} error={error} convertLevel={convertLevel} />
+                    </div>
+
+                    {/* 📌 Player Stats (Right Side) */}
+                    {filteredPlayers.length > 0 && !error && (
+                        <div className="w-full lg:w-1/5">
+                            <PlayerStats stats={stats} />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

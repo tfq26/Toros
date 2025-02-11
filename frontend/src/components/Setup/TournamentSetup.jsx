@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import InputField from "./InputField";
 import CheckboxField from "./CheckboxField";
 import TeamsList from "./TeamsList";
+import PlayerStats from "../PlayerList/PlayerStats.jsx"; // ✅ Imported PlayerStats
 import ErrorMessage from "../Error";
 import { fetchPlayersAndGenerateTeams, handleTournamentSetup } from "../utils/SetupFunctions";
+import { calculateStats } from "../utils/playerUtils.js"; // ✅ For player statistics calculation
 
 const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
@@ -52,120 +54,136 @@ const TournamentSetup = ({ onSetupComplete }) => {
         setTournamentConfig((prevConfig) => ({ ...prevConfig, startTime: formattedTime }));
     };
 
+    // ✅ Calculate Player Stats
+    const stats = calculateStats(teams.flat()); // Convert teams into a flat list of players
+
     return (
-        <div className="container mx-auto px-6 py-8 bg-gray-100 rounded-lg shadow-lg max-w-3xl">
-            {/* Tournament Name Input */}
-            <input
-                type="text"
-                value={tournamentConfig.tournamentName}
-                onChange={(e) =>
-                    setTournamentConfig({ ...tournamentConfig, tournamentName: e.target.value })
-                }
-                placeholder="Enter Tournament Name"
-                className="w-full text-3xl font-bold text-center text-gray-800 mb-6 p-2 border border-gray-300 rounded-lg"
-            />
+        <div className="bg-orange-50">
+            <div className="container mx-auto px-6 py-8 bg-transparent rounded-lg max-w-screen">
+                <div className="flex flex-col lg:flex-row gap-6">
+                    {/* 📌 Player Stats (Left Side) */}
+                    <div className="w-full lg:w-1/4 h-fit bg-white p-4 rounded-lg shadow-md">
+                        {/*<h3 className="text-xl font-semibold text-gray-800 mb-4">Player Stats</h3>*/}
+                        <PlayerStats stats={stats} />
+                    </div>
 
-            {error && <ErrorMessage message={error} />}
+                    {/* 📌 Tournament Setup Form (Right Side) */}
+                    <div className="w-full lg:flex-1 bg-white p-6 rounded-lg shadow-md">
+                        {/* Tournament Name Input */}
+                        <input
+                            type="text"
+                            value={tournamentConfig.tournamentName}
+                            onChange={(e) =>
+                                setTournamentConfig({ ...tournamentConfig, tournamentName: e.target.value })
+                            }
+                            placeholder="Enter Tournament Name"
+                            className="w-full text-3xl font-bold text-center text-gray-800 mb-6 p-2 border border-gray-300 rounded-lg"
+                        />
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <InputField
-                    label="Number of Courts"
-                    type="number"
-                    value={tournamentConfig.numCourts}
-                    onChange={(e) =>
-                        setTournamentConfig({ ...tournamentConfig, numCourts: e.target.value })
-                    }
-                    placeholder="Enter number of courts"
-                />
-                <InputField
-                    label="Games Per Team"
-                    type="number"
-                    value={tournamentConfig.gamesPerTeam}
-                    onChange={(e) =>
-                        setTournamentConfig({ ...tournamentConfig, gamesPerTeam: e.target.value })
-                    }
-                    placeholder="Enter games per team"
-                />
+                        {error && <ErrorMessage message={error} />}
 
-                {/* Start Time Input + Auto-Fill Button */}
-                <div className="flex items-center gap-4">
-                    <InputField
-                        label="Start Time"
-                        type="time"
-                        value={tournamentConfig.startTime}
-                        onChange={(e) =>
-                            setTournamentConfig({ ...tournamentConfig, startTime: e.target.value })
-                        }
-                    />
-                    <button
-                        type="button"
-                        className="bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition"
-                        onClick={handleSetCurrentTime}
-                    >
-                        Use Current Time
-                    </button>
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <InputField
+                                label="Number of Courts"
+                                type="number"
+                                value={tournamentConfig.numCourts}
+                                onChange={(e) =>
+                                    setTournamentConfig({ ...tournamentConfig, numCourts: e.target.value })
+                                }
+                                placeholder="Enter number of courts"
+                            />
+                            <InputField
+                                label="Games Per Team"
+                                type="number"
+                                value={tournamentConfig.gamesPerTeam}
+                                onChange={(e) =>
+                                    setTournamentConfig({ ...tournamentConfig, gamesPerTeam: e.target.value })
+                                }
+                                placeholder="Enter games per team"
+                            />
+
+                            {/* Start Time Input + Auto-Fill Button */}
+                            <div className="flex items-center gap-4">
+                                <InputField
+                                    label="Start Time"
+                                    type="time"
+                                    value={tournamentConfig.startTime}
+                                    onChange={(e) =>
+                                        setTournamentConfig({ ...tournamentConfig, startTime: e.target.value })
+                                    }
+                                />
+                                <button
+                                    type="button"
+                                    className="bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition"
+                                    onClick={handleSetCurrentTime}
+                                >
+                                    Use Current Time
+                                </button>
+                            </div>
+
+                            {/* Sliders for Match Duration & Break Time */}
+                            <div>
+                                <label className="block text-lg font-medium text-gray-700">
+                                    Match Duration: {tournamentConfig.matchDuration} minutes
+                                </label>
+                                <input
+                                    type="range"
+                                    min="10"
+                                    max="90"
+                                    step="5"
+                                    value={tournamentConfig.matchDuration}
+                                    onChange={(e) =>
+                                        setTournamentConfig({ ...tournamentConfig, matchDuration: e.target.value })
+                                    }
+                                    className="w-full mt-2 cursor-pointer"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-lg font-medium text-gray-700">
+                                    Break Time: {tournamentConfig.breakTime} minutes
+                                </label>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="30"
+                                    step="5"
+                                    value={tournamentConfig.breakTime}
+                                    onChange={(e) =>
+                                        setTournamentConfig({ ...tournamentConfig, breakTime: e.target.value })
+                                    }
+                                    className="w-full mt-2 cursor-pointer"
+                                />
+                            </div>
+
+                            <CheckboxField
+                                label="Use Existing Player List"
+                                checked={tournamentConfig.useExistingPlayers}
+                                onChange={(e) =>
+                                    setTournamentConfig({ ...tournamentConfig, useExistingPlayers: e.target.checked })
+                                }
+                            />
+                            <CheckboxField
+                                label="Divide Tournament into Tiers"
+                                checked={tournamentConfig.tiered}
+                                onChange={(e) =>
+                                    setTournamentConfig({ ...tournamentConfig, tiered: e.target.checked })
+                                }
+                            />
+
+                            <button
+                                type="submit"
+                                className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition text-lg font-semibold"
+                            >
+                                Start Tournament 🚀
+                            </button>
+                        </form>
+
+                        <div className="mt-8">
+                            <TeamsList teams={teams} />
+                        </div>
+                    </div>
                 </div>
-
-                {/* Sliders for Match Duration & Break Time */}
-                <div>
-                    <label className="block text-lg font-medium text-gray-700">
-                        Match Duration: {tournamentConfig.matchDuration} minutes
-                    </label>
-                    <input
-                        type="range"
-                        min="10"
-                        max="90"
-                        step="5"
-                        value={tournamentConfig.matchDuration}
-                        onChange={(e) =>
-                            setTournamentConfig({ ...tournamentConfig, matchDuration: e.target.value })
-                        }
-                        className="w-full mt-2 cursor-pointer"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-lg font-medium text-gray-700">
-                        Break Time: {tournamentConfig.breakTime} minutes
-                    </label>
-                    <input
-                        type="range"
-                        min="0"
-                        max="30"
-                        step="5"
-                        value={tournamentConfig.breakTime}
-                        onChange={(e) =>
-                            setTournamentConfig({ ...tournamentConfig, breakTime: e.target.value })
-                        }
-                        className="w-full mt-2 cursor-pointer"
-                    />
-                </div>
-
-                <CheckboxField
-                    label="Use Existing Player List"
-                    checked={tournamentConfig.useExistingPlayers}
-                    onChange={(e) =>
-                        setTournamentConfig({ ...tournamentConfig, useExistingPlayers: e.target.checked })
-                    }
-                />
-                <CheckboxField
-                    label="Divide Tournament into Tiers"
-                    checked={tournamentConfig.tiered}
-                    onChange={(e) =>
-                        setTournamentConfig({ ...tournamentConfig, tiered: e.target.checked })
-                    }
-                />
-
-                <button
-                    type="submit"
-                    className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition text-lg font-semibold"
-                >
-                    Start Tournament 🚀
-                </button>
-            </form>
-
-            <div className="mt-8">
-                <TeamsList teams={teams} />
             </div>
         </div>
     );

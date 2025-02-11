@@ -9,7 +9,7 @@ class PlayerTable extends React.Component {
                 {/*<h2 className="text-4xl font-bold text-center text-gray-800 mb-6">Player List</h2>*/}
 
                 {/* ✅ Responsive Table Wrapper (Now Bigger) */}
-                <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-300 flex-grow min-h-[600px]">
+                <div className="overflow-x-auto shadow-lg rounded-lg border flex-grow min-h-[600px]">
                     <table className="table-auto w-full min-w-full text-md text-gray-700">
                         {/* ✅ Bigger Table Headers */}
                         <thead>
@@ -30,8 +30,7 @@ class PlayerTable extends React.Component {
                                 .map((player, index) => (
                                     <tr
                                         key={`player-${index}`}
-                                        className="odd:bg-gray-100 even:bg-white hover:bg-gray-200 transition"
-                                    >
+                                        className="odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition">
                                         <td className="border px-8 py-4 text-center">
                                             {player.name || "N/A"}
                                         </td>

@@ -16,7 +16,7 @@ const Login = ({ setAuthToken }) => {
             console.log("Attempting to log in with:", { username, password });
 
             const response = await axios.post(
-                "http://localhost:8080/auth/login",  // Ensure backend is running at this URL
+                "http://localhost:8080/auth/login",
                 { username, password },
                 { headers: { "Content-Type": "application/json" } }
             );
@@ -39,7 +39,6 @@ const Login = ({ setAuthToken }) => {
             console.error("Login Error:", err);
 
             if (err.response) {
-                // ✅ Handle authentication errors
                 console.log("Error Response Data:", err.response.data);
                 console.log("Error Response Status:", err.response.status);
                 console.log("Error Response Headers:", err.response.headers);
@@ -62,10 +61,15 @@ const Login = ({ setAuthToken }) => {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div
+            className="flex justify-center items-center h-screen bg-cover bg-center"
+            style={{
+                backgroundImage: `url('https://images.axios.com/tEKRllKFCtdUQx34QOndSiLQxKM=/0x306:3936x2520/1920x1080/2021/11/04/1636048442154.jpg?w=3840')`
+            }}
+        >
             <form
                 onSubmit={handleLogin}
-                className="bg-white p-6 rounded shadow-md w-80 space-y-4"
+                className="bg-white bg-opacity-80 p-6 rounded shadow-md w-80 space-y-4"
             >
                 <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
 

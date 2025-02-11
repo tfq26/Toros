@@ -73,7 +73,7 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
                 </button>
             ) : (
                 <Link
-                    to="/auth/signup" // ✅ Updated to point to the Signup page
+                    to="/auth" // ✅ Updated to point to the Signup page
                     className="flex flex-col justify-center items-center w-full h-20 hover:bg-red-700 transition"
                 >
                     <IoLogInOutline className="text-3xl" />
