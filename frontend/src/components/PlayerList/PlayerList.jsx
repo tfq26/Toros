@@ -40,28 +40,15 @@ const PlayerList = () => {
         }
     };
 
-    const handleFileUpload = async (file) => {
-        if (!file) return;
-
-        setIsLoading(true);
-        try {
-            const formData = new FormData();
-            formData.append("file", file);
-
-            await axios.post("http://localhost:8080/api/players/import", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-
-            setSuccessMessage(`File "${file.name}" imported successfully!`);
-            setError(null);
-            fetchPlayers(); // Refresh player list
-        } catch (err) {
-            console.error("Error uploading file:", err);
-            setSuccessMessage(null);
-            setError(`Failed to import file: ${file.name}. Please try again.`);
-        } finally {
-            setIsLoading(false);
+    // ✅ This function is passed to PlayerListSettings to handle imports
+    const handleFileImport = (importedPlayers) => {
+        if (!importedPlayers || importedPlayers.length === 0) {
+            setError("Error: No valid player data found in the imported file.");
+            return;
         }
+        setPlayers(importedPlayers);
+        setSuccessMessage(`File imported successfully! ${importedPlayers.length} players added.`);
+        setError(null);
     };
 
     const filterPlayers = () => {
@@ -79,16 +66,14 @@ const PlayerList = () => {
     };
 
     const stats = calculateStats(filteredPlayers);
-
     const clubs = [...new Set(players.map((player) => player.clubName))];
     const levels = [...new Set(players.map((player) => convertLevel(player.placement)))];
 
     return (
-        <div className="bg-orange-50 h-screen">
-            <div className="w-full px-6 py-6"> {/* ✅ Ensures full width */}
+        <div className="bg-orange-100 h-screen">
+            <div className="w-full px-6 py-6">
                 {/* ✅ Display Success/Error Messages */}
                 {error && <div className="mb-4 p-3 bg-red-100 text-red-800 border border-red-400 rounded">{error}</div>}
-
                 {successMessage && (
                     <div className="mb-4 p-3 bg-green-100 text-green-800 border border-green-400 rounded">
                         {successMessage}
@@ -96,12 +81,13 @@ const PlayerList = () => {
                 )}
 
                 {/* 📌 Layout: Settings (Left) - Table (Center) - Stats (Right) */}
-                <div className="flex flex-col lg:flex-row gap-6 w-full"> {/* ✅ Ensures child components take full width */}
+                <div className="flex flex-col lg:flex-row gap-6 w-full">
                     {/* 📌 PlayerList Settings (Left Side) */}
-                    <div className="w-full lg:w-2/12">
+                    <div>
                         <PlayerListSettings
                             isLoading={isLoading}
-                            onFileSelect={handleFileUpload}
+                            onFileSelect={handleFileImport} // ✅ Pass function to handle imported data
+                            onStatusUpdate={setSuccessMessage} // ✅ Update messages
                             clubs={clubs}
                             levels={levels}
                             selectedClub={selectedClub}
@@ -114,7 +100,7 @@ const PlayerList = () => {
                     </div>
 
                     {/* 📌 Player Table (Center) */}
-                    <div className="relative flex-1 min-w-0"> {/* ✅ Ensures the table takes available space */}
+                    <div className="relative flex-1 min-w-0">
                         {isLoading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
                                 <LoadingModal message="Loading Player List" description="Please wait..." />

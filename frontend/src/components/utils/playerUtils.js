@@ -63,6 +63,34 @@ export const formatTo12HourTime = (time) => {
     });
 };
 
+/**
+ * Validate and transform imported player data.
+ * @param {Array} data - The raw player data.
+ * @returns {Object} - Contains valid status, message, and processed data.
+ */
+export const validateAndPreviewPlayers = (data) => {
+    const requiredFields = ["Name", "Email", "Club", "Placement"];
+    if (!data || data.length === 0) {
+        return { valid: false, message: "Error: No valid player data found in the file.", data: [] };
+    }
+
+    const processedData = [];
+    for (let i = 0; i < data.length; i++) {
+        const player = data[i];
+        for (let field of requiredFields) {
+            if (!player[field]) {
+                return { valid: false, message: `Error: Missing '${field}' in row ${i + 1}.`, data: [] };
+            }
+        }
+        processedData.push({
+            name: player.Name,
+            email: player.Email,
+            clubName: player.Club,
+            placement: convertLevel(player.Placement),
+        });
+    }
+    return { valid: true, message: "Valid data", data: processedData };
+};
 
 /**
  * Calculate player stats.

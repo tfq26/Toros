@@ -1,167 +1,104 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { signup } from "../utils/authUtils.js";
 
 const Signup = () => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [phone, setPhone] = useState("");
-    const [tosAccepted, setTosAccepted] = useState(false);
+    const [userData, setUserData] = useState({
+        firstName: "",
+        lastName: "",
+        username: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        tosAccepted: false,
+    });
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
-
+    const [successMessage, setSuccessMessage] = useState(null);
     const navigate = useNavigate();
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setUserData((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value,
+        }));
+    };
 
     const handleSignup = async (e) => {
         e.preventDefault();
         setError(null);
-        setSuccess(null);
+        setSuccessMessage(null);
 
-        // ✅ Validate password match
-        if (password !== confirmPassword) {
+        if (userData.password !== userData.confirmPassword) {
             setError("Passwords do not match.");
             return;
         }
-
-        // ✅ Ensure TOS is accepted
-        if (!tosAccepted) {
+        if (!userData.tosAccepted) {
             setError("You must accept the Terms of Service.");
             return;
         }
 
         try {
-            console.log("Attempting signup with:", { name, email, username, phone });
-
-            const response = await axios.post(
-                "http://localhost:8080/auth/signup", // Ensure backend endpoint exists
-                { name, email, username, password, phone },
-                { headers: { "Content-Type": "application/json" } }
-            );
-
-            console.log("Signup response:", response);
-
-            if (response.status === 201) {
-                setSuccess("Account created successfully! Redirecting to login...");
-                setTimeout(() => navigate("/auth/login"), 2000); // Redirect after success
-            }
+            const message = await signup(userData);
+            setSuccessMessage(message);
+            setTimeout(() => navigate("/auth/login"), 2000);
         } catch (err) {
-            console.error("Signup Error:", err);
-            if (err.response) {
-                if (err.response.status === 400) {
-                    setError("Invalid input. Please check your details.");
-                } else if (err.response.status === 409) {
-                    setError("Username or email already exists.");
-                } else {
-                    setError("Failed to create an account. Please try again.");
-                }
-            } else {
-                setError("Could not connect to the server. Please try again later.");
-            }
+            setError(err.message);
         }
     };
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
-            <form onSubmit={handleSignup} className="bg-white p-6 rounded shadow-md w-80 space-y-4">
+        <div className="relative h-screen flex justify-center items-center bg-cover bg-center"
+             style={{
+                 backgroundImage: `url('https://images.axios.com/tEKRllKFCtdUQx34QOndSiLQxKM=/0x306:3936x2520/1920x1080/2021/11/04/1636048442154.jpg?w=3840')`
+             }}
+        >
+            <div className="absolute inset-0 bg-black opacity-60"></div>
+
+            <form onSubmit={handleSignup} className="relative z-10 bg-white p-6 rounded shadow-md w-80 space-y-4">
                 <h2 className="text-2xl font-bold text-center mb-4">Sign Up</h2>
 
-                {/* ✅ Show success or error messages */}
                 {error && <p className="text-red-500 text-center">{error}</p>}
-                {success && <p className="text-green-500 text-center">{success}</p>}
+                {successMessage && <p className="text-green-500 text-center">{successMessage}</p>}
 
                 <div>
-                    <label className="block text-gray-700">Full Name</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        placeholder="Enter your full name"
-                        required
-                    />
+                    <label className="block text-gray-700">First Name</label>
+                    <input type="text" name="firstName" value={userData.firstName} onChange={handleChange} className="w-full p-2 border rounded" required />
                 </div>
-
                 <div>
-                    <label className="block text-gray-700">Email</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        placeholder="Enter your email"
-                        required
-                    />
+                    <label className="block text-gray-700">Last Name</label>
+                    <input type="text" name="lastName" value={userData.lastName} onChange={handleChange} className="w-full p-2 border rounded" required />
                 </div>
-
                 <div>
                     <label className="block text-gray-700">Username</label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        placeholder="Choose a username"
-                        required
-                    />
+                    <input type="text" name="username" value={userData.username} onChange={handleChange} className="w-full p-2 border rounded" required />
                 </div>
-
+                <div>
+                    <label className="block text-gray-700">Email</label>
+                    <input type="email" name="email" value={userData.email} onChange={handleChange} className="w-full p-2 border rounded" required />
+                </div>
+                <div>
+                    <label className="block text-gray-700">Phone</label>
+                    <input type="text" name="phone" value={userData.phone} onChange={handleChange} className="w-full p-2 border rounded" required />
+                </div>
                 <div>
                     <label className="block text-gray-700">Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        placeholder="Create a password"
-                        required
-                    />
+                    <input type="password" name="password" value={userData.password} onChange={handleChange} className="w-full p-2 border rounded" required />
                 </div>
-
                 <div>
                     <label className="block text-gray-700">Confirm Password</label>
-                    <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        placeholder="Re-enter password"
-                        required
-                    />
+                    <input type="password" name="confirmPassword" value={userData.confirmPassword} onChange={handleChange} className="w-full p-2 border rounded" required />
                 </div>
 
-                <div>
-                    <label className="block text-gray-700">Phone Number</label>
-                    <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        placeholder="Enter your phone number"
-                        required
-                    />
-                </div>
-
-                {/* ✅ Terms of Service Checkbox */}
                 <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        checked={tosAccepted}
-                        onChange={() => setTosAccepted(!tosAccepted)}
-                        className="mr-2"
-                        required
-                    />
+                    <input type="checkbox" name="tosAccepted" checked={userData.tosAccepted} onChange={handleChange} className="mr-2" required />
                     <label className="text-gray-700">
                         I accept the <a href="/tos" className="text-blue-500 underline">Terms of Service</a>
                     </label>
                 </div>
 
-                <button
-                    type="submit"
-                    className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
-                >
+                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
                     Sign Up
                 </button>
             </form>

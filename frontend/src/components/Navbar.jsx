@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
     AiOutlineTrophy,
     AiOutlineTeam,
@@ -13,7 +12,7 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
 
     const handleLogout = () => {
         onLogout();
-        navigate("/auth"); // Redirect to the login page on logout
+        navigate("/auth/login"); // ✅ Updated to the correct login endpoint
     };
 
     const links = [
@@ -73,11 +72,11 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
                 </button>
             ) : (
                 <Link
-                    to="/auth" // ✅ Updated to point to the Signup page
+                    to="/auth/login" // ✅ Updated to the correct login page
                     className="flex flex-col justify-center items-center w-full h-20 hover:bg-red-700 transition"
                 >
                     <IoLogInOutline className="text-3xl" />
-                    <span className="sr-only">Signup</span>
+                    <span className="sr-only">Login</span>
                 </Link>
             )}
         </div>

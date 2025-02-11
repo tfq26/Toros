@@ -9,12 +9,12 @@ class PlayerTable extends React.Component {
                 {/*<h2 className="text-4xl font-bold text-center text-gray-800 mb-6">Player List</h2>*/}
 
                 {/* ✅ Responsive Table Wrapper (Now Bigger) */}
-                <div className="overflow-x-auto shadow-lg rounded-lg border flex-grow min-h-[600px]">
+                <div className="overflow-x-auto shadow-lg rounded-lg w-full border flex-grow min-h-[600px]">
                     <table className="table-auto w-full min-w-full text-md text-gray-700">
                         {/* ✅ Bigger Table Headers */}
                         <thead>
                         <tr className="bg-emerald-600 text-white uppercase text-lg font-semibold">
-                            {["Name", "Team Number", "Club", "Level"].map((header) => (
+                            {["Team Number", "Name", "Club", "Level"].map((header) => (
                                 <th key={header} className="border px-8 py-4 text-center">
                                     {header}
                                 </th>
@@ -32,10 +32,10 @@ class PlayerTable extends React.Component {
                                         key={`player-${index}`}
                                         className="odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition">
                                         <td className="border px-8 py-4 text-center">
-                                            {player.name || "N/A"}
+                                            {player.teamNumber || "N/A"}
                                         </td>
                                         <td className="border px-8 py-4 text-center">
-                                            {player.teamNumber || "N/A"}
+                                            {player.name || "N/A"}
                                         </td>
                                         <td className="border px-8 py-4 text-center">
                                             {player.clubName || "N/A"}

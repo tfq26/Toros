@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
+import * as XLSX from "xlsx";
 
-const FileUploader = ({ isLoading, onFileSelect, onStatusUpdate }) => {
+const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleFileSelection = (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -13,13 +16,47 @@ const FileUploader = ({ isLoading, onFileSelect, onStatusUpdate }) => {
             buttons: [
                 {
                     label: "Yes",
-                    onClick: () => onFileSelect(file), // ✅ Pass file to PlayerList.js
+                    onClick: () => processFile(file),
                 },
                 {
                     label: "No",
                 },
             ],
         });
+    };
+
+    const processFile = async (file) => {
+        setIsLoading(true);
+        onStatusUpdate("Processing file...");
+
+        try {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+
+                const sheetName = workbook.SheetNames[0]; // Read first sheet
+                const sheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(sheet); // Convert to JSON
+
+                if (jsonData.length === 0) {
+                    onStatusUpdate("Error: No data found in the file.");
+                    setIsLoading(false);
+                    return;
+                }
+
+                // ✅ Pass processed player data to PlayerList
+                onFileSelect(jsonData);
+                onStatusUpdate("File imported successfully!");
+            };
+
+            reader.readAsArrayBuffer(file);
+        } catch (error) {
+            console.error("Error processing file:", error);
+            onStatusUpdate("Error importing file. Please check the format.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -30,7 +67,7 @@ const FileUploader = ({ isLoading, onFileSelect, onStatusUpdate }) => {
                 <input
                     type="file"
                     accept=".xlsx, .xls"
-                    onChange={handleFileSelection} // ✅ Triggers confirmation & sends file up
+                    onChange={handleFileSelection}
                     className="hidden"
                 />
             </label>

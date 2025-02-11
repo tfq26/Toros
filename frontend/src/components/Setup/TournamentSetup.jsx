@@ -58,17 +58,17 @@ const TournamentSetup = ({ onSetupComplete }) => {
     const stats = calculateStats(teams.flat()); // Convert teams into a flat list of players
 
     return (
-        <div className="bg-orange-50">
-            <div className="container mx-auto px-6 py-8 bg-transparent rounded-lg max-w-screen">
-                <div className="flex flex-col lg:flex-row gap-6">
+        <div className="bg-orange-100 h-screen">
+            <div className="container mx-5 py-8 bg-transparent rounded-lg max-w-screen">
+                <div className="flex flex-col lg:flex-row gap-6 w-full">
                     {/* 📌 Player Stats (Left Side) */}
-                    <div className="w-full lg:w-1/4 h-fit bg-white p-4 rounded-lg shadow-md">
+                    <div className="w-2/12 lg:w-2/12 h-fit bg-white p-4 rounded-lg shadow-md">
                         {/*<h3 className="text-xl font-semibold text-gray-800 mb-4">Player Stats</h3>*/}
                         <PlayerStats stats={stats} />
                     </div>
 
                     {/* 📌 Tournament Setup Form (Right Side) */}
-                    <div className="w-full lg:flex-1 bg-white p-6 rounded-lg shadow-md">
+                    <div className="w-1/4 lg:flex-1 bg-white p-6 rounded-lg shadow-md bg-gray-200">
                         {/* Tournament Name Input */}
                         <input
                             type="text"

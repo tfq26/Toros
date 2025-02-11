@@ -54,7 +54,7 @@ const App = () => {
                         />
                         {/* Authentication Routes */}
                         <Route
-                            path="/auth"
+                            path="/auth/login"
                             element={
                                 <LoginPage
                                     onLogin={(token) => {
