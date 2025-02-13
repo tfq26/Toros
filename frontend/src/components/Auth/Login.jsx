@@ -64,9 +64,18 @@ const Login = ({ setAuthToken }) => {
 
                 <button
                     type="submit"
-                    className="w-full bg-emerald-500 text-white py-2 rounded-lg hover:bg-emerald-400 transition font-semibold"
+                    className="w-full bg-emerald-500 text-white py-2 rounded-lg hover:bg-emerald-600 transition font-semibold"
                 >
                     Login
+                </button>
+
+                {/* Sign Up Button */}
+                <button
+                    type="button"
+                    onClick={() => navigate("/auth/signup")}
+                    className="w-full bg-amber-500 text-gray-100 py-2 rounded-lg hover:bg-amber-600 transition font-semibold mt-2"
+                >
+                    Sign Up
                 </button>
             </form>
         </div>

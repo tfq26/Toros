@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import PlayerTable from "./PlayerTable";
 import PlayerStats from "./PlayerStats";
@@ -29,6 +29,7 @@ const PlayerList = () => {
             const response = await axios.get("http://localhost:8080/api/players/all", {
                 headers: { "Content-Type": "application/json" },
             });
+            console.log("Fetched players:", response.data); // <-- Log here
             setPlayers(response.data);
             setError(null);
         } catch (err) {
@@ -41,14 +42,17 @@ const PlayerList = () => {
     };
 
     // ✅ This function is passed to PlayerListSettings to handle imports
-    const handleFileImport = (importedPlayers) => {
+    const handleFileImport = async (importedPlayers) => {
         if (!importedPlayers || importedPlayers.length === 0) {
-            setError("Error: No valid player data found in the imported file.");
+            setError("⚠️ No valid player data found in the imported file.");
             return;
         }
-        setPlayers(importedPlayers);
-        setSuccessMessage(`File imported successfully! ${importedPlayers.length} players added.`);
+
+        setSuccessMessage(`✅ File imported successfully! ${importedPlayers.length} players added.`);
         setError(null);
+
+        // ✅ Re-fetch updated player list from MongoDB
+        await fetchPlayers();
     };
 
     const filterPlayers = () => {
@@ -86,8 +90,8 @@ const PlayerList = () => {
                     <div>
                         <PlayerListSettings
                             isLoading={isLoading}
-                            onFileSelect={handleFileImport} // ✅ Pass function to handle imported data
-                            onStatusUpdate={setSuccessMessage} // ✅ Update messages
+                            onFileSelect={handleFileImport} // ✅ Correctly passing function
+                            onStatusUpdate={setSuccessMessage} // ✅ Ensure this is passed
                             clubs={clubs}
                             levels={levels}
                             selectedClub={selectedClub}

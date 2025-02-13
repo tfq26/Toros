@@ -28,33 +28,20 @@ public class PlayerController {
      * Import players from an Excel file and save them to the database.
      */
     @PostMapping("/import")
-    public ResponseEntity<String> importPlayers(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            logger.warn("File upload failed: empty file");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("The uploaded file is empty. Please upload a valid Excel file.");
+    public ResponseEntity<String> importPlayers(@RequestBody List<Player> players) {
+        if (players == null || players.isEmpty()) {
+            logger.warn("Received empty player list.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No players found in the request.");
         }
 
-        // Validate file type (optional but recommended)
-        if (!file.getOriginalFilename().endsWith(".xlsx") && !file.getOriginalFilename().endsWith(".xls")) {
-            logger.warn("Invalid file type: {}", file.getOriginalFilename());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Invalid file type. Please upload an Excel file (.xlsx or .xls).");
-        }
-
-        try (InputStream inputStream = file.getInputStream()) {
-            // Import players and save directly to the database
-            List<Player> players = playerService.importPlayersFromExcel(inputStream);
+        try {
             playerService.savePlayers(players);
             logger.info("Successfully imported {} players.", players.size());
-            return ResponseEntity.ok("Players imported and saved successfully! Number of players: " + players.size());
-        } catch (IllegalArgumentException e) {
-            logger.error("Validation error during import: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Validation Error: " + e.getMessage());
+            return ResponseEntity.ok("Players imported successfully! Number of players: " + players.size());
         } catch (Exception e) {
             logger.error("Unexpected error during import: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An unexpected error occurred: " + e.getMessage());
+                    .body("An error occurred while importing players: " + e.getMessage());
         }
     }
 

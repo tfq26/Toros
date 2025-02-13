@@ -1,71 +1,36 @@
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
-import Home from "./components/Home.jsx";
-import PlayerList from "./components/PlayerList/PlayerList.jsx";
-import TournamentSetup from "./components/Setup/TournamentSetup.jsx";
-import TournamentBracket from "./components/Standings/TeamStandings.jsx";
-import LiveTournament from "./components/Live/LiveTournament.jsx";
-import ErrorPage from "./components/Error.jsx";
-import LoginPage from "./components/Login/Login.jsx"; // Import the Login page
-import './index.css'; // Ensure this matches the actual file structure
+import AppRoutes from "./components/AppRouting.jsx"; // Import the new routing component
+import './index.css';
 
 const App = () => {
     const [tournamentSetupComplete, setTournamentSetupComplete] = useState(false);
-    const [tournamentConfig, setTournamentConfig] = useState(null); // State to store tournament configuration
-    const [authToken, setAuthToken] = useState(localStorage.getItem("authToken")); // Manage authentication state
+    const [tournamentConfig, setTournamentConfig] = useState(null);
+    const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
 
     return (
         <Router>
             <div className="flex h-screen">
-                {/* Sidebar Navbar - Fixed Position */}
+                {/* Sidebar Navbar */}
                 <Navbar
                     tournamentSetupComplete={tournamentSetupComplete}
-                    user={authToken ? { name: "John Doe" } : null} // Replace with actual user data
+                    user={authToken ? { name: "John Doe" } : null}
                     onLogout={() => {
-                        setAuthToken(null); // Clear the auth token
-                        localStorage.removeItem("authToken"); // Clear the token from localStorage
+                        setAuthToken(null);
+                        localStorage.removeItem("authToken");
                     }}
                 />
 
-                {/* Main Content Wrapper - Ensures No Clipping */}
+                {/* Main Content */}
                 <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-gray-100">
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/players" element={<PlayerList />} />
-                        <Route
-                            path="/tournament/setup"
-                            element={
-                                <TournamentSetup
-                                    onSetupComplete={() => setTournamentSetupComplete(true)}
-                                    setTournamentConfig={setTournamentConfig} // Pass setter for tournamentConfig
-                                />
-                            }
-                        />
-                        <Route path="/bracket" element={<TournamentBracket />} />
-                        <Route
-                            path="/tournament/live"
-                            element={
-                                <LiveTournament
-                                    setTournamentSetupComplete={setTournamentSetupComplete}
-                                    tournamentConfig={tournamentConfig} // Pass tournamentConfig to LiveTournament
-                                />
-                            }
-                        />
-                        {/* Authentication Routes */}
-                        <Route
-                            path="/auth/login"
-                            element={
-                                <LoginPage
-                                    onLogin={(token) => {
-                                        setAuthToken(token); // Set the auth token
-                                        localStorage.setItem("authToken", token); // Persist the token in localStorage
-                                    }}
-                                />
-                            }
-                        />
-                        <Route path="*" element={<ErrorPage statusCode={404} />} />
-                    </Routes>
+                    <AppRoutes
+                        setAuthToken={setAuthToken}
+                        authToken={authToken}
+                        setTournamentSetupComplete={setTournamentSetupComplete}
+                        tournamentConfig={tournamentConfig}
+                        setTournamentConfig={setTournamentConfig}
+                    />
                 </div>
             </div>
         </Router>

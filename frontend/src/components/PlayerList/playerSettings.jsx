@@ -3,7 +3,8 @@ import FileUploader from "./FileUploader";
 
 const PlayerListSettings = ({
                                 isLoading,
-                                onFileUpload,
+                                onFileSelect,      // Renamed prop from onFileUpload to onFileSelect
+                                onStatusUpdate,    // Added missing prop for status updates
                                 clubs,
                                 levels,
                                 selectedClub,
@@ -16,7 +17,11 @@ const PlayerListSettings = ({
 
             {/* 📌 File Import Button */}
             <div className="mb-6">
-                <FileUploader isLoading={isLoading} onFileUpload={onFileUpload} />
+                <FileUploader
+                    isLoading={isLoading}
+                    onFileSelect={onFileSelect}
+                    onStatusUpdate={onStatusUpdate}
+                />
             </div>
 
             {/* 📌 Club Filter */}
