@@ -33,18 +33,31 @@ public class AuthService {
      * Handles user authentication and token generation.
      */
     public AuthResponse authenticateUser(AuthRequest authRequest) {
+        if (!doesUserExist(authRequest.getUsername())) {
+            throw new RuntimeException("User does not exist.");
+        }
+
         try {
-            Authentication authentication;
-            authentication = authenticationManager.authenticate(
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
 
             String token = jwtUtil.generateToken(authRequest.getUsername());
             return new AuthResponse(token);
-
         } catch (AuthenticationException e) {
             throw new RuntimeException("Invalid username or password.");
         }
+    }
+
+
+    /**
+     * Checks if a user exists in the database by username or email.
+     *
+     * @param username The username to check.
+     * @return true if the user exists, false otherwise.
+     */
+    public boolean doesUserExist(String username) {
+        return userRepository.findByUsername(username).isPresent();
     }
 
     /**

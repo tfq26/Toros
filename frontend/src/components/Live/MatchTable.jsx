@@ -24,7 +24,7 @@ const MatchTable = ({ matches, updateMatch }) => {
             <h2 className="text-2xl font-bold mb-4">Live Tournament Matches (Table View)</h2>
             <table className="table-auto w-full border-collapse border border-gray-200">
                 <thead>
-                <tr className="bg-gray-200">
+                <tr className="bg-red-500 text-white">
                     <th className="border border-gray-300 px-4 py-2">Team 1</th>
                     <th className="border border-gray-300 px-4 py-2">Team 2</th>
                     <th className="border border-gray-300 px-4 py-2">Status</th>
@@ -34,7 +34,7 @@ const MatchTable = ({ matches, updateMatch }) => {
                 <tbody>
                 {matches.length > 0 ? (
                     matches.map((match) => (
-                        <tr key={match.id}>
+                        <tr key={match.id} className={"odd:bg-emerald-200 even:bg-emerald-300 hover:bg-emerald-500 transition text-center text-2xl font-bold mb-2"}>
                             <td className="border border-gray-300 px-4 py-2">{match.team1?.name || "N/A"}</td>
                             <td className="border border-gray-300 px-4 py-2">{match.team2?.name || "N/A"}</td>
                             <td className="border border-gray-300 px-4 py-2">

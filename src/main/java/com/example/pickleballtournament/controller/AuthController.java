@@ -17,20 +17,19 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @GetMapping("/login")
-    public ResponseEntity<String> loginInfo() {
-        return ResponseEntity.ok("This is an API endpoint. Please use a POST request to log in.");
-    }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
+        System.out.println("Login API called with username: " + authRequest.getUsername());
         try {
             AuthResponse response = authService.authenticateUser(authRequest);
+            System.out.println("Login successful for user: " + authRequest.getUsername());
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+            System.err.println("Login failed for user: " + authRequest.getUsername() + " - " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
+
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest request) {

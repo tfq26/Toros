@@ -6,19 +6,37 @@ const Login = ({ setAuthToken }) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(null); // Reset error on new attempt
+        setIsLoading(true);
 
         try {
-            const data = await login(username, password);
+            const response = await fetch("http://localhost:8080/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (response.status === 404) {
+                throw new Error("User does not exist. Please check your username or sign up.");
+            } else if (response.status === 401) {
+                throw new Error("Invalid username or password. Please try again.");
+            } else if (!response.ok) {
+                throw new Error("An unexpected error occurred. Please try again later.");
+            }
+
+            const data = await response.json();
             localStorage.setItem("authToken", data.token); // ✅ Store token
             setAuthToken(data.token);
-            navigate("/dashboard"); // ✅ Redirect to dashboard
+            navigate("/"); // ✅ Redirect to home page
         } catch (err) {
             setError(err.message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -65,8 +83,9 @@ const Login = ({ setAuthToken }) => {
                 <button
                     type="submit"
                     className="w-full bg-emerald-500 text-white py-2 rounded-lg hover:bg-emerald-600 transition font-semibold"
+                    disabled={isLoading}
                 >
-                    Login
+                    {isLoading ? "Logging in..." : "Login"}
                 </button>
 
                 {/* Sign Up Button */}

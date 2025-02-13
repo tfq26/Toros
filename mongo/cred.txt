@@ -1,4 +1,4 @@
 Mongo UserName: taufeeq26
-Mongo Password: v2DQ0sl6WxTneIWJ
+Mongo Password: bdY9MXzmvAIJZOoW
 
-Mongo Link: mongodb+srv://taufeeq26:<v2DQ0sl6WxTneIWJ>@toroscluster.2stjj.mongodb.net/?retryWrites=true&w=majority&appName=TorosCluster
+Mongo Link: mongodb+srv://taufeeq26:bdY9MXzmvAIJZOoW@toroscluster.2stjj.mongodb.net/?retryWrites=true&w=majority&appName=TorosCluster

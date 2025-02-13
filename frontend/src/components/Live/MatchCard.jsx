@@ -21,7 +21,7 @@ const MatchCard = ({ match, updateMatch }) => {
     };
 
     return (
-        <div className="border p-4 rounded shadow space-y-2">
+        <div className="border p-4 rounded shadow space-y-2 bg-emerald-500">
             <div className="flex justify-between items-center">
                 <p className="text-lg font-bold">Match {match.id}</p>
                 <select
