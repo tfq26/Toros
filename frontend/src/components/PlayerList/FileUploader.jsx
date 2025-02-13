@@ -38,9 +38,12 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
 
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(sheet);
+                const jsonData = XLSX.utils.sheet_to_json(sheet, {
+                    header: ["name", "teamNumber", "clubName", "placement"], // ✅ Define expected headers
+                    defval: null, // ✅ Prevent undefined values
+                });
 
-                console.log("🔍 Extracted JSON Data from Excel:", jsonData); // ✅ Check Excel to JSON conversion
+                console.log("🔍 Extracted JSON Data from Excel:", jsonData);
 
                 if (jsonData.length === 0) {
                     onStatusUpdate("Error: No data found in the file.");
@@ -48,7 +51,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                     return;
                 }
 
-                await uploadPlayersToBackend(jsonData);
+                await uploadPlayersToBackend(jsonData, file);  // Pass the file itself for multipart upload
             };
 
             reader.readAsArrayBuffer(file);
@@ -60,11 +63,14 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
         }
     };
 
-    // ✅ Upload processed players to backend
-    const uploadPlayersToBackend = async (players) => {
+    // ✅ Upload processed players to backend as a file
+    const uploadPlayersToBackend = async (players, file) => {
+        const formData = new FormData();
+        formData.append("file", file); // Append file to FormData
+
         try {
-            const response = await axios.post("http://localhost:8080/api/players/import", players, {
-                headers: { "Content-Type": "application/json" },
+            const response = await axios.post("http://localhost:8080/api/players/import", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
             });
 
             if (response.status === 200) {

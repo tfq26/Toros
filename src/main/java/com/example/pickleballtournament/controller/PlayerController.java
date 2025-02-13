@@ -28,18 +28,26 @@ public class PlayerController {
      * Import players from an Excel file and save them to the database.
      */
     @PostMapping("/import")
-    public ResponseEntity<String> importPlayers(@RequestBody List<Player> players) {
-        if (players == null || players.isEmpty()) {
-            logger.warn("Received empty player list.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No players found in the request.");
+    public ResponseEntity<String> importPlayers(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            logger.warn("Received empty file.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No file provided.");
         }
 
+        logger.info("🔍 Received file: " + file.getOriginalFilename());
+
         try {
+            // Convert MultipartFile to InputStream and import players
+            InputStream inputStream = file.getInputStream();
+            List<Player> players = playerService.importPlayersFromExcel(inputStream);
+
+            // Save players to the database
             playerService.savePlayers(players);
-            logger.info("Successfully imported {} players.", players.size());
+
+            logger.info("✅ Successfully imported {} players.", players.size());
             return ResponseEntity.ok("Players imported successfully! Number of players: " + players.size());
         } catch (Exception e) {
-            logger.error("Unexpected error during import: {}", e.getMessage());
+            logger.error("❌ Error processing file:", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while importing players: " + e.getMessage());
         }

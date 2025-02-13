@@ -3,15 +3,16 @@ import TeamList from './TeamList';
 import MatchList from './MatchList';
 import ExportButtons from './ExportButtons';
 import ErrorAlert from '../Error';
-import LoadingModal from '../LoadingModal'; // Import LoadingModal
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import LoadingModal from '../LoadingModal';
+import { useNavigate } from 'react-router-dom';
 import {
     fetchStandings,
     fetchAllMatches,
     clearStandings,
     exportToExcel,
     exportToPDF,
-    fetchTeamMatches
+    fetchTeamMatches,
+    //fetchBracket
 } from '../utils/standingsUtils.js';
 
 function TeamStandings() {
@@ -19,28 +20,29 @@ function TeamStandings() {
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [teamMatches, setTeamMatches] = useState([]);
     const [matches, setMatches] = useState([]);
+    const [bracketData, setBracketData] = useState([]); // Added bracket state
     const [error, setError] = useState(null);
     const [loadingMatches, setLoadingMatches] = useState(false);
-    const [loadingStandings, setLoadingStandings] = useState(true); // Add loading state for standings
-    const navigate = useNavigate(); // Initialize navigate
+    const [loadingStandings, setLoadingStandings] = useState(true);
+    const [loadingBracket, setLoadingBracket] = useState(true); // Added loading for bracket
+    const navigate = useNavigate();
 
     const loadStandings = async () => {
         try {
             const data = await fetchStandings();
             setTeams(data);
-            setLoadingStandings(false); // Set loading to false after fetching data
         } catch (error) {
             setError(error.message);
-            setLoadingStandings(false); // Ensure loading is stopped on error
-            // Navigate to the ErrorPage with detailed error message
             navigate("/error", {
                 state: {
                     city: "Tokyo",
                     message: "Failed to load standings.",
                     detailedMessage: error.message || "An unknown error occurred while fetching standings.",
-                    errorMessages: [error.message] // Pass the error messages array
+                    errorMessages: [error.message]
                 }
             });
+        } finally {
+            setLoadingStandings(false);
         }
     };
 
@@ -50,17 +52,27 @@ function TeamStandings() {
             setMatches(data);
         } catch (error) {
             setError(error.message);
-            // Navigate to the ErrorPage with detailed error message
             navigate("/error", {
                 state: {
                     statusCode: 500,
                     message: "Failed to load matches.",
                     detailedMessage: error.message || "An unknown error occurred while fetching matches.",
-                    errorMessages: [error.message] // Pass the error messages array
+                    errorMessages: [error.message]
                 }
             });
         }
     };
+
+    // const loadBracket = async () => {
+    //     try {
+    //         const data = await fetchBracket();
+    //         setBracketData(data); // Store bracket data
+    //     } catch (error) {
+    //         setError(error.message);
+    //     } finally {
+    //         setLoadingBracket(false);
+    //     }
+    // };
 
     const handleClearStandings = async () => {
         try {
@@ -69,13 +81,12 @@ function TeamStandings() {
             setTeams([]);
         } catch (error) {
             setError(error.message);
-            // Navigate to the ErrorPage with detailed error message
             navigate("/error", {
                 state: {
                     statusCode: 500,
                     message: "Failed to clear standings.",
                     detailedMessage: error.message || "An unknown error occurred while clearing standings.",
-                    errorMessages: [error.message] // Pass the error messages array
+                    errorMessages: [error.message]
                 }
             });
         }
@@ -97,13 +108,12 @@ function TeamStandings() {
             setTeamMatches(matchesData);
         } catch (error) {
             setError(error.message);
-            // Navigate to the ErrorPage with detailed error message
             navigate("/error", {
                 state: {
                     statusCode: 500,
                     message: "Failed to load team matches.",
                     detailedMessage: error.message || "An unknown error occurred while fetching team matches.",
-                    errorMessages: [error.message] // Pass the error messages array
+                    errorMessages: [error.message]
                 }
             });
         } finally {
@@ -114,10 +124,11 @@ function TeamStandings() {
     useEffect(() => {
         loadStandings();
         loadMatches();
+        //loadBracket(); // Load bracket data
     }, []);
 
-    if (loadingStandings) {
-        return <LoadingModal message="Loading Team Standings" description="Please wait while we fetch the latest team standings." />;
+    if (loadingStandings || loadingBracket) {
+        return <LoadingModal message="Loading Data" description="Please wait while we fetch the latest data." />;
     }
 
     return (
@@ -125,8 +136,7 @@ function TeamStandings() {
             <h1 className="text-2xl font-bold mb-4">Team Standings</h1>
             <ErrorAlert message={error} />
 
-            {/* Display the LoadingModal when matches are loading */}
-            {loadingMatches && <LoadingModal message="Loading Team Matches" description="Please wait while we fetch the matches for the selected team." />}
+            {loadingMatches && <LoadingModal message="Loading Team Matches" description="Fetching matches for the selected team." />}
 
             <ExportButtons
                 onExportExcel={handleExportToExcel}
@@ -140,6 +150,18 @@ function TeamStandings() {
                 <div className="mt-6">
                     <h2 className="text-xl font-bold">Matches for {selectedTeam.name}</h2>
                     <MatchList teamMatches={teamMatches} loadingMatches={loadingMatches} />
+                </div>
+            )}
+
+            {/* Display bracket data if available */}
+            {bracketData.length > 0 && (
+                <div className="mt-6">
+                    <h2 className="text-xl font-bold">Bracket Standings</h2>
+                    <ul className="list-disc pl-5">
+                        {bracketData.map((team, index) => (
+                            <li key={index} className="text-lg">{team}</li>
+                        ))}
+                    </ul>
                 </div>
             )}
         </div>

@@ -68,7 +68,7 @@ const LiveTournament = ({ setTournamentSetupComplete, tournamentConfig }) => {
     if (error) return <ErrorPage statusCode={500} message={error} detailedMessage={detailedError} />;
 
     return (
-        <div className="container mx-auto px-4 py-6 flex gap-6">
+        <div className="container mx-auto px-4 py-6 flex gap-6 w-screen p-5">
             {/* Main Content */}
             <div className="flex-grow">
                 {viewMode === "tile" ? (

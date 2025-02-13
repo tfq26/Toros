@@ -4,7 +4,8 @@ import PlayerTable from "./PlayerTable";
 import PlayerStats from "./PlayerStats";
 import PlayerListSettings from "./PlayerSettings";
 import LoadingModal from "../LoadingModal";
-import { convertLevel, calculateStats } from "../utils/playerUtils.js";
+import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/playerUtils.js"; // Import the filter function
+import PlayerSearch from "./PlayerSearch.jsx"; // Import the SearchPlayer component
 
 const PlayerList = () => {
     const [players, setPlayers] = useState([]);
@@ -14,6 +15,7 @@ const PlayerList = () => {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(""); // Track the search query
 
     useEffect(() => {
         fetchPlayers();
@@ -21,7 +23,7 @@ const PlayerList = () => {
 
     useEffect(() => {
         filterPlayers();
-    }, [players, selectedClub, selectedLevel]);
+    }, [players, selectedClub, selectedLevel, searchQuery]);
 
     const fetchPlayers = async () => {
         setIsLoading(true);
@@ -29,30 +31,14 @@ const PlayerList = () => {
             const response = await axios.get("http://localhost:8080/api/players/all", {
                 headers: { "Content-Type": "application/json" },
             });
-            console.log("Fetched players:", response.data); // <-- Log here
             setPlayers(response.data);
             setError(null);
         } catch (err) {
-            console.error("Error fetching players:", err);
             setError("Failed to load player data. Please try again later.");
             setPlayers([]);
         } finally {
             setIsLoading(false);
         }
-    };
-
-    // ✅ This function is passed to PlayerListSettings to handle imports
-    const handleFileImport = async (importedPlayers) => {
-        if (!importedPlayers || importedPlayers.length === 0) {
-            setError("⚠️ No valid player data found in the imported file.");
-            return;
-        }
-
-        setSuccessMessage(`✅ File imported successfully! ${importedPlayers.length} players added.`);
-        setError(null);
-
-        // ✅ Re-fetch updated player list from MongoDB
-        await fetchPlayers();
     };
 
     const filterPlayers = () => {
@@ -66,17 +52,32 @@ const PlayerList = () => {
             filtered = filtered.filter((player) => convertLevel(player.placement) === selectedLevel);
         }
 
+        if (searchQuery) {
+            filtered = filterPlayersBySearch(filtered, searchQuery); // Apply search filter
+        }
+
         setFilteredPlayers(filtered);
+    };
+
+    const handleFileImport = async (importedPlayers) => {
+        if (!importedPlayers || importedPlayers.length === 0) {
+            setError("⚠️ No valid player data found in the imported file.");
+            return;
+        }
+
+        setSuccessMessage(`✅ File imported successfully! ${importedPlayers.length} players added.`);
+        setError(null);
+        await fetchPlayers();
     };
 
     const stats = calculateStats(filteredPlayers);
     const clubs = [...new Set(players.map((player) => player.clubName))];
     const levels = [...new Set(players.map((player) => convertLevel(player.placement)))];
 
+
     return (
-        <div className="bg-orange-100 h-screen">
+        <div>
             <div className="w-full px-6 py-6">
-                {/* ✅ Display Success/Error Messages */}
                 {error && <div className="mb-4 p-3 bg-red-100 text-red-800 border border-red-400 rounded">{error}</div>}
                 {successMessage && (
                     <div className="mb-4 p-3 bg-green-100 text-green-800 border border-green-400 rounded">
@@ -84,14 +85,12 @@ const PlayerList = () => {
                     </div>
                 )}
 
-                {/* 📌 Layout: Settings (Left) - Table (Center) - Stats (Right) */}
                 <div className="flex flex-col lg:flex-row gap-6 w-full">
-                    {/* 📌 PlayerList Settings (Left Side) */}
-                    <div>
+                    <div className="w-2/12 lg:w-fit h-fit bg-white p-4 rounded-lg shadow-md">
                         <PlayerListSettings
                             isLoading={isLoading}
-                            onFileSelect={handleFileImport} // ✅ Correctly passing function
-                            onStatusUpdate={setSuccessMessage} // ✅ Ensure this is passed
+                            onFileSelect={handleFileImport}
+                            onStatusUpdate={setSuccessMessage}
                             clubs={clubs}
                             levels={levels}
                             selectedClub={selectedClub}
@@ -103,19 +102,22 @@ const PlayerList = () => {
                         />
                     </div>
 
-                    {/* 📌 Player Table (Center) */}
                     <div className="relative flex-1 min-w-0">
                         {isLoading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
                                 <LoadingModal message="Loading Player List" description="Please wait..." />
                             </div>
                         )}
-                        <PlayerTable players={filteredPlayers} error={error} convertLevel={convertLevel} />
+
+                        {/* Add SearchPlayer Component */}
+                        <PlayerSearch onSearchChange={setSearchQuery} />
+                        <div className="min-w-full lg:w-full h-fit bg-white p-4 rounded-lg shadow-md">
+                            <PlayerTable players={filteredPlayers} error={error} convertLevel={convertLevel} />
+                        </div>
                     </div>
 
-                    {/* 📌 Player Stats (Right Side) */}
                     {filteredPlayers.length > 0 && !error && (
-                        <div className="w-full lg:w-1/5">
+                        <div className="min-w-fit lg:w-fit h-fit bg-white p-4 rounded-lg shadow-md">
                             <PlayerStats stats={stats} />
                         </div>
                     )}

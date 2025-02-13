@@ -16,7 +16,7 @@ const PlayerListSettings = ({
             <h3 className="text-xl text-orange-200 font-bold mb-4 text-center">Player List Settings</h3>
 
             {/* 📌 File Import Button */}
-            <div className="mb-6">
+            <div className="mb-6 align-middle">
                 <FileUploader
                     isLoading={isLoading}
                     onFileSelect={onFileSelect}

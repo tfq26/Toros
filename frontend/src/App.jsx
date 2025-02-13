@@ -23,7 +23,7 @@ const App = () => {
                 />
 
                 {/* Main Content */}
-                <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-gray-100">
+                <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-orange-100">
                     <AppRoutes
                         setAuthToken={setAuthToken}
                         authToken={authToken}

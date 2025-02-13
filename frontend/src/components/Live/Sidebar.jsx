@@ -7,7 +7,7 @@ const Sidebar = ({
                      setViewMode,
                      tournamentConfig,
                  }) => (
-    <div className="sticky top-4 border p-4 rounded shadow bg-white flex flex-col items-center">
+    <div className="sticky top-4 border p-4 rounded shadow bg-white flex flex-col items-center h-fit">
         <h2 className="text-xl font-bold mb-4 text-center">Tournament Overview</h2>
         <p><strong>Number of Courts:</strong> {tournamentConfig?.numCourts || "N/A"}</p>
         <p><strong>Games Per Team:</strong> {tournamentConfig?.gamesPerTeam || "N/A"}</p>

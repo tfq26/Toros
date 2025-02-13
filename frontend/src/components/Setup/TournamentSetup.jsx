@@ -58,17 +58,16 @@ const TournamentSetup = ({ onSetupComplete }) => {
     const stats = calculateStats(teams.flat()); // Convert teams into a flat list of players
 
     return (
-        <div className="bg-orange-100 h-screen">
-            <div className="container mx-5 py-8 bg-transparent rounded-lg max-w-screen">
+        <div>
+            <div className="container mx-5 py-8 bg-transparent rounded-lg max-w-full">
                 <div className="flex flex-col lg:flex-row gap-6 w-full">
                     {/* 📌 Player Stats (Left Side) */}
-                    <div className="w-2/12 lg:w-2/12 h-fit bg-white p-4 rounded-lg shadow-md">
-                        {/*<h3 className="text-xl font-semibold text-gray-800 mb-4">Player Stats</h3>*/}
+                    <div className="w-full lg:w-2/12 h-fit bg-white p-4 rounded-lg shadow-md">
                         <PlayerStats stats={stats} />
                     </div>
 
                     {/* 📌 Tournament Setup Form (Right Side) */}
-                    <div className="w-1/4 lg:flex-1 bg-white p-6 rounded-lg shadow-md bg-gray-200">
+                    <div className="w-full lg:w-3/5 bg-white p-6 rounded-lg shadow-md h-fit">
                         {/* Tournament Name Input */}
                         <input
                             type="text"
@@ -104,14 +103,17 @@ const TournamentSetup = ({ onSetupComplete }) => {
 
                             {/* Start Time Input + Auto-Fill Button */}
                             <div className="flex items-center gap-4">
-                                <InputField
-                                    label="Start Time"
-                                    type="time"
-                                    value={tournamentConfig.startTime}
-                                    onChange={(e) =>
-                                        setTournamentConfig({ ...tournamentConfig, startTime: e.target.value })
-                                    }
-                                />
+                                <div className="flex flex-col w-full">
+                                    <InputField
+                                        label="Start Time"
+                                        type="time"
+                                        value={tournamentConfig.startTime}
+                                        onChange={(e) =>
+                                            setTournamentConfig({ ...tournamentConfig, startTime: e.target.value })
+                                        }
+                                    />
+                                </div>
+
                                 <button
                                     type="button"
                                     className="bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition"
@@ -128,8 +130,8 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                 </label>
                                 <input
                                     type="range"
-                                    min="10"
-                                    max="90"
+                                    min="0"
+                                    max="30"
                                     step="5"
                                     value={tournamentConfig.matchDuration}
                                     onChange={(e) =>
@@ -178,10 +180,11 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                 Start Tournament 🚀
                             </button>
                         </form>
+                    </div>
 
-                        <div className="mt-8">
-                            <TeamsList teams={teams} />
-                        </div>
+                    {/* 📌 Teams List (Right Side on Larger Screens) */}
+                    <div className="w-full lg:w-fit bg-white p-4 rounded-lg shadow-md mt-6 lg:mt-0">
+                        <TeamsList teams={teams} />
                     </div>
                 </div>
             </div>

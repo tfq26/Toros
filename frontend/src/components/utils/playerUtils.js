@@ -118,3 +118,18 @@ export const calculateStats = (players) => {
 
     return { totalPlayers, totalTeams, rankCounts, clubCounts };
 };
+
+/**
+ * Filters the player list based on the search query.
+ * @param {Array} players - The list of players.
+ * @param {string} searchQuery - The search query to filter players by.
+ * @returns {Array} The filtered list of players.
+ */
+export const filterPlayersBySearch = (players, searchQuery) => {
+    const lowerCaseQuery = searchQuery.toLowerCase();
+
+    return players.filter((player) =>
+        player.name && player.name.toLowerCase().includes(lowerCaseQuery)
+    );
+};
+

@@ -12,14 +12,13 @@ const getAuthHeaders = () => {
 // Fetch team standings
 export const fetchStandings = async () => {
     try {
-        const response = await axios.get("http://localhost:8080/api/teams/standings", {
-            headers: getAuthHeaders(),
-        });
-        const validTeams = response.data.filter((team) => team.name && team.name.includes(" & "));
-        return validTeams;
+        const response = await fetch("http://localhost:8080/api/bracket");
+        if (!response.ok) {
+            throw new Error("Failed to fetch bracket standings.");
+        }
+        return await response.json();
     } catch (error) {
-        console.error("Error fetching standings:", error);
-        throw new Error("Failed to fetch standings. Please try again later.");
+        throw new Error(error.message);
     }
 };
 
