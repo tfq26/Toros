@@ -2,7 +2,6 @@ package com.example.pickleballtournament.controller;
 
 import com.example.pickleballtournament.model.Team;
 import com.example.pickleballtournament.service.TeamService;
-import com.example.pickleballtournament.service.TournamentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

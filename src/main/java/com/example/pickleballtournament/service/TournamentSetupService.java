@@ -2,12 +2,15 @@ package com.example.pickleballtournament.service;
 
 import com.example.pickleballtournament.model.Match;
 import com.example.pickleballtournament.model.Team;
+import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.repository.MatchRepository;
 import com.example.pickleballtournament.repository.TeamRepository;
+import com.example.pickleballtournament.repository.TournamentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,48 +22,70 @@ public class TournamentSetupService {
 
     private final MatchRepository matchRepository;
     private final TeamRepository teamRepository;
+    private final TournamentRepository tournamentRepository;
     private final TeamService teamService;
 
-    public TournamentSetupService(MatchRepository matchRepository, TeamRepository teamRepository, TeamService teamService) {
+    public TournamentSetupService(MatchRepository matchRepository, TeamRepository teamRepository,
+                                  TournamentRepository tournamentRepository, TeamService teamService) {
         this.matchRepository = matchRepository;
         this.teamRepository = teamRepository;
+        this.tournamentRepository = tournamentRepository;
         this.teamService = teamService;
     }
 
     /** ✅ Setup the Tournament */
     @Transactional
-    public void setupTournament(int numCourts, int gamesPerTeam, boolean useExistingPlayers, boolean tiered, LocalTime startTime, int matchDuration) {
-        log.info("Initializing tournament setup...");
+    public Tournament setupTournament(int numCourts, int gamesPerTeam, boolean useExistingPlayers,
+                                      boolean tiered, LocalTime startTime, int matchDuration, String tournamentName) {
+        log.info("Initializing tournament setup for: {}", tournamentName);
 
+        // Clear old tournament data
         matchRepository.deleteAll();
         teamRepository.deleteAll();
-        log.info("Cleared all existing matches and teams.");
+        tournamentRepository.deleteAll();
+        log.info("Cleared all existing tournaments, matches, and teams.");
 
+        // Generate teams
         List<Team> teams = setupAndGenerateTeams();
         if (teams.isEmpty()) {
             throw new IllegalStateException("No teams available for the tournament.");
         }
 
+        // Generate matches
         List<Match> matches = generateMatches(teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
         matchRepository.saveAll(matches);
-        log.info("Saved {} matches.", matches.size());
+
+        // Create & Save Tournament
+        Tournament tournament = new Tournament();
+        tournament.setName(tournamentName);
+        tournament.setDateHeld(LocalDate.now());
+        tournament.setActive(true);
+        tournament.setNumCourts(numCourts);
+        tournament.setGamesPerTeam(gamesPerTeam);
+        tournament.setTiered(tiered);
+        tournament.setTeams(teams);
+        tournament.setMatches(matches);
+        tournament.setStatus("LIVE");
+
+        tournamentRepository.save(tournament);
+        log.info("Tournament '{}' saved successfully with {} teams and {} matches!", tournamentName, teams.size(), matches.size());
+
+        return tournament;
     }
 
     /** ✅ Generate Teams */
     @Transactional
     public List<Team> setupAndGenerateTeams() {
         log.info("Generating teams...");
-        teamRepository.deleteAll();
-
         List<Team> teams = teamService.generateTeams();
         teamRepository.saveAll(teams);
         log.info("Successfully saved {} teams.", teams.size());
-
         return teams;
     }
 
     /** ✅ Generate Matches */
-    private List<Match> generateMatches(List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered, LocalTime startTime, int matchDuration) {
+    private List<Match> generateMatches(List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered,
+                                        LocalTime startTime, int matchDuration) {
         log.info("Generating matches for {} teams with {} courts.", teams.size(), numCourts);
 
         if (teams.size() < 2) {
@@ -144,5 +169,17 @@ public class TournamentSetupService {
             }
             queue.addAll(currentRound);
         }
+    }
+
+    /** ✅ End Tournament */
+    @Transactional
+    public void endTournament() {
+        Optional<Tournament> activeTournament = tournamentRepository.findByStatus("LIVE");
+        activeTournament.ifPresent(tournament -> {
+            tournament.setStatus("COMPLETED");
+            tournament.setActive(false);
+            tournamentRepository.save(tournament);
+            log.info("Tournament '{}' has been marked as COMPLETED.", tournament.getName());
+        });
     }
 }
