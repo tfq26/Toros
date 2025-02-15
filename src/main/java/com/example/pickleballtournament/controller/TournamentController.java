@@ -5,13 +5,14 @@ import com.example.pickleballtournament.model.Team;
 import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.request.TournamentSetupRequest;
 import com.example.pickleballtournament.request.UpdateMatchRequest;
-import com.example.pickleballtournament.service.LiveTournamentService;
 import com.example.pickleballtournament.service.TournamentSetupService;
+import com.example.pickleballtournament.service.LiveTournamentService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,25 +29,26 @@ public class TournamentController {
         this.liveTournamentService = liveTournamentService;
     }
 
-    /** ✅ Setup a New Tournament */
+    /** ✅ Setup Tournament */
     @PostMapping("/setup")
     public ResponseEntity<?> setupTournament(@RequestBody TournamentSetupRequest request) {
         try {
-            log.info("Received tournament setup request: {}", request);
+            log.info("🛠️ Setting up tournament: {}", request.getTournamentName());
 
             Tournament tournament = tournamentSetupService.setupTournament(
+                    request.getTournamentName(),
                     request.getNumCourts(),
                     request.getGamesPerTeam(),
                     request.isUseExistingPlayers(),
                     request.isTiered(),
                     request.getStartTime(),
-                    request.getMatchDuration(),
-                    request.getTournamentName()
+                    request.getMatchDuration()
             );
 
+            log.info("✅ Tournament '{}' setup successfully!", tournament.getName());
             return ResponseEntity.ok(tournament);
         } catch (Exception e) {
-            log.error("Error setting up tournament", e);
+            log.error("❌ Error setting up tournament", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to setup tournament.");
         }
     }
@@ -55,26 +57,30 @@ public class TournamentController {
     @GetMapping("/active")
     public ResponseEntity<?> getActiveTournament() {
         Optional<Tournament> tournament = liveTournamentService.getActiveTournament();
-        return tournament.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.ok("No active tournament found."));
+
+        if (tournament.isPresent()) {
+            return ResponseEntity.ok(tournament.get());
+        } else {
+            log.warn("⚠️ No active tournament found.");
+            return ResponseEntity.ok(Collections.singletonMap("message", "No active tournament."));
+        }
     }
 
-    /** ✅ End Tournament */
+
     @PostMapping("/end")
     public ResponseEntity<String> endTournament() {
-        try {
-            liveTournamentService.endTournament();
-            return ResponseEntity.ok("Tournament successfully ended.");
-        } catch (Exception e) {
-            log.error("Error ending tournament", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to end tournament.");
-        }
+        liveTournamentService.endTournament();
+        log.info("Live tournament has been ended.");
+        return ResponseEntity.ok("Tournament ended successfully.");
     }
 
     /** ✅ Get All Tournaments */
     @GetMapping("/all")
     public ResponseEntity<List<Tournament>> getAllTournaments() {
         List<Tournament> tournaments = liveTournamentService.getAllTournaments();
+        if (tournaments.isEmpty()) {
+            log.info("📂 No tournaments found.");
+        }
         return ResponseEntity.ok(tournaments);
     }
 
@@ -88,17 +94,20 @@ public class TournamentController {
     /** ✅ Get All Matches */
     @GetMapping("/matches")
     public ResponseEntity<List<Match>> getAllMatches() {
-        return ResponseEntity.ok(liveTournamentService.getAllMatches());
+        List<Match> matches = liveTournamentService.getAllMatches();
+        return ResponseEntity.ok(matches.isEmpty() ? Collections.emptyList() : matches);
     }
 
     /** ✅ Get Matches by Team ID */
     @GetMapping("/matches/team/{teamId}")
-    public ResponseEntity<List<Match>> getMatchesByTeam(@PathVariable String teamId) {
+    public ResponseEntity<?> getMatchesByTeam(@PathVariable String teamId) {
         try {
-            return ResponseEntity.ok(liveTournamentService.getMatchesByTeam(teamId));
+            List<Match> matches = liveTournamentService.getMatchesByTeam(teamId);
+            return ResponseEntity.ok(matches.isEmpty() ? Collections.emptyList() : matches);
         } catch (Exception e) {
-            log.error("Error fetching matches for team ID: {}", teamId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            log.error("❌ Error fetching matches for team ID: {}", teamId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Failed to fetch matches."));
         }
     }
 
@@ -106,10 +115,12 @@ public class TournamentController {
     @PatchMapping("/match/{id}")
     public ResponseEntity<String> updateMatch(@PathVariable String id, @RequestBody UpdateMatchRequest request) {
         try {
+            log.info("🔄 Updating match {} - Status: {}", id, request.getStatus());
             liveTournamentService.updateMatchStatus(id, request.getTeam1Score(), request.getTeam2Score(), request.getStatus());
+            log.info("✅ Match {} updated successfully.", id);
             return ResponseEntity.ok("Match updated successfully.");
         } catch (Exception e) {
-            log.error("Error updating match {}", id, e);
+            log.error("❌ Error updating match {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update match.");
         }
     }

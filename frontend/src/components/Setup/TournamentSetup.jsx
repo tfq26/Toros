@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import InputField from "./InputField";
 import CheckboxField from "./CheckboxField";
 import TeamsList from "./TeamsList";
-import PlayerStats from "../PlayerList/PlayerStats.jsx"; // ✅ Imported PlayerStats
+import PlayerStats from "../PlayerList/PlayerStats.jsx";
 import ErrorMessage from "../Error";
 import { fetchPlayersAndGenerateTeams, handleTournamentSetup } from "../utils/SetupFunctions";
-import { calculateStats } from "../utils/playerUtils.js"; // ✅ For player statistics calculation
+import { calculateStats } from "../utils/playerUtils.js";
 
 const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
@@ -19,7 +19,6 @@ const TournamentSetup = ({ onSetupComplete }) => {
         useExistingPlayers: false,
         tiered: false,
     });
-
     const [teams, setTeams] = useState([]);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -28,7 +27,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
         fetchPlayersAndGenerateTeams(setTeams, setError);
     }, []);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const { tournamentName, numCourts, gamesPerTeam, startTime, matchDuration, breakTime } = tournamentConfig;
@@ -43,9 +42,23 @@ const TournamentSetup = ({ onSetupComplete }) => {
         }
 
         const formData = { ...tournamentConfig, teams };
-        handleTournamentSetup(formData, setError, () => {
-            onSetupComplete(formData);
-        }, navigate);
+
+        try {
+            // Attempt tournament setup using the provided handler function.
+            await handleTournamentSetup(formData, setError, () => {
+                onSetupComplete(formData);
+            }, navigate);
+        } catch (err) {
+            // If an error occurs, navigate to the error page with the specified state.
+            navigate("/error", {
+                state: {
+                    city: "Moscow",
+                    message: "Failed to setup tournament.",
+                    detailedMessage: err.message || "An unknown error occurred while setting up the tournament.",
+                    errorMessages: [err.message]
+                }
+            });
+        }
     };
 
     const handleSetCurrentTime = () => {
@@ -54,19 +67,19 @@ const TournamentSetup = ({ onSetupComplete }) => {
         setTournamentConfig((prevConfig) => ({ ...prevConfig, startTime: formattedTime }));
     };
 
-    // ✅ Calculate Player Stats
-    const stats = calculateStats(teams.flat()); // Convert teams into a flat list of players
+    // Calculate player stats based on teams (flattened if needed)
+    const stats = calculateStats(teams.flat());
 
     return (
         <div>
             <div className="container mx-5 py-8 bg-transparent rounded-lg max-w-full">
                 <div className="flex flex-col lg:flex-row gap-6 w-full">
-                    {/* 📌 Player Stats (Left Side) */}
+                    {/* Player Stats Sidebar */}
                     <div className="w-full lg:w-2/12 h-fit bg-white p-4 rounded-lg shadow-md">
                         <PlayerStats stats={stats} />
                     </div>
 
-                    {/* 📌 Tournament Setup Form (Right Side) */}
+                    {/* Tournament Setup Form */}
                     <div className="w-full lg:w-3/5 bg-white p-6 rounded-lg shadow-md h-fit">
                         {/* Tournament Name Input */}
                         <input
@@ -113,7 +126,6 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                         }
                                     />
                                 </div>
-
                                 <button
                                     type="button"
                                     className="bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition"
@@ -182,7 +194,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                         </form>
                     </div>
 
-                    {/* 📌 Teams List (Right Side on Larger Screens) */}
+                    {/* Teams List */}
                     <div className="w-full lg:w-fit bg-white p-4 rounded-lg shadow-md mt-6 lg:mt-0">
                         <TeamsList teams={teams} />
                     </div>

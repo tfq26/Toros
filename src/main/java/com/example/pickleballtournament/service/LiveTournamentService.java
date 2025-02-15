@@ -10,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,9 +29,38 @@ public class LiveTournamentService {
         this.tournamentRepository = tournamentRepository;
     }
 
+    /** ✅ Get Active Tournament */
+    public Optional<Tournament> getActiveTournament() {
+        return tournamentRepository.findByIsActive(true);
+    }
+
+    /** ✅ Retrieve All Tournaments */
+    public List<Tournament> getAllTournaments() {
+        List<Tournament> tournaments = tournamentRepository.findAll();
+        log.info("Retrieved {} tournaments from the database.", tournaments.size());
+        return tournaments;
+    }
+
     /** ✅ Get All Matches */
     public List<Match> getAllMatches() {
         return matchRepository.findAll();
+    }
+
+    /** ✅ Get Standings */
+    public List<Team> getStandings() {
+        List<Team> teams = teamRepository.findAll();
+        return teams.stream()
+                .sorted(Comparator.comparingInt(Team::getWins).reversed()
+                        .thenComparingInt(Team::getLosses))
+                .collect(Collectors.toList());
+    }
+
+    /** ✅ Get Matches by Team ID */
+    public List<Match> getMatchesByTeam(String teamId) {
+        if (!teamRepository.existsById(teamId)) {
+            throw new IllegalArgumentException("Team not found with ID: " + teamId);
+        }
+        return matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId);
     }
 
     /** ✅ Update Match Status */
@@ -61,69 +92,17 @@ public class LiveTournamentService {
         }
 
         matchRepository.save(match);
+        log.info("Match {} updated with scores: {} - {}", matchId, team1Score, team2Score);
     }
 
     /** ✅ End Tournament */
     @Transactional
     public void endTournament() {
-        Optional<Tournament> liveTournament = tournamentRepository.findByStatus("LIVE");
-        liveTournament.ifPresent(tournament -> {
-            tournament.setStatus("COMPLETED");
+        Optional<Tournament> activeTournament = getActiveTournament();
+        activeTournament.ifPresent(tournament -> {
+            tournament.setActive(false);
             tournamentRepository.save(tournament);
             log.info("Tournament {} marked as COMPLETED.", tournament.getName());
         });
-    }
-
-    /** ✅ Get Team Standings */
-    public List<Team> getStandings() {
-        return teamRepository.findAll().stream()
-                .sorted(Comparator.comparingInt(Team::getWins).reversed()
-                        .thenComparingInt(Team::getLosses))
-                .collect(Collectors.toList());
-    }
-
-    /** ✅ Get Matches by Team ID */
-    public List<Match> getMatchesByTeam(String teamId) {
-        if (!teamRepository.existsById(teamId)) {
-            throw new IllegalArgumentException("Team not found with ID: " + teamId);
-        }
-        return matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId);
-    }
-
-    /** ✅ Get Matches by Team Name */
-    public List<Match> getMatchesByTeamName(String teamName) {
-        List<Team> teams = teamRepository.findAllByTeamName(teamName);
-        List<String> teamIds = teams.stream().map(Team::getId).collect(Collectors.toList());
-
-        List<Match> matches = new ArrayList<>();
-        for (String teamId : teamIds) {
-            matches.addAll(matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId));
-        }
-        return matches;
-    }
-
-    /** ✅ Advance a Winner in Knockout Matches */
-    @Transactional
-    public void advanceWinner(String matchId, String winnerTeamId) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new IllegalArgumentException("Match not found: " + matchId));
-
-        Match nextMatch = matchRepository.findById(match.getNextMatchId())
-                .orElseThrow(() -> new IllegalArgumentException("Next match not found."));
-
-        if (nextMatch.getTeam1() == null) {
-            nextMatch.setTeam1(teamRepository.findById(winnerTeamId).orElseThrow());
-        } else {
-            nextMatch.setTeam2(teamRepository.findById(winnerTeamId).orElseThrow());
-        }
-
-        matchRepository.save(nextMatch);
-    }
-
-    /** ✅ Clear All Matches */
-    @Transactional
-    public void clearAllMatches() {
-        matchRepository.deleteAll();
-        log.info("All matches have been cleared from the database.");
     }
 }

@@ -54,9 +54,9 @@ function TeamStandings() {
             setError(error.message);
             navigate("/error", {
                 state: {
-                    statusCode: 500,
-                    message: "Failed to load matches.",
-                    detailedMessage: error.message || "An unknown error occurred while fetching matches.",
+                    city: "Tokyo",
+                    message: "Failed to load standings.",
+                    detailedMessage: error.message || "An unknown error occurred while fetching standings.",
                     errorMessages: [error.message]
                 }
             });
@@ -83,9 +83,9 @@ function TeamStandings() {
             setError(error.message);
             navigate("/error", {
                 state: {
-                    statusCode: 500,
-                    message: "Failed to clear standings.",
-                    detailedMessage: error.message || "An unknown error occurred while clearing standings.",
+                    city: "Tokyo",
+                    message: "Failed to load standings.",
+                    detailedMessage: error.message || "An unknown error occurred while fetching standings.",
                     errorMessages: [error.message]
                 }
             });
@@ -110,9 +110,9 @@ function TeamStandings() {
             setError(error.message);
             navigate("/error", {
                 state: {
-                    statusCode: 500,
-                    message: "Failed to load team matches.",
-                    detailedMessage: error.message || "An unknown error occurred while fetching team matches.",
+                    city: "Tokyo",
+                    message: "Failed to load standings.",
+                    detailedMessage: error.message || "An unknown error occurred while fetching standings.",
                     errorMessages: [error.message]
                 }
             });

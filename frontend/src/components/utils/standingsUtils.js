@@ -25,7 +25,7 @@ export const fetchStandings = async () => {
 // Fetch all matches for bracket data
 export const fetchAllMatches = async () => {
     try {
-        const response = await axios.get("http://localhost:8080/api/tournament/live", {
+        const response = await axios.get("http://localhost:8080/api/tournament/matches", {
             headers: getAuthHeaders(),
         });
         return response.data || [];

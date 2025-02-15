@@ -16,4 +16,8 @@ public interface TournamentRepository extends MongoRepository<Tournament, String
 
     /** ✅ Get all completed tournaments */
     List<Tournament> findByIsActiveFalse();
+
+    /** ✅ Find a tournament by status (LIVE, COMPLETED, UPCOMING) */
+    Optional<Tournament> findByStatus(String status);
+
 }
