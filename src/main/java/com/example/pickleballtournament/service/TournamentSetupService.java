@@ -88,11 +88,22 @@ public class TournamentSetupService {
         teamRepository.deleteAll();
 
         List<Team> teams = teamService.generateTeams();
+
+        // ✅ Ensure team name is correctly set
+        teams.forEach(team -> {
+            if (team.getName() == null || team.getName().isEmpty()) {
+                String player1Name = team.getPlayer1() != null ? team.getPlayer1().getName() : "Unknown";
+                String player2Name = team.getPlayer2() != null ? team.getPlayer2().getName() : "Unknown";
+                team.setName(player1Name + " & " + player2Name); // 🏆 Set team name
+            }
+        });
+
         teamRepository.saveAll(teams);
         log.info("Successfully saved {} teams.", teams.size());
 
         return teams;
     }
+
 
     /** Generate Matches */
     private List<Match> generateMatches(List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered,
@@ -137,6 +148,9 @@ public class TournamentSetupService {
                     match.setEndTime(matchEndTime);
                     match.generateCustomId();
 
+                    // ✅ Log Team Names for Debugging
+                    log.info("Match Scheduled: {} vs {} on Court {}", team1.getName(), team2.getName(), assignedCourt);
+
                     matches.add(match);
                     courtTimes.put(assignedCourt, matchEndTime);
                     courtNumber.set((courtNumber.get() % numCourts) + 1);
@@ -147,6 +161,7 @@ public class TournamentSetupService {
         log.info("Generated {} matches.", matches.size());
         return matches;
     }
+
 
     /** Create Knockout Matches */
     @Transactional

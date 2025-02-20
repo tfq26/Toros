@@ -2,16 +2,13 @@ package com.example.pickleballtournament.repository;
 
 import com.example.pickleballtournament.model.Team;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
-@Repository
 public interface TeamRepository extends MongoRepository<Team, String> {
 
-    // Return a list in case multiple teams have the same name
-    List<Team> findAllByTeamName(String teamName);
+    // ✅ Correct field name
+    List<Team> findAllByName(String name);
 
-    // Check if a team with the given name exists
-    boolean existsByTeamName(String teamName);
+    // ✅ Optional: Find teams using player names
+    List<Team> findByPlayer1_NameOrPlayer2_Name(String player1Name, String player2Name);
 }

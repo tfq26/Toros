@@ -93,10 +93,10 @@ function TeamStandings() {
     };
 
     // Fetch matches for a specific team
-    const fetchTeamMatches = async (teamName) => {
-        console.log("Fetching matches for team name:", teamName);
+    const fetchTeamMatches = async (Name) => {
+        console.log("Fetching matches for team name:", Name);
         try {
-            const response = await axios.get(`http://localhost:8080/api/tournament/teamMatchesByName/${encodeURIComponent(teamName)}`);
+            const response = await axios.get(`http://localhost:8080/api/tournament/teamMatchesByName/${encodeURIComponent(Name)}`);
             setTeamMatches(response.data);
             console.log("API response for team matches:", response.data);
             console.log("Updated teamMatches state:", teamMatches);

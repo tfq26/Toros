@@ -85,10 +85,10 @@ export const exportToPDF = (teams) => {
 };
 
 // Fetch matches for a specific team
-export const fetchTeamMatches = async (teamName) => {
+export const fetchTeamMatches = async (Name) => {
     try {
         const response = await axios.get(
-            `http://localhost:8080/api/tournament/teamMatchesByName/${encodeURIComponent(teamName)}`,
+            `http://localhost:8080/api/tournament/teamMatchesByName/${encodeURIComponent(Name)}`,
             {
                 headers: getAuthHeaders(),
             }

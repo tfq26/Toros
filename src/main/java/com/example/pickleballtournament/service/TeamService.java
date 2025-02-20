@@ -120,7 +120,7 @@ public class TeamService {
 
                 Team team = new Team();
                 team.setId(generateUniqueTeamId());
-                team.setTeamName(player1.getName() + " & " + player2.getName());
+                team.setName(player1.getName() + " & " + player2.getName());
                 team.setPlayers(player1, player2);
                 team.setWins(0);
                 team.setLosses(0);

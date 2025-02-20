@@ -31,7 +31,9 @@ public class LiveTournamentService {
 
     /** ✅ Get Active Tournament */
     public Optional<Tournament> getActiveTournament() {
-        return tournamentRepository.findByIsActive(true);
+        Optional<Tournament> tournament = tournamentRepository.findByIsActive(true);
+        log.info("Active tournament: {}", tournament.map(Tournament::getName).orElse("None"));
+        return tournament;
     }
 
     /** ✅ Retrieve All Tournaments */
@@ -43,12 +45,24 @@ public class LiveTournamentService {
 
     /** ✅ Get All Matches */
     public List<Match> getAllMatches() {
-        return matchRepository.findAll();
+        List<Match> matches = matchRepository.findAll();
+
+        if (matches.isEmpty()) {
+            log.warn("⚠️ No matches found in the database.");
+        } else {
+            log.info("✅ Retrieved {} matches from the database.", matches.size());
+        }
+
+        return matches;
     }
 
     /** ✅ Get Standings */
     public List<Team> getStandings() {
         List<Team> teams = teamRepository.findAll();
+        if (teams.isEmpty()) {
+            log.warn("⚠️ No teams found in the database.");
+        }
+
         return teams.stream()
                 .sorted(Comparator.comparingInt(Team::getWins).reversed()
                         .thenComparingInt(Team::getLosses))
@@ -58,9 +72,14 @@ public class LiveTournamentService {
     /** ✅ Get Matches by Team ID */
     public List<Match> getMatchesByTeam(String teamId) {
         if (!teamRepository.existsById(teamId)) {
+            log.error("❌ Team not found with ID: {}", teamId);
             throw new IllegalArgumentException("Team not found with ID: " + teamId);
         }
-        return matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId);
+
+        List<Match> matches = matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId);
+
+        log.info("✅ Found {} matches for team ID: {}", matches.size(), teamId);
+        return matches;
     }
 
     /** ✅ Update Match Status */
@@ -77,12 +96,17 @@ public class LiveTournamentService {
             Team team1 = match.getTeam1();
             Team team2 = match.getTeam2();
 
+            if (team1 == null || team2 == null) {
+                log.error("❌ Match {} has null team references!", matchId);
+                throw new IllegalStateException("Match teams cannot be null.");
+            }
+
             if (team1Score > team2Score) {
-                match.setWinner(team1.getTeamName());
+                match.setWinner(team1.getName());
                 team1.incrementWins();
                 team2.incrementLosses();
             } else {
-                match.setWinner(team2.getTeamName());
+                match.setWinner(team2.getName());
                 team2.incrementWins();
                 team1.incrementLosses();
             }
@@ -92,7 +116,7 @@ public class LiveTournamentService {
         }
 
         matchRepository.save(match);
-        log.info("Match {} updated with scores: {} - {}", matchId, team1Score, team2Score);
+        log.info("✅ Match {} updated: {} - {} (Status: {})", matchId, team1Score, team2Score, status);
     }
 
     /** ✅ End Tournament */
@@ -102,7 +126,7 @@ public class LiveTournamentService {
         activeTournament.ifPresent(tournament -> {
             tournament.setActive(false);
             tournamentRepository.save(tournament);
-            log.info("Tournament {} marked as COMPLETED.", tournament.getName());
+            log.info("✅ Tournament '{}' marked as COMPLETED.", tournament.getName());
         });
     }
 }

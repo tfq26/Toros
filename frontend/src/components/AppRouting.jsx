@@ -6,7 +6,8 @@ import TournamentBracket from "./Standings/TeamStandings.jsx";
 import LiveTournament from "./Live/LiveTournament.jsx";
 import ErrorPage from "./Error.jsx";
 import LoginPage from "./Auth/Login.jsx";
-import SignupPage from "./Auth/Signup.jsx"; // ✅ Import Signup component
+import SignupPage from "./Auth/Signup.jsx";
+import MatchTest from "./Live/MatchTest.jsx"; // ✅ Import Signup component
 
 const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tournamentConfig, setTournamentConfig }) => {
     return (
@@ -23,6 +24,7 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
                 }
             />
             <Route path="/bracket" element={<TournamentBracket />} />
+            <Route path="/test-matches" element={<MatchTest />} />
             <Route
                 path="/tournament/live"
                 element={
