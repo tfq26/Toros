@@ -56,7 +56,7 @@ public class PlayerController {
     /**
      * Get all players in the database.
      */
-    @GetMapping("/all") // Maps to GET /api/players/all
+    @GetMapping("/all")
     public ResponseEntity<List<Player>> getAllPlayers() {
         List<Player> players = playerService.getAllPlayers();
         logger.info("Fetched {} players from the database.", players.size());
@@ -81,6 +81,64 @@ public class PlayerController {
         List<Integer> teamNumbers = playerService.getAllTeamNumbers();
         logger.info("Fetched {} team numbers from the database.", teamNumbers.size());
         return ResponseEntity.ok(teamNumbers);
+    }
+
+    /**
+     * Get a player by ID.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Player> getPlayerById(@PathVariable String id) {
+        Player player = playerService.getPlayerById(id);
+        if (player == null) {
+            logger.warn("Player with id {} not found.", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(player);
+    }
+
+    /**
+     * Create a new player.
+     */
+    @PostMapping
+    public ResponseEntity<Player> createPlayer(@RequestBody Player player) {
+        try {
+            Player createdPlayer = playerService.createPlayer(player);
+            logger.info("Created new player with id {}.", createdPlayer.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdPlayer);
+        } catch (Exception e) {
+            logger.error("Error creating player:", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Update an existing player.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Player> updatePlayer(@PathVariable String id, @RequestBody Player updatedPlayer) {
+        try {
+            Player player = playerService.updatePlayer(id, updatedPlayer);
+            logger.info("Updated player with id {}.", id);
+            return ResponseEntity.ok(player);
+        } catch (Exception e) {
+            logger.error("Error updating player:", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Delete a player.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePlayer(@PathVariable String id) {
+        try {
+            playerService.deletePlayer(id);
+            logger.info("Deleted player with id {}.", id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            logger.error("Error deleting player:", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import InputField from "./InputField";
 import CheckboxField from "./CheckboxField";
@@ -7,6 +7,8 @@ import PlayerStats from "../PlayerList/PlayerStats.jsx";
 import ErrorMessage from "../Error";
 import { fetchPlayersAndGenerateTeams, handleTournamentSetup } from "../utils/SetupFunctions";
 import { calculateStats } from "../utils/playerUtils.js";
+import SliderField from "./SliderField.jsx";
+import SlidingWindow from "../SlidingWindow.jsx"; // Import the new SlidingWindow component
 
 const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
@@ -19,12 +21,14 @@ const TournamentSetup = ({ onSetupComplete }) => {
         useExistingPlayers: false,
         tiered: false,
     });
+
     const [teams, setTeams] = useState([]);
     const [error, setError] = useState(null);
+    const [isWindowOpen, setIsWindowOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchPlayersAndGenerateTeams(setTeams, setError);
+        fetchPlayersAndGenerateTeams(setTeams, setError).then((r) => r);
     }, []);
 
     const handleSubmit = async (e) => {
@@ -44,19 +48,17 @@ const TournamentSetup = ({ onSetupComplete }) => {
         const formData = { ...tournamentConfig, teams };
 
         try {
-            // Attempt tournament setup using the provided handler function.
             await handleTournamentSetup(formData, setError, () => {
                 onSetupComplete(formData);
             }, navigate);
         } catch (err) {
-            // If an error occurs, navigate to the error page with the specified state.
             navigate("/error", {
                 state: {
                     city: "Moscow",
                     message: "Failed to setup tournament.",
                     detailedMessage: err.message || "An unknown error occurred while setting up the tournament.",
-                    errorMessages: [err.message]
-                }
+                    errorMessages: [err.message],
+                },
             });
         }
     };
@@ -67,139 +69,95 @@ const TournamentSetup = ({ onSetupComplete }) => {
         setTournamentConfig((prevConfig) => ({ ...prevConfig, startTime: formattedTime }));
     };
 
-    // Calculate player stats based on teams (flattened if needed)
     const stats = calculateStats(teams.flat());
 
     return (
-        <div>
-            <div className="container mx-5 py-8 bg-transparent rounded-lg max-w-full">
-                <div className="flex flex-col lg:flex-row gap-6 w-full">
-                    {/* Player Stats Sidebar */}
-                    <div className="w-full lg:w-2/12 h-fit bg-white p-4 rounded-lg shadow-md">
-                        <PlayerStats stats={stats} />
-                    </div>
+        <div className="relative container px-6 py-6 bg-transparent rounded-lg max-w-full">
+            <div className="flex">
+                {/* Tournament Setup Form */}
+                <div className="w-full lg:w-[95%] bg-white dark:bg-gray-600 p-6 rounded-lg shadow-md h-fit">
+                    <input
+                        type="text"
+                        value={tournamentConfig.tournamentName}
+                        onChange={(e) =>
+                            setTournamentConfig({ ...tournamentConfig, tournamentName: e.target.value })
+                        }
+                        placeholder="Enter Tournament Name"
+                        className="w-full text-3xl font-bold text-center text-gray-800 dark:text-gray-900 mb-6 p-2 border border-gray-300 rounded-lg"
+                    />
 
-                    {/* Tournament Setup Form */}
-                    <div className="w-full lg:w-3/5 bg-white p-6 rounded-lg shadow-md h-fit">
-                        {/* Tournament Name Input */}
-                        <input
-                            type="text"
-                            value={tournamentConfig.tournamentName}
+                    {error && <ErrorMessage message={error} />}
+
+                    <form onSubmit={handleSubmit} className="space-y-2 dark:text-black placeholder:text-gray-100">
+                        <InputField
+                            label="Court Number"
+                            type="number"
+                            value={tournamentConfig.numCourts}
                             onChange={(e) =>
-                                setTournamentConfig({ ...tournamentConfig, tournamentName: e.target.value })
+                                setTournamentConfig({ ...tournamentConfig, numCourts: e.target.value })
                             }
-                            placeholder="Enter Tournament Name"
-                            className="w-full text-3xl font-bold text-center text-gray-800 mb-6 p-2 border border-gray-300 rounded-lg"
+                            placeholder="Enter number of courts"
+                        />
+                        <InputField
+                            label="Games Played"
+                            type="number"
+                            value={tournamentConfig.gamesPerTeam}
+                            onChange={(e) =>
+                                setTournamentConfig({ ...tournamentConfig, gamesPerTeam: e.target.value })
+                            }
+                            placeholder="Enter games per team"
                         />
 
-                        {error && <ErrorMessage message={error} />}
+                        <SliderField
+                            label="Match Duration"
+                            value={tournamentConfig.matchDuration}
+                            min="0"
+                            max="30"
+                            step="5"
+                            onChange={(e) =>
+                                setTournamentConfig({ ...tournamentConfig, matchDuration: e.target.value })
+                            }
+                        />
+                        <SliderField
+                            label="Break Time"
+                            value={tournamentConfig.breakTime}
+                            min="0"
+                            max="30"
+                            step="5"
+                            onChange={(e) =>
+                                setTournamentConfig({ ...tournamentConfig, breakTime: e.target.value })
+                            }
+                        />
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <InputField
-                                label="Number of Courts"
-                                type="number"
-                                value={tournamentConfig.numCourts}
-                                onChange={(e) =>
-                                    setTournamentConfig({ ...tournamentConfig, numCourts: e.target.value })
-                                }
-                                placeholder="Enter number of courts"
-                            />
-                            <InputField
-                                label="Games Per Team"
-                                type="number"
-                                value={tournamentConfig.gamesPerTeam}
-                                onChange={(e) =>
-                                    setTournamentConfig({ ...tournamentConfig, gamesPerTeam: e.target.value })
-                                }
-                                placeholder="Enter games per team"
-                            />
+                        <button
+                            type="submit"
+                            className="w-full bg-yellow-400 text-gray-800 py-2 px-4 rounded-lg hover:bg-amber-500 transition text-2xl font-semibold dark:text-black"
+                        >
+                            Start Tournament 🚀
+                        </button>
+                    </form>
+                </div>
 
-                            {/* Start Time Input + Auto-Fill Button */}
-                            <div className="flex items-center gap-4">
-                                <div className="flex flex-col w-full">
-                                    <InputField
-                                        label="Start Time"
-                                        type="time"
-                                        value={tournamentConfig.startTime}
-                                        onChange={(e) =>
-                                            setTournamentConfig({ ...tournamentConfig, startTime: e.target.value })
-                                        }
-                                    />
-                                </div>
-                                <button
-                                    type="button"
-                                    className="bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition"
-                                    onClick={handleSetCurrentTime}
-                                >
-                                    Use Current Time
-                                </button>
-                            </div>
-
-                            {/* Sliders for Match Duration & Break Time */}
-                            <div>
-                                <label className="block text-lg font-medium text-gray-700">
-                                    Match Duration: {tournamentConfig.matchDuration} minutes
-                                </label>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="30"
-                                    step="5"
-                                    value={tournamentConfig.matchDuration}
-                                    onChange={(e) =>
-                                        setTournamentConfig({ ...tournamentConfig, matchDuration: e.target.value })
-                                    }
-                                    className="w-full mt-2 cursor-pointer"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-lg font-medium text-gray-700">
-                                    Break Time: {tournamentConfig.breakTime} minutes
-                                </label>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="30"
-                                    step="5"
-                                    value={tournamentConfig.breakTime}
-                                    onChange={(e) =>
-                                        setTournamentConfig({ ...tournamentConfig, breakTime: e.target.value })
-                                    }
-                                    className="w-full mt-2 cursor-pointer"
-                                />
-                            </div>
-
-                            <CheckboxField
-                                label="Use Existing Player List"
-                                checked={tournamentConfig.useExistingPlayers}
-                                onChange={(e) =>
-                                    setTournamentConfig({ ...tournamentConfig, useExistingPlayers: e.target.checked })
-                                }
-                            />
-                            <CheckboxField
-                                label="Divide Tournament into Tiers"
-                                checked={tournamentConfig.tiered}
-                                onChange={(e) =>
-                                    setTournamentConfig({ ...tournamentConfig, tiered: e.target.checked })
-                                }
-                            />
-
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition text-lg font-semibold"
-                            >
-                                Start Tournament 🚀
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* Teams List */}
-                    <div className="w-full lg:w-fit bg-white p-4 rounded-lg shadow-md mt-6 lg:mt-0">
-                        <TeamsList teams={teams} />
-                    </div>
+                {/* Toggle Button to Open Sliding Window */}
+                <div className="w-[0%] flex items-center justify-center">
+                    <button
+                        onClick={() => setIsWindowOpen(!isWindowOpen)}
+                        className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition z-50"
+                    >
+                        {isWindowOpen ? "❌ Close" : "←"}
+                    </button>
                 </div>
             </div>
+
+            {/* Sliding Window Component */}
+            <SlidingWindow
+                isOpen={isWindowOpen}
+                onClose={() => setIsWindowOpen(false)}
+                sections={[
+                    { id: "teams", label: "Teams", content: <TeamsList teams={teams} /> },
+                    { id: "stats", label: "Stats", content: <PlayerStats stats={stats} /> },
+                ]}
+            />
         </div>
     );
 };

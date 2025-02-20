@@ -50,7 +50,7 @@ const Login = ({ setAuthToken }) => {
 
             <form
                 onSubmit={handleLogin}
-                className="relative z-10 bg-red-900 bg-opacity-90 p-6 rounded-lg shadow-xl w-80 space-y-4"
+                className="relative z-10 bg-red-900 dark:bg-gray-800 bg-opacity-90 p-6 rounded-lg shadow-xl w-80 space-y-4"
             >
                 <h2 className="text-2xl font-bold text-center text-white mb-4">Login</h2>
 

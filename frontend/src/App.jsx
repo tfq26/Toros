@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
-import AppRoutes from "./components/AppRouting.jsx"; // Import the new routing component
-import './index.css';
+import AppRoutes from "./components/AppRouting.jsx";
+import "./index.css";
 
 const App = () => {
     const [tournamentSetupComplete, setTournamentSetupComplete] = useState(
@@ -10,18 +10,29 @@ const App = () => {
     );
     const [tournamentConfig, setTournamentConfig] = useState(null);
     const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
+    const [isDarkMode, setIsDarkMode] = useState(window.matchMedia("(prefers-color-scheme: dark)").matches);
 
     // ✅ Sync state with localStorage when it changes
     useEffect(() => {
         localStorage.setItem("tournamentSetupComplete", JSON.stringify(tournamentSetupComplete));
     }, [tournamentSetupComplete]);
 
+    // ✅ Detect system dark mode and update when it changes
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+        const handleChange = () => setIsDarkMode(mediaQuery.matches);
+        mediaQuery.addEventListener("change", handleChange);
+
+        return () => mediaQuery.removeEventListener("change", handleChange);
+    }, []);
+
     // ✅ Fetch active tournament from the backend on mount
     useEffect(() => {
         const fetchTournamentStatus = async () => {
             try {
                 const response = await fetch("/api/tournament/active", {
-                    headers: { "Authorization": `Bearer ${authToken}` },
+                    headers: { Authorization: `Bearer ${authToken}` },
                 });
                 const data = await response.json();
 
@@ -43,7 +54,7 @@ const App = () => {
 
     return (
         <Router>
-            <div className="flex h-screen">
+            <div className={`flex h-screen ${isDarkMode ? "dark" : ""}`}>
                 {/* Sidebar Navbar */}
                 <Navbar
                     tournamentSetupComplete={tournamentSetupComplete}
@@ -57,7 +68,7 @@ const App = () => {
                 />
 
                 {/* Main Content */}
-                <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-orange-100">
+                <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-yellow-100 dark:bg-gray-800 dark:text-gray-200">
                     <AppRoutes
                         setAuthToken={setAuthToken}
                         authToken={authToken}

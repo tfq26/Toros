@@ -2,14 +2,16 @@ package com.example.pickleballtournament.service;
 
 import com.example.pickleballtournament.model.Player;
 import com.example.pickleballtournament.repository.PlayerRepository;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,23 +28,33 @@ public class PlayerService {
         Sheet sheet = workbook.getSheetAt(0);
 
         List<Player> players = new ArrayList<>();
-        List<String> errors = new ArrayList<>(); // Collect errors for missing or incorrect data
+        List<String> errors = new ArrayList<>();
 
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue; // Skip header row
 
             String name = getCellValue(row.getCell(0), "name", errors, row.getRowNum());
-            Integer teamNumber = getNumericCellValue(row.getCell(1), "teamNumber", errors, row.getRowNum());
-            String clubName = getCellValue(row.getCell(2), "clubName", errors, row.getRowNum());
-            Integer placement = getNumericCellValue(row.getCell(3), "placement", errors, row.getRowNum());
+            Integer age = getNumericCellValue(row.getCell(1), "age", errors, row.getRowNum());
+            String email = getCellValue(row.getCell(2), "email", errors, row.getRowNum());
+            String phone = getCellValue(row.getCell(3), "phone", errors, row.getRowNum());
+            Integer teamNumber = getNumericCellValue(row.getCell(4), "teamNumber", errors, row.getRowNum());
+            String clubName = getCellValue(row.getCell(5), "clubName", errors, row.getRowNum());
+            Integer placement = getNumericCellValue(row.getCell(6), "placement", errors, row.getRowNum());
 
-            if (name != null && teamNumber != null && clubName != null && placement != null) {
+            // Ensure all required fields are available before adding to the list
+            if (name != null && age != null && email != null && phone != null &&
+                    teamNumber != null && clubName != null && placement != null) {
+
                 Player player = new Player();
-                player.setId(generateCustomId(name, teamNumber)); // Set custom ID
+                player.setId(generateCustomId(name, teamNumber));
                 player.setName(name);
+                player.setAge(age);
+                player.setEmail(email);
+                player.setPhone(phone);
                 player.setTeamNumber(teamNumber);
                 player.setClubName(clubName);
                 player.setPlacement(placement);
+
                 players.add(player);
             }
         }
@@ -57,8 +69,54 @@ public class PlayerService {
     }
 
     public void savePlayers(List<Player> players) {
-        playerRepository.deleteAll(); // Clear the database before saving new players
-        playerRepository.saveAll(players); // Save the players to MongoDB
+        playerRepository.deleteAll();
+        playerRepository.saveAll(players);
+    }
+
+    public Player createPlayer(Player player) {
+        return playerRepository.save(player);
+    }
+
+    public Player updatePlayer(String id, Player updatedPlayer) {
+        Optional<Player> optionalPlayer = playerRepository.findById(id);
+        if (optionalPlayer.isEmpty()) {
+            throw new RuntimeException("Player not found with id: " + id);
+        }
+        Player player = optionalPlayer.get();
+        player.setName(updatedPlayer.getName());
+        player.setAge(updatedPlayer.getAge());
+        player.setEmail(updatedPlayer.getEmail());
+        player.setPhone(updatedPlayer.getPhone());
+        player.setTeamNumber(updatedPlayer.getTeamNumber());
+        player.setClubName(updatedPlayer.getClubName());
+        player.setPlacement(updatedPlayer.getPlacement());
+
+        return playerRepository.save(player);
+    }
+
+    public void deletePlayer(String id) {
+        playerRepository.deleteById(id);
+    }
+
+    public Player getPlayerById(String id) {
+        return playerRepository.findById(id).orElse(null);
+    }
+
+    public List<Player> getAllPlayers() {
+        return playerRepository.findAll();
+    }
+
+    public List<Player> getPlayersByTeamNumber(int teamNumber) {
+        return playerRepository.findByTeamNumber(teamNumber);
+    }
+
+    public List<Integer> getAllTeamNumbers() {
+        return playerRepository.findAll()
+                .stream()
+                .map(Player::getTeamNumber)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private String generateCustomId(String name, Integer teamNumber) {
@@ -74,11 +132,11 @@ public class PlayerService {
 
     private String getCellValue(Cell cell, String fieldName, List<String> errors, int rowNum) {
         try {
-            if (cell == null || cell.getCellType() != CellType.STRING) {
-                errors.add("Row " + (rowNum + 1) + ": Missing or invalid value for " + fieldName);
+            if (cell == null || cell.getCellType() == CellType.BLANK) {
+                errors.add("Row " + (rowNum + 1) + ": Missing value for " + fieldName);
                 return null;
             }
-            return cell.getStringCellValue();
+            return cell.getCellType() == CellType.STRING ? cell.getStringCellValue() : String.valueOf(cell.getNumericCellValue());
         } catch (Exception e) {
             errors.add("Row " + (rowNum + 1) + ": Error reading " + fieldName + ": " + e.getMessage());
             return null;
@@ -87,32 +145,21 @@ public class PlayerService {
 
     private Integer getNumericCellValue(Cell cell, String fieldName, List<String> errors, int rowNum) {
         try {
-            if (cell == null || cell.getCellType() != CellType.NUMERIC) {
-                errors.add("Row " + (rowNum + 1) + ": Missing or invalid value for " + fieldName);
+            if (cell == null || cell.getCellType() == CellType.BLANK) {
+                errors.add("Row " + (rowNum + 1) + ": Missing value for " + fieldName);
                 return null;
             }
-            return (int) cell.getNumericCellValue();
+            if (cell.getCellType() == CellType.NUMERIC) {
+                return (int) cell.getNumericCellValue();
+            } else if (cell.getCellType() == CellType.STRING) {
+                return Integer.parseInt(cell.getStringCellValue().trim());
+            } else {
+                errors.add("Row " + (rowNum + 1) + ": Invalid value for " + fieldName);
+                return null;
+            }
         } catch (Exception e) {
             errors.add("Row " + (rowNum + 1) + ": Error reading " + fieldName + ": " + e.getMessage());
             return null;
         }
-    }
-
-    public List<Player> getAllPlayers() {
-        return playerRepository.findAll();
-    }
-
-    public List<Player> getPlayersByTeamNumber(int teamNumber) {
-        return playerRepository.findByTeamNumber(teamNumber);
-    }
-
-    public List<Integer> getAllTeamNumbers() {
-        // Fetch all players and extract unique team numbers
-        return playerRepository.findAll()
-                .stream()
-                .map(Player::getTeamNumber)
-                .filter(Objects::nonNull) // Ignore null team numbers
-                .distinct()
-                .collect(Collectors.toList());
     }
 }

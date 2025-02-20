@@ -4,6 +4,13 @@ import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import * as XLSX from "xlsx";
 
+const DEFAULT_VALUES = {
+    name: "Unknown Player",
+    teamNumber: "N/A",
+    clubName: "Unknown Club",
+    placement: "N/A",
+};
+
 const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
     const [isLoading, setIsLoading] = useState(false);
 
@@ -38,12 +45,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
 
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(sheet, {
-                    header: ["name", "teamNumber", "clubName", "placement"], // ✅ Define expected headers
-                    defval: null, // ✅ Prevent undefined values
-                });
-
-                console.log("🔍 Extracted JSON Data from Excel:", jsonData);
+                let jsonData = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
                 if (jsonData.length === 0) {
                     onStatusUpdate("Error: No data found in the file.");
@@ -51,7 +53,15 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                     return;
                 }
 
-                await uploadPlayersToBackend(jsonData, file);  // Pass the file itself for multipart upload
+                jsonData = jsonData.map((player) => ({
+                    name: player.name || DEFAULT_VALUES.name,
+                    teamNumber: player.teamNumber || DEFAULT_VALUES.teamNumber,
+                    clubName: player.clubName || DEFAULT_VALUES.clubName,
+                    placement: player.placement || DEFAULT_VALUES.placement,
+                }));
+
+                console.log("🔍 Processed JSON Data:", jsonData);
+                await uploadPlayersToBackend(jsonData, file);
             };
 
             reader.readAsArrayBuffer(file);
@@ -63,10 +73,9 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
         }
     };
 
-    // ✅ Upload processed players to backend as a file
     const uploadPlayersToBackend = async (players, file) => {
         const formData = new FormData();
-        formData.append("file", file); // Append file to FormData
+        formData.append("file", file);
 
         try {
             const response = await axios.post("http://localhost:8080/api/players/import", formData, {
@@ -75,7 +84,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
 
             if (response.status === 200) {
                 onStatusUpdate(`✅ Players uploaded successfully! (${players.length} players added)`);
-                onFileSelect(players); // Notify PlayerList of new players
+                onFileSelect(players);
             } else {
                 onStatusUpdate("⚠️ Error uploading players. Please try again.");
             }

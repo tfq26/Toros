@@ -3,30 +3,41 @@ import FileUploader from "./FileUploader";
 
 const PlayerListSettings = ({
                                 isLoading,
-                                onFileSelect,      // Renamed prop from onFileUpload to onFileSelect
-                                onStatusUpdate,    // Added missing prop for status updates
+                                onFileSelect,
+                                onStatusUpdate,
                                 clubs,
                                 levels,
                                 selectedClub,
                                 selectedLevel,
-                                onFilterChange
+                                onFilterChange,
+                                onAddPlayer // New prop to handle adding a player
                             }) => {
     return (
-        <aside className="w-fit bg-red-900 p-4 rounded shadow-md h-fit border-gray-300">
-            <h3 className="text-xl text-orange-200 font-bold mb-4 text-center">Player List Settings</h3>
+        <aside className="w-full bg-red-600 dark:bg-gray-900 p-4 rounded shadow-md h-fit border-gray-300">
+            <h3 className="text-xl text-orange-200 font-bold mb-4 text-center">
+                Player List Settings
+            </h3>
 
-            {/* 📌 File Import Button */}
-            <div className="mb-6 align-middle">
+            {/* File Import Button */}
+            <div className="flex items-center gap-4">
                 <FileUploader
                     isLoading={isLoading}
                     onFileSelect={onFileSelect}
                     onStatusUpdate={onStatusUpdate}
                 />
+                <button
+                    className="cursor-pointer bg-amber-300 text-amber-800 px-4 py-2 rounded hover:bg-amber-600 hover:text-white transition duration-200"
+                    onClick={onAddPlayer}
+                >
+                    Add Player
+                </button>
             </div>
 
-            {/* 📌 Club Filter */}
-            <div className="mb-4">
-                <label className="block text-orange-300 font-semibold mb-2">Filter by Club:</label>
+            {/* Club Filter */}
+            <div className="my-4">
+                <label className="block text-orange-300 font-semibold mb-2">
+                    Filter by Club:
+                </label>
                 <select
                     className="w-full p-2 rounded bg-white text-gray-800"
                     value={selectedClub}
@@ -41,9 +52,11 @@ const PlayerListSettings = ({
                 </select>
             </div>
 
-            {/* 📌 Level Filter */}
+            {/* Level Filter */}
             <div>
-                <label className="block text-orange-300 font-semibold mb-2">Filter by Level:</label>
+                <label className="block text-orange-300 font-semibold mb-2">
+                    Filter by Level:
+                </label>
                 <select
                     className="w-full p-2 rounded bg-white text-gray-800"
                     value={selectedLevel}
