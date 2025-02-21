@@ -28,30 +28,52 @@ const TournamentSetup = ({ onSetupComplete }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchPlayersAndGenerateTeams(setTeams, setError).then((r) => r);
+        console.log("Fetching players and generating teams...");
+        fetchPlayersAndGenerateTeams(setTeams, setError)
+            .then(() => console.log("✅ Players and teams fetched successfully"))
+            .catch((err) => console.error("❌ Error fetching players:", err));
     }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        console.log("🔍 Submitting tournament with configuration:", tournamentConfig);
+        console.log("📊 Total teams available:", teams.length);
+
         const { tournamentName, numCourts, gamesPerTeam, startTime, matchDuration, breakTime } = tournamentConfig;
+
+        // Check for empty required fields
         if (!tournamentName || !numCourts || !gamesPerTeam || !startTime || !matchDuration || !breakTime) {
             setError("Please fill in all fields.");
+            console.error("❌ Missing required fields:", { tournamentName, numCourts, gamesPerTeam, startTime, matchDuration, breakTime });
             return;
         }
 
+        // Ensure teams exist before submission
         if (teams.length === 0) {
             setError("No valid teams available. Please ensure players are correctly paired.");
+            console.error("❌ No teams generated.");
             return;
         }
 
         const formData = { ...tournamentConfig, teams };
 
         try {
-            await handleTournamentSetup(formData, setError, () => {
-                onSetupComplete(formData);
-            }, navigate);
+            console.log("🚀 Sending tournament data to backend:", formData);
+            await handleTournamentSetup(
+                formData,
+                (errorMsg) => {
+                    setError(errorMsg);
+                    console.error("❌ Tournament setup failed:", errorMsg);
+                },
+                () => {
+                    console.log("✅ Tournament setup successful!");
+                    onSetupComplete(formData);
+                },
+                navigate
+            );
         } catch (err) {
+            console.error("❌ Error during tournament setup:", err);
             navigate("/error", {
                 state: {
                     city: "Moscow",
@@ -67,6 +89,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
         const now = new Date();
         const formattedTime = now.toTimeString().slice(0, 5);
         setTournamentConfig((prevConfig) => ({ ...prevConfig, startTime: formattedTime }));
+        console.log("🕒 Start time set to:", formattedTime);
     };
 
     const stats = calculateStats(teams.flat());
@@ -108,6 +131,47 @@ const TournamentSetup = ({ onSetupComplete }) => {
                             placeholder="Enter games per team"
                         />
 
+                        {/* Start Time Input + Auto-Fill Button */}
+                        <div className="flex items-center gap-4">
+                            <div className="flex flex-col w-full">
+                                <InputField
+                                    label="Start Time"
+                                    type="time"
+                                    value={tournamentConfig.startTime}
+                                    onChange={(e) =>
+                                        setTournamentConfig({ ...tournamentConfig, startTime: e.target.value })
+                                    }
+                                />
+                            </div>
+                            <button
+                                type="button"
+                                className="bg-emerald-500 text-gray-100 py-2 px-4 rounded-lg hover:bg-emerald-600 transition"
+                                onClick={handleSetCurrentTime}
+                            >
+                                Use Current Time
+                            </button>
+                        </div>
+
+                        {/* Checkbox Fields */}
+                        <div className="flex gap-6 items-center">
+                            <CheckboxField
+                                label="Use Existing Player List"
+                                checked={tournamentConfig.useExistingPlayers}
+                                onChange={(e) =>
+                                    setTournamentConfig({ ...tournamentConfig, useExistingPlayers: e.target.checked })
+                                }
+                                className="text-gray-700 dark:text-white"
+                            />
+                            <CheckboxField
+                                label="Divide Tournament into Tiers"
+                                checked={tournamentConfig.tiered}
+                                onChange={(e) =>
+                                    setTournamentConfig({ ...tournamentConfig, tiered: e.target.checked })
+                                }
+                                className="text-gray-700 dark:text-white"
+                            />
+                        </div>
+
                         <SliderField
                             label="Match Duration"
                             value={tournamentConfig.matchDuration}
@@ -141,7 +205,10 @@ const TournamentSetup = ({ onSetupComplete }) => {
                 {/* Toggle Button to Open Sliding Window */}
                 <div className="w-[0%] flex items-center justify-center">
                     <button
-                        onClick={() => setIsWindowOpen(!isWindowOpen)}
+                        onClick={() => {
+                            setIsWindowOpen(!isWindowOpen);
+                            console.log(isWindowOpen ? "Closing window" : "Opening window");
+                        }}
                         className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition z-50"
                     >
                         {isWindowOpen ? "❌ Close" : "←"}
@@ -152,7 +219,10 @@ const TournamentSetup = ({ onSetupComplete }) => {
             {/* Sliding Window Component */}
             <SlidingWindow
                 isOpen={isWindowOpen}
-                onClose={() => setIsWindowOpen(false)}
+                onClose={() => {
+                    setIsWindowOpen(false);
+                    console.log("Sliding window closed");
+                }}
                 sections={[
                     { id: "teams", label: "Teams", content: <TeamsList teams={teams} /> },
                     { id: "stats", label: "Stats", content: <PlayerStats stats={stats} /> },

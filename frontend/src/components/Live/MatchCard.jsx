@@ -28,14 +28,14 @@ const MatchCard = ({ match, updateMatch }) => {
     };
 
     return (
-        <div className="border p-4 rounded shadow bg-emerald-500 space-y-2">
+        <div className="p-3 rounded shadow bg-emerald-800 space-y-2">
             {/* Match Header */}
             <div className="flex justify-between items-center">
                 <p className="text-lg font-bold">Match {match.id || "N/A"}</p>
                 <select
                     value={match.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    className="border rounded px-2 py-1 bg-white text-black"
+                    className="border rounded px-2 py-1 bg-none text-black"
                 >
                     <option value="Scheduled">Scheduled</option>
                     <option value="In Progress">In Progress</option>
