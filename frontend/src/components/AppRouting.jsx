@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Home from "./Home.jsx";
-import PlayerList from "./PlayerList/PlayerList.jsx";
+import PlayerList from "./Players/PlayerList.jsx";
 import TournamentSetup from "./Setup/TournamentSetup.jsx";
 import TournamentBracket from "./Standings/TeamStandings.jsx";
 import LiveTournament from "./Live/LiveTournament.jsx";

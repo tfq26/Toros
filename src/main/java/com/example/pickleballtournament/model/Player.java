@@ -21,4 +21,5 @@ public class Player {
     private Integer teamNumber;
     private String clubName;
     private Integer placement;
+    private boolean registered;
 }

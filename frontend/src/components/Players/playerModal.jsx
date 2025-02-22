@@ -10,6 +10,7 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
         teamNumber: "",
         clubName: "",
         placement: "",
+        registered: false, // ✅ Added registered field
     });
     const [isDirty, setIsDirty] = useState(false);
     const [showCheckmark, setShowCheckmark] = useState(false);
@@ -24,6 +25,7 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
                 teamNumber: player.teamNumber || "",
                 clubName: player.clubName || "",
                 placement: player.placement || "",
+                registered: player.registered || false, // ✅ Load registered status
             });
         } else {
             setFormData({
@@ -34,13 +36,18 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
                 teamNumber: "",
                 clubName: "",
                 placement: "",
+                registered: false, // ✅ Default to false for new players
             });
         }
         setIsDirty(false);
     }, [player]);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value, type, checked } = e.target;
+        setFormData({
+            ...formData,
+            [name]: type === "checkbox" ? checked : value, // ✅ Handles checkbox properly
+        });
         setIsDirty(true);
     };
 
@@ -90,9 +97,9 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-transparent backdrop-blur-lg flex justify-center items-center z-50 transition">
             <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full animate__animated animate__fadeIn relative">
-                {/* Close Button (X in the top right corner) */}
+                {/* Close Button */}
                 <button
                     onClick={handleExit}
                     className="absolute top-3 right-3 text-gray-600 hover:text-red-600 text-xl font-bold"
@@ -185,6 +192,18 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
                             className="w-full p-2 border rounded dark:text-gray-800"
                         />
                     </div>
+
+                    {/* ✅ Registered Checkbox */}
+                    <div className="flex items-center">
+                        <input
+                            type="checkbox"
+                            name="registered"
+                            checked={formData.registered}
+                            onChange={handleChange}
+                            className="h-5 w-5 text-emerald-600 focus:ring-0"
+                        />
+                        <label className="ml-2 text-gray-700 font-semibold">Registered</label>
+                    </div>
                 </div>
 
                 {/* Buttons with Checkmark */}
@@ -193,7 +212,6 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
                         Save Changes
                     </button>
 
-                    {/* Checkmark appears after saving */}
                     {showCheckmark && <span className="text-green-500 text-xl">✅</span>}
 
                     {player && (

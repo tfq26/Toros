@@ -39,7 +39,7 @@ class PlayerTable extends React.Component {
                                         <td className="border border-gray-300 px-8 py-4 text-center dark:border-green-900">
                                             <button
                                                 onClick={() => onEdit(player)}
-                                                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800"
+                                                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-blue-600 dark:bg-yellow-600 dark:hover:bg-blue-800"
                                             >
                                                 Edit
                                             </button>

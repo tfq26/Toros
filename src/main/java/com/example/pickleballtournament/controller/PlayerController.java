@@ -97,6 +97,20 @@ public class PlayerController {
     }
 
     /**
+     * Get a player by registration status.
+     */
+    @GetMapping("/registered/{status}")
+    public ResponseEntity<List<Player>> getPlayerByRegistered(@PathVariable boolean status) {
+        List<Player> players = playerService.getPlayerByRegistered(status);
+        if (players == null || players.isEmpty()) {
+            logger.warn("No players found with registration status: {}", status);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(players);
+    }
+
+
+    /**
      * Create a new player.
      */
     @PostMapping

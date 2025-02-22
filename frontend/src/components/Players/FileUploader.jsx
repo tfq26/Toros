@@ -58,6 +58,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                     teamNumber: player.teamNumber || DEFAULT_VALUES.teamNumber,
                     clubName: player.clubName || DEFAULT_VALUES.clubName,
                     placement: player.placement || DEFAULT_VALUES.placement,
+                    registered: player.registered !== undefined ? player.registered : false, // Ensure registered is included
                 }));
 
                 console.log("🔍 Processed JSON Data:", jsonData);
@@ -95,7 +96,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
     };
 
     return (
-        <div className="mb-6">
+        <div>
             <label className="cursor-pointer bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-600 hover:text-white transition duration-200">
                 Import Players
                 <input type="file" accept=".xlsx, .xls" onChange={handleFileSelection} className="hidden" />

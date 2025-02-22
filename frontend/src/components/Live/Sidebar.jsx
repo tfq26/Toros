@@ -1,21 +1,38 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 
 const Sidebar = ({
                      matchStats,
                      endTournament,
-                     viewMode,
-                     setViewMode,
                      tournamentConfig,
+                     fetchMatches,
+                     sortOrder, // ✅ Receive sorting order
+                     setSortOrder, // ✅ Function to update sorting order
                  }) => {
     const [isLoading, setIsLoading] = useState(false);
 
-    /** ✅ Fetch Matches from API */
-    const fetchMatches = async () => {
+    /** ✅ Log tournamentConfig on render */
+    console.log("🎾 Received tournamentConfig:", tournamentConfig);
+
+    /** ✅ Effect to log updates in tournamentConfig */
+    useEffect(() => {
+        if (!tournamentConfig) {
+            console.warn("⚠️ tournamentConfig is NULL! Waiting for data...");
+        } else {
+            console.log("✅ Loaded tournamentConfig:", tournamentConfig);
+        }
+    }, [tournamentConfig]);
+
+    /** ✅ Refresh Matches */
+    const handleFetchMatches = async () => {
+        if (!fetchMatches) {
+            console.error("❌ fetchMatches function is missing!");
+            return;
+        }
+
         setIsLoading(true);
         try {
-            const response = await axios.get("http://localhost:8080/api/tournament/matches");
-            console.log("📡 Sidebar API Response:", response.data);
+            await fetchMatches(); // ✅ Correctly calling the function from `MatchTabs`
+            console.log("✅ Matches refreshed successfully.");
         } catch (err) {
             console.error("❌ Error fetching matches:", err);
             alert("Failed to fetch live matches.");
@@ -37,31 +54,33 @@ const Sidebar = ({
 
             {/* Match Statistics */}
             <h3 className="text-lg font-semibold mt-4">Match Statistics</h3>
-            <p><strong>Completed:</strong> {matchStats.complete}</p>
-            <p><strong>In Progress:</strong> {matchStats.inProgress}</p>
-            <p><strong>Not Started:</strong> {matchStats.notStarted}</p>
+            <p><strong>Completed:</strong> {matchStats?.complete ?? "N/A"}</p>
+            <p><strong>In Progress:</strong> {matchStats?.inProgress ?? "N/A"}</p>
+            <p><strong>Not Started:</strong> {matchStats?.notStarted ?? "N/A"}</p>
 
-            {/* Toggle View */}
+            {/* Sorting Button */}
             <button
-                onClick={() => setViewMode(viewMode === "tile" ? "table" : "tile")}
-                className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition mt-4"
+                onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition w-full mt-4"
             >
-                {viewMode === "tile" ? "Switch to Table View" : "Switch to Tile View"}
+                {sortOrder === "desc" ? "🔽 Sort Descending" : "🔼 Sort Ascending"}
             </button>
 
             {/* Refresh Matches */}
             <button
-                onClick={fetchMatches}
-                className="bg-blue-500 text-white px-3 py-2 rounded mt-2"
+                onClick={handleFetchMatches}
+                className={`bg-blue-500 text-white px-3 py-2 rounded mt-4 w-full ${
+                    isLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600 transition"
+                }`}
                 disabled={isLoading}
             >
-                {isLoading ? "Refreshing..." : "Refresh"}
+                {isLoading ? "Refreshing..." : "Refresh Matches"}
             </button>
 
             {/* End Tournament Button */}
             <button
                 onClick={endTournament}
-                className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition mt-2"
+                className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition mt-2 w-full"
             >
                 End Tournament
             </button>

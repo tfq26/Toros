@@ -13,27 +13,29 @@ public class Team {
     @Id
     private String id;
 
-    private String name; // ✅ Fixed field name
+    private String name;
     private Player player1;
     private Player player2;
     private int teamScore;
     private int wins;
     private int losses;
     private int matchesPlayed;
-    private String skillLevel; // e.g., "Beginner", "Intermediate", "Advanced"
+    private String skillLevel;
     private Integer placement;
+    private int totalPoints; // ✅ Tracks total points won by the team
 
     // ✅ Constructor with null safety checks
     public Team() {}
 
     public Team(String name, Player player1, Player player2) {
-        this.name = name; // ✅ Fixed field name
+        this.name = name;
         this.player1 = player1;
         this.player2 = player2;
         this.teamScore = 0;
         this.wins = 0;
         this.losses = 0;
         this.matchesPlayed = 0;
+        this.totalPoints = 0; // ✅ Initialize total points
         this.skillLevel = calculateSkillLevel(
                 player1 != null ? player1.getPlacement() : 0,
                 player2 != null ? player2.getPlacement() : 0
@@ -96,6 +98,14 @@ public class Team {
         );
     }
 
+    /**
+     * ✅ Add points to team's totalPoints.
+     * @param pointsScored The number of points the team won in a match.
+     */
+    public void addPoints(int pointsScored) {
+        this.totalPoints += pointsScored;
+    }
+
     @Override
     public String toString() {
         return "Team{" +
@@ -107,6 +117,7 @@ public class Team {
                 ", wins=" + wins +
                 ", losses=" + losses +
                 ", matchesPlayed=" + matchesPlayed +
+                ", totalPoints=" + totalPoints + // ✅ Added toString for total points
                 ", skillLevel='" + skillLevel + '\'' +
                 '}';
     }

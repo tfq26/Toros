@@ -110,6 +110,10 @@ public class PlayerService {
         return playerRepository.findByTeamNumber(teamNumber);
     }
 
+    public List<Player> getPlayerByRegistered(boolean registered) {
+        return playerRepository.findByRegistered(registered);
+    }
+
     public List<Integer> getAllTeamNumbers() {
         return playerRepository.findAll()
                 .stream()

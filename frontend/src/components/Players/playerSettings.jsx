@@ -20,13 +20,15 @@ const PlayerListSettings = ({
 
             {/* File Import Button */}
             <div className="flex items-center gap-4">
-                <FileUploader
-                    isLoading={isLoading}
-                    onFileSelect={onFileSelect}
-                    onStatusUpdate={onStatusUpdate}
-                />
+                <div>
+                    <FileUploader
+                        isLoading={isLoading}
+                        onFileSelect={onFileSelect}
+                        onStatusUpdate={onStatusUpdate}
+                    />
+                </div>
                 <button
-                    className="cursor-pointer bg-amber-300 text-amber-800 px-4 py-2 rounded hover:bg-amber-600 hover:text-white transition duration-200"
+                    className="cursor-pointer bg-amber-300 text-amber-800 px-4 py-2 rounded hover:bg-amber-600 hover:text-white transition duration-200 h-10 flex items-center"
                     onClick={onAddPlayer}
                 >
                     Add Player

@@ -8,6 +8,7 @@ import LoadingModal from "../LoadingModal";
 import PlayerModal from "./PlayerModal";
 import SlidingWindow from "../SlidingWindow";
 import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/playerUtils.js";
+import {PiArrowSquareLeftBold} from "react-icons/pi";
 
 const PlayerList = () => {
     const [players, setPlayers] = useState([]);
@@ -104,7 +105,7 @@ const PlayerList = () => {
                         )}
 
                         <PlayerSearch onSearchChange={setSearchQuery} />
-                        <div className="min-w-full lg:w-[85%] h-fit bg-white dark:bg-gray-500 p-4 rounded-lg shadow-md border-gray-500">
+                        <div className="min-w-full lg:w-[85%] h-fit bg-white dark:bg-gray-500 rounded-lg shadow-md ">
                             <PlayerTable
                                 players={filteredPlayers}
                                 error={error}
@@ -122,9 +123,9 @@ const PlayerList = () => {
             {/* Floating Button for Sliding Window (Ensures it stays above everything) */}
             <button
                 onClick={() => setIsSlidingWindowOpen(true)}
-                className="fixed right-4 top-1/2 transform -translate-y-1/2 text-center bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition z-50"
+                className="fixed right-[1%] top-1/2 transform -translate-y-1/2 text-center bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition z-50"
             >
-                ←
+                <PiArrowSquareLeftBold className="text-3xl" />
             </button>
 
             {/* Player Modal */}

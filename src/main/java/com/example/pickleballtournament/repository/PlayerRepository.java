@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface PlayerRepository extends MongoRepository<Player, String> {
     List<Player> findByTeamNumber(int teamNumber);
+    List<Player> findByRegistered(boolean registered);
 }
