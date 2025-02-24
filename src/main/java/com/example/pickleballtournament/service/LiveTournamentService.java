@@ -76,6 +76,23 @@ public class LiveTournamentService {
         return matches;
     }
 
+    /** ✅ Fetch a Tournament by ID */
+    public Optional<Tournament> getTournamentById(String tournamentId) {
+        return tournamentRepository.findById(tournamentId);
+    }
+
+    /** ✅ Fetch Matches by Tournament ID */
+    public List<Match> getMatchesByTournamentId(String tournamentId) {
+        return matchRepository.findAll().stream()
+                .filter(match -> match.getTournament() != null && tournamentId.equals(match.getTournament().getId()))
+                .collect(Collectors.toList());
+    }
+
+    /** ✅ Fetch a List of All Active Tournaments */
+    public List<Tournament> getAllActiveTournaments() {
+        return tournamentRepository.findByIsActiveTrue(); // ✅ Fetch all active tournaments
+    }
+
     /** 🎯 Update Match */
     @Transactional
     public Match updateMatch(String matchId, UpdateMatchRequest request) {

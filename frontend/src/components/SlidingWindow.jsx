@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import {PiArrowSquareRightBold} from "react-icons/pi";
 
 const SlidingWindow = ({ isOpen, onClose, sections }) => {
     const [activeSection, setActiveSection] = useState(sections[0]?.id || "");
@@ -14,9 +15,9 @@ const SlidingWindow = ({ isOpen, onClose, sections }) => {
                 {isOpen && (
                     <button
                         onClick={onClose}
-                        className="absolute left-[-50px] top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-4 py-2 rounded-l-md hover:bg-blue-600 transition"
+                        className="absolute left-[-60px] top-1/2 transform -translate-y-1/2 bg-red-500 text-white px-4 py-2 rounded-l-md hover:bg-red-600 transition"
                     >
-                        ❌
+                        <PiArrowSquareRightBold className="text-3xl"/>
                     </button>
                 )}
 
@@ -27,7 +28,7 @@ const SlidingWindow = ({ isOpen, onClose, sections }) => {
                             key={section.id}
                             className={`flex-1 p-2 text-center text-lg font-semibold ${
                                 activeSection === section.id
-                                    ? "bg-blue-500 text-white"
+                                    ? "bg-red-500 text-white"
                                     : "bg-gray-100 dark:bg-gray-600 dark:text-gray-300"
                             }`}
                             onClick={() => setActiveSection(section.id)}

@@ -16,7 +16,7 @@ const PlayerSearch = ({ onSearchChange }) => {
                 value={query}
                 onChange={handleSearchChange}
                 placeholder="Search players by name..."
-                className="w-full px-4 py-2 border bg-gray-400 dark:text-gray-950 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border bg-gray-50 dark:bg-gray-400 dark:text-gray-950 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
         </div>
     );

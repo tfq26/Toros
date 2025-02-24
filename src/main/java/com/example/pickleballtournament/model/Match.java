@@ -15,6 +15,7 @@ public class Match {
     @Id
     private String id;
     private String tournamentName;
+    private Tournament tournament;
     private int courtNumber;
     private Team team1;
     private Team team2;

@@ -16,4 +16,7 @@ public interface MatchRepository extends MongoRepository<Match, String> {
 
     // Alternative method using Spring Data naming convention
     List<Match> findByTeam1_IdOrTeam2_Id(String teamId1, String teamId2);
+
+    //Find matches by tournament ID
+    List<Match> findByTournamentId(String tournamentId);
 }

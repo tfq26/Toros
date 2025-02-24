@@ -50,7 +50,7 @@ const MatchTabs = ({ sortOrder, refreshMatches, updateMatch }) => {
                         key={tab}
                         onClick={() => setSelectedTab(tab)}
                         className={`px-4 py-2 font-semibold ${
-                            selectedTab === tab ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-300"
+                            selectedTab === tab ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-700 dark:text-gray-300"
                         }`}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)} Matches
@@ -63,13 +63,13 @@ const MatchTabs = ({ sortOrder, refreshMatches, updateMatch }) => {
                 {/*<span className="text-gray-300">View Mode:</span>*/}
                 <div className="flex gap-2">
                     <button
-                        className={`px-3 py-1 rounded ${viewMode === "table" ? "bg-blue-500 text-white" : "bg-gray-700"}`}
+                        className={`px-3 py-1 rounded ${viewMode === "table" ? "bg-green-500 text-white" : "bg-green-300 dark:bg-gray-700"}`}
                         onClick={() => setViewMode("table")}
                     >
                         Table
                     </button>
                     <button
-                        className={`px-3 py-1 rounded ${viewMode === "card" ? "bg-blue-500 text-white" : "bg-gray-700"}`}
+                        className={`px-3 py-1 rounded ${viewMode === "card" ? "bg-green-500 text-white" : "bg-green-300 dark:bg-gray-700"}`}
                         onClick={() => setViewMode("card")}
                     >
                         Card

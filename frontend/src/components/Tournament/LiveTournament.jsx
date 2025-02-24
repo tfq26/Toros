@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate for navigation
 import axios from "axios";
 import MatchTabs from "./MatchTabs";
 import Sidebar from "./Sidebar.jsx";
@@ -10,6 +11,7 @@ const LiveTournament = ({ tournamentConfig }) => {
     const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sortOrder, setSortOrder] = useState("desc");
+    const navigate = useNavigate(); // ✅ Initialize navigation
 
     useEffect(() => {
         fetchMatches();
@@ -56,7 +58,16 @@ const LiveTournament = ({ tournamentConfig }) => {
 
     return (
         <div className="w-auto h-screen flex flex-col md:flex-row pr-6 relative">
-            <div className="flex-grow flex flex-col p-6 overflow-auto mr-24">
+            <div className="flex-grow flex flex-col overflow-auto pl-6 py-6 pr-14">
+                {/* ✅ Back Button */}
+                <button
+                    onClick={() => navigate("/tournament/list")}
+                    className="mb-4 flex items-center gap-2 text-red-600 hover:text-red-800 transition"
+                >
+                    <PiArrowSquareLeftBold className="text-2xl" />
+                    <span className="text-lg font-semibold">Back to Tournament List</span>
+                </button>
+
                 <h1 className="text-2xl font-bold">Live Tournament Matches</h1>
 
                 {/* ✅ Display Loading Indicator */}
@@ -76,7 +87,7 @@ const LiveTournament = ({ tournamentConfig }) => {
             {/* Floating Sidebar Toggle Button */}
             <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="fixed right-7 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition z-50"
+                className="fixed right-2 top-1/2 transform -translate-y-1/2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition z-50"
             >
                 {isSidebarOpen ? "❌ Close" : <PiArrowSquareLeftBold className="text-3xl" />}
             </button>
@@ -94,6 +105,7 @@ const LiveTournament = ({ tournamentConfig }) => {
                                 sortOrder={sortOrder}
                                 setSortOrder={setSortOrder}
                                 fetchMatches={fetchMatches}
+                                tournamentConfig={tournamentConfig}
                             />
                         ),
                     },

@@ -34,35 +34,29 @@ public class TournamentSetupService {
     }
 
     /**
-     * Setup the Tournament:
-     * - Clears previous matches, teams, and tournaments.
+     * ✅ Setup the Tournament without deleting previous data:
      * - Generates new teams and matches.
-     * - Saves matches separately and then creates a Tournament document referencing those matches.
+     * - Assigns the Tournament object to each match.
+     * - Saves the tournament with references to new teams and matches.
      */
     @Transactional
     public Tournament setupTournament(String tournamentName, int numCourts, int gamesPerTeam, boolean useExistingPlayers,
                                       boolean tiered, LocalTime startTime, int matchDuration) {
         log.info("Setting up new tournament: {}", tournamentName);
 
-        // Clear previous data
-        matchRepository.deleteAll();
-        teamRepository.deleteAll();
-        tournamentRepository.deleteAll();
-        log.info("Cleared all existing tournaments, matches, and teams.");
+        // ✅ Check if a tournament with the same name already exists
+        Optional<Tournament> existingTournament = tournamentRepository.findByName(tournamentName);
+        if (existingTournament.isPresent()) {
+            throw new IllegalStateException("A tournament with this name already exists.");
+        }
 
-        // Generate teams
+        // ✅ Generate teams (without clearing previous teams)
         List<Team> teams = setupAndGenerateTeams();
         if (teams.isEmpty()) {
             throw new IllegalStateException("No teams available for the tournament.");
         }
 
-        // Generate matches
-        List<Match> matches = generateMatches(teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
-        // Explicitly save matches to the MongoDB collection
-        matchRepository.saveAll(matches);
-        log.info("Saved {} matches to the match collection.", matches.size());
-
-        // Create and Save Tournament with references to teams and matches
+        // ✅ Create and Save Tournament First
         Tournament tournament = new Tournament();
         tournament.setName(tournamentName);
         tournament.setDateHeld(LocalDate.now());
@@ -71,44 +65,50 @@ public class TournamentSetupService {
         tournament.setGamesPerTeam(gamesPerTeam);
         tournament.setTiered(tiered);
         tournament.setTeams(teams);
-        tournament.setMatches(matches);
-        // Optionally, you can set an initial status for the tournament if needed
         tournament.setStatus("LIVE");
 
+        tournament = tournamentRepository.save(tournament);
+        log.info("✅ Tournament '{}' saved successfully with ID: {}", tournament.getName(), tournament.getId());
+
+        // ✅ Generate matches and assign the Tournament object
+        List<Match> matches = generateMatches(tournament, teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
+        matchRepository.saveAll(matches);
+        log.info("✅ Saved {} matches for Tournament '{}'", matches.size(), tournament.getName());
+
+        // ✅ Update Tournament with matches
+        tournament.setMatches(matches);
         tournamentRepository.save(tournament);
-        log.info("Tournament '{}' saved successfully!", tournament.getName());
 
         return tournament;
     }
 
-    /** Generate Teams */
+    /** ✅ Generate Teams without deleting previous ones */
     @Transactional
     public List<Team> setupAndGenerateTeams() {
         log.info("Generating teams...");
-        teamRepository.deleteAll();
 
+        // ✅ Generate teams while preserving existing ones
         List<Team> teams = teamService.generateTeams();
 
-        // ✅ Ensure team name is correctly set
         teams.forEach(team -> {
             if (team.getName() == null || team.getName().isEmpty()) {
                 String player1Name = team.getPlayer1() != null ? team.getPlayer1().getName() : "Unknown";
                 String player2Name = team.getPlayer2() != null ? team.getPlayer2().getName() : "Unknown";
-                team.setName(player1Name + " & " + player2Name); // 🏆 Set team name
+                team.setName(player1Name + " & " + player2Name);
             }
         });
 
         teamRepository.saveAll(teams);
-        log.info("Successfully saved {} teams.", teams.size());
+        log.info("✅ Successfully saved {} new teams.", teams.size());
 
         return teams;
     }
 
-
-    /** Generate Matches */
-    private List<Match> generateMatches(List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered,
+    /** ✅ Generate Matches and Assign the Tournament Object */
+    private List<Match> generateMatches(Tournament tournament, List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered,
                                         LocalTime startTime, int matchDuration) {
-        log.info("Generating matches for {} teams with {} courts.", teams.size(), numCourts);
+        log.info("Generating matches for Tournament '{}' (ID: {}) | {} teams with {} courts.",
+                tournament.getName(), tournament.getId(), teams.size(), numCourts);
 
         if (teams.size() < 2) {
             throw new IllegalStateException("Not enough teams to generate matches.");
@@ -138,6 +138,7 @@ public class TournamentSetupService {
                     LocalTime matchEndTime = matchStartTime.plusMinutes(matchDuration);
 
                     Match match = new Match();
+                    match.setTournament(tournament); // ✅ Assign Tournament Object
                     match.setTeam1(team1);
                     match.setTeam2(team2);
                     match.setTeam1Score(0);
@@ -148,8 +149,8 @@ public class TournamentSetupService {
                     match.setEndTime(matchEndTime);
                     match.generateCustomId();
 
-                    // ✅ Log Team Names for Debugging
-                    log.info("Match Scheduled: {} vs {} on Court {}", team1.getName(), team2.getName(), assignedCourt);
+                    log.info("✅ Match Scheduled: {} vs {} on Court {} for Tournament '{}'",
+                            team1.getName(), team2.getName(), assignedCourt, tournament.getName());
 
                     matches.add(match);
                     courtTimes.put(assignedCourt, matchEndTime);
@@ -158,44 +159,7 @@ public class TournamentSetupService {
             }
         }
 
-        log.info("Generated {} matches.", matches.size());
+        log.info("✅ Generated {} matches for Tournament '{}'", matches.size(), tournament.getName());
         return matches;
-    }
-
-
-    /** Create Knockout Matches */
-    @Transactional
-    public void createKnockoutMatches(List<Team> teams) {
-        if (teams.size() < 2) throw new IllegalArgumentException("Not enough teams for knockout.");
-
-        Queue<Match> queue = new LinkedList<>();
-        for (int i = 0; i < teams.size(); i += 2) {
-            Match match = new Match();
-            match.setTeam1(teams.get(i));
-            match.setTeam2(i + 1 < teams.size() ? teams.get(i + 1) : null);
-            match.setStatus("Scheduled");
-            matchRepository.save(match);
-            queue.add(match);
-        }
-
-        while (queue.size() > 1) {
-            List<Match> currentRound = new ArrayList<>();
-            while (!queue.isEmpty()) {
-                Match match1 = queue.poll();
-                Match match2 = queue.poll();
-                Match nextMatch = new Match();
-                nextMatch.setStatus("Scheduled");
-
-                match1.setNextMatchId(nextMatch.getId());
-                if (match2 != null) {
-                    match2.setNextMatchId(nextMatch.getId());
-                }
-
-                currentRound.add(nextMatch);
-                matchRepository.save(match1);
-                if (match2 != null) matchRepository.save(match2);
-            }
-            queue.addAll(currentRound);
-        }
     }
 }

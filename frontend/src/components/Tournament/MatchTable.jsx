@@ -38,16 +38,16 @@ const MatchTable = ({ matches, refreshMatches, updateMatch }) => {
     };
 
     return (
-        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-lg">
             <div className="overflow-x-auto rounded-lg w-full flex-grow min-h-[600px]">
-                <table className="table-auto border-collapse border border-gray-300 w-full dark:border-gray-600">
+                <table className="table-auto w-full dark:border-gray-600">
                     <thead>
                     <tr className="bg-emerald-600 dark:bg-emerald-950 text-white uppercase text-lg font-semibold">
-                        <th className="border px-6 py-3 text-center dark:border-emerald-900">Team 1</th>
-                        <th className="border px-6 py-3 text-center dark:border-emerald-900">Team 2</th>
-                        <th className="border px-6 py-3 text-center dark:border-emerald-900">Score</th>
-                        <th className="border px-6 py-3 text-center dark:border-emerald-900">Status</th>
-                        <th className="border px-6 py-3 text-center dark:border-emerald-900">Actions</th>
+                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Team 1</th>
+                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Team 2</th>
+                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Score</th>
+                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Status</th>
+                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -63,22 +63,22 @@ const MatchTable = ({ matches, refreshMatches, updateMatch }) => {
                                 key={match.id}
                                 className="odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition dark:odd:bg-green-800 dark:even:bg-green-700 dark:hover:bg-green-600"
                             >
-                                <td className="border px-6 py-3 text-center dark:border-green-900 dark:text-gray-200">
+                                <td className="border px-6 py-3 text-center border-green-500 dark:border-green-900 dark:text-gray-200">
                                     {match.team1?.name ?? "N/A"}
                                 </td>
-                                <td className="border px-6 py-3 text-center dark:border-green-900 dark:text-gray-200">
+                                <td className="border px-6 py-3 text-center border-green-500 dark:border-green-900 dark:text-gray-200">
                                     {match.team2?.name ?? "N/A"}
                                 </td>
-                                <td className="border px-6 py-3 text-center font-semibold dark:border-green-900 dark:text-gray-200">
+                                <td className="border px-6 py-3 text-center font-semibold border-green-500 dark:border-green-900 dark:text-gray-200">
                                     {match.team1Score ?? "N/A"} - {match.team2Score ?? "N/A"}
                                 </td>
-                                <td className="border px-6 py-3 text-center dark:border-green-900">
+                                <td className="border px-6 py-3 text-center border-green-500 dark:border-green-900">
                                     {match.status}
                                 </td>
-                                <td className="border px-6 py-3 text-center dark:border-green-900">
+                                <td className="border px-6 py-3 text-center border-green-500 dark:border-green-900">
                                     <button
                                         onClick={() => openModal(match)}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                                        className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
                                         disabled={loading}
                                     >
                                         {loading ? "Updating..." : "Update Score"}

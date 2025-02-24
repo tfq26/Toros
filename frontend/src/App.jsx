@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import AppRoutes from "./components/AppRouting.jsx";
+import DevTools from "./components/DevTools/DevTools.jsx"; // ✅ DevTools integration
 import "./index.css";
 
 const App = () => {
@@ -12,40 +13,38 @@ const App = () => {
     const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
     const [isDarkMode, setIsDarkMode] = useState(window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-    // ✅ Sync state with localStorage when it changes
+    /** ✅ Sync state with localStorage */
     useEffect(() => {
         localStorage.setItem("tournamentSetupComplete", JSON.stringify(tournamentSetupComplete));
     }, [tournamentSetupComplete]);
 
-    // ✅ Detect system dark mode and update when it changes
+    /** ✅ Detect system dark mode */
     useEffect(() => {
         const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
         const handleChange = () => setIsDarkMode(mediaQuery.matches);
-        mediaQuery.addEventListener("change", handleChange);
 
+        mediaQuery.addEventListener("change", handleChange);
         return () => mediaQuery.removeEventListener("change", handleChange);
     }, []);
 
-    // ✅ Fetch active tournament from the backend on mount
+    /** ✅ Fetch Active Tournaments */
     useEffect(() => {
         const fetchTournamentStatus = async () => {
             try {
-                const response = await fetch("/api/tournament/active", {
+                const response = await fetch("/api/tournament/activeTournaments", {
                     headers: { Authorization: `Bearer ${authToken}` },
                 });
                 const data = await response.json();
 
-                if (response.ok && data.active) {
-                    console.log("Active tournament found:", data);
+                if (response.ok && data.length > 0) {
+                    console.log("✅ Active tournaments found:", data);
                     setTournamentSetupComplete(true);
-                    setTournamentConfig(data);
                 } else {
-                    console.log("No active tournament.");
+                    console.log("⚠️ No active tournaments.");
                     setTournamentSetupComplete(false);
                 }
             } catch (error) {
-                console.error("Error fetching active tournament:", error);
+                console.error("❌ Error fetching active tournaments:", error);
             }
         };
 
@@ -68,7 +67,7 @@ const App = () => {
                 />
 
                 {/* Main Content */}
-                <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-yellow-100 dark:bg-gray-800 dark:text-gray-200">
+                <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-orange-50 dark:bg-gray-800 dark:text-gray-200">
                     <AppRoutes
                         setAuthToken={setAuthToken}
                         authToken={authToken}
@@ -76,6 +75,11 @@ const App = () => {
                         tournamentConfig={tournamentConfig}
                         setTournamentConfig={setTournamentConfig}
                     />
+                </div>
+
+                {/* ✅ Development Tools (Floating Window) */}
+                <div className="fixed bottom-4 right-4">
+                    <DevTools />
                 </div>
             </div>
         </Router>

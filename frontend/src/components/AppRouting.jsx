@@ -1,13 +1,14 @@
 import { Routes, Route } from "react-router-dom";
 import Home from "./Home.jsx";
 import PlayerList from "./Players/PlayerList.jsx";
+import TournamentList from "./Tournament/TournamentList.jsx"; // ✅ New Tournament Selection View
 import TournamentSetup from "./Setup/TournamentSetup.jsx";
 import TournamentBracket from "./Standings/TeamStandings.jsx";
-import LiveTournament from "./Live/LiveTournament.jsx";
+import LiveTournament from "./Tournament/LiveTournament.jsx";
 import ErrorPage from "./Error.jsx";
 import LoginPage from "./Auth/Login.jsx";
 import SignupPage from "./Auth/Signup.jsx";
-import MatchTest from "./Live/MatchTest.jsx"; // ✅ Import Signup component
+import MatchTest from "./Tournament/MatchTest.jsx";
 
 const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tournamentConfig, setTournamentConfig }) => {
     return (
@@ -25,8 +26,11 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
             />
             <Route path="/bracket" element={<TournamentBracket />} />
             <Route path="/test-matches" element={<MatchTest />} />
+
+            {/* ✅ Tournament Selection Step */}
+            <Route path="/tournament/list" element={<TournamentList />} />
             <Route
-                path="/tournament/live"
+                path="/tournament/live/:tournamentId"
                 element={
                     <LiveTournament
                         setTournamentSetupComplete={setTournamentSetupComplete}
@@ -34,6 +38,7 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
                     />
                 }
             />
+
             {/* Authentication Routes */}
             <Route
                 path="/auth/login"
@@ -46,7 +51,9 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
                     />
                 }
             />
-            <Route path="/auth/signup" element={<SignupPage />} /> {/* ✅ Add signup route */}
+            <Route path="/auth/signup" element={<SignupPage />} />
+
+            {/* Error Handling */}
             <Route path="*" element={<ErrorPage statusCode={404} />} />
         </Routes>
     );

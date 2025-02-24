@@ -97,7 +97,7 @@ const PlayerList = () => {
                 )}
 
                 <div className="flex flex-col lg:flex-row gap-6 w-full">
-                    <div className="relative flex-1 min-w-0 pr-16"> {/* Added `pr-16` to shrink the table width */}
+                    <div className="relative flex-1 min-w-0 pr-12"> {/* Added `pr-16` to shrink the table width */}
                         {isLoading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
                                 <LoadingModal message="Loading Player List" description="Please wait..." />
@@ -123,7 +123,7 @@ const PlayerList = () => {
             {/* Floating Button for Sliding Window (Ensures it stays above everything) */}
             <button
                 onClick={() => setIsSlidingWindowOpen(true)}
-                className="fixed right-[1%] top-1/2 transform -translate-y-1/2 text-center bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition z-50"
+                className="fixed right-2 top-1/2 transform -translate-y-1/2 text-center bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition z-50"
             >
                 <PiArrowSquareLeftBold className="text-3xl" />
             </button>

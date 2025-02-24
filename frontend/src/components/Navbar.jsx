@@ -12,7 +12,7 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
 
     const handleLogout = () => {
         onLogout();
-        navigate("/auth/login"); // ✅ Updated to the correct login endpoint
+        navigate("/auth/login"); // ✅ Redirect to login page after logout
     };
 
     const links = [
@@ -33,11 +33,11 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
         { label: "Tournaments", path: "/tournament/setup", Icon: AiOutlineTrophy },
     ];
 
-    // Conditionally add Bracket and Live Tournament links after setup
+    // ✅ Conditionally add Bracket and Live Tournament links after setup
     if (tournamentSetupComplete) {
         links.push(
             { label: "Bracket", path: "/bracket", Icon: IoPodiumOutline },
-            { label: "Live Tournament", path: "/tournament/live", Icon: TbTournament }
+            { label: "Live Tournament", path: "/tournament/list", Icon: TbTournament } // ✅ Updated route to list first
         );
     }
 

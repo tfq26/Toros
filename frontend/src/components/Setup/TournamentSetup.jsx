@@ -4,9 +4,9 @@ import InputField from "./InputField";
 import CheckboxField from "./CheckboxField";
 import SliderField from "./SliderField";
 import ErrorMessage from "../Error";
-import SlidingWindow from "../SlidingWindow"; // ✅ Import Sliding Window
+import SlidingWindow from "../SlidingWindow";
 import axios from "axios";
-import PlayerStats from "../Players/PlayerStats.jsx"; // ✅ Import PlayerStats
+import PlayerStats from "../Players/PlayerStats.jsx";
 import { PiArrowSquareLeftBold } from "react-icons/pi";
 import { convertLevel, calculateStats } from "../utils/playerUtils.js";
 
@@ -32,8 +32,13 @@ const TournamentSetup = ({ onSetupComplete }) => {
         const fetchPlayers = async () => {
             try {
                 const response = await axios.get("http://localhost:8080/api/players/all");
-                setPlayers(response.data || []); // ✅ Prevents `null`
-                console.log("✅ Players fetched successfully:", response.data);
+                const allPlayers = response.data || []; // ✅ Prevents `null`
+
+                // ✅ Filter only registered players
+                const registeredPlayers = allPlayers.filter(player => player.isRegistered);
+                setPlayers(registeredPlayers);
+
+                console.log("✅ Registered Players fetched successfully:", registeredPlayers);
             } catch (err) {
                 console.error("❌ Error fetching players:", err);
                 setError("Failed to fetch players.");
@@ -58,11 +63,10 @@ const TournamentSetup = ({ onSetupComplete }) => {
         const now = new Date();
         const hours = now.getHours().toString().padStart(2, "0");
         const minutes = now.getMinutes().toString().padStart(2, "0");
-        const formattedTime = `${hours}:${minutes}`; // Ensures proper format for <input type="time">
+        const formattedTime = `${hours}:${minutes}`;
 
         handleConfigChange("startTime", formattedTime);
     };
-
 
     /** ✅ Submit Tournament Setup */
     const handleSubmit = async (e) => {
@@ -78,7 +82,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
             const response = await axios.post("http://localhost:8080/api/tournament/setup", tournamentConfig);
             console.log("✅ Tournament setup successful:", response.data);
             onSetupComplete();
-            navigate("/tournament/live");
+            navigate("/tournament/list");
         } catch (err) {
             console.error("❌ Error setting up tournament:", err);
             setError(err.response?.data?.message || "Failed to set up tournament.");
@@ -86,7 +90,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-gray-100 to-gray-300 dark:from-gray-800 dark:to-gray-900 p-6">
+        <div className="flex justify-center items-center min-h-screen p-6">
             <div className="w-full max-w-3xl bg-white dark:bg-gray-700 p-8 rounded-2xl shadow-lg">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
@@ -157,14 +161,6 @@ const TournamentSetup = ({ onSetupComplete }) => {
                 </form>
             </div>
 
-            {/* Floating Button for Sliding Window */}
-            <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="fixed right-7 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition z-50"
-            >
-                {isSidebarOpen ? "❌ Close" : <PiArrowSquareLeftBold className="text-3xl" />}
-            </button>
-
             {/* Sliding Window for Player List & Stats */}
             <SlidingWindow
                 isOpen={isSidebarOpen}
@@ -172,7 +168,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                 sections={[
                     {
                         id: "players",
-                        label: "Player List",
+                        label: "Registered Players",
                         content: (
                             <div className="p-4">
                                 <h3 className="text-xl font-bold mb-3">📋 Registered Players</h3>
@@ -185,7 +181,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                         ))}
                                     </ul>
                                 ) : (
-                                    <p className="text-gray-600">No players found.</p>
+                                    <p className="text-gray-600">No registered players found.</p>
                                 )}
                             </div>
                         ),

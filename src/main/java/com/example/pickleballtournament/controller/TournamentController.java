@@ -53,15 +53,18 @@ public class TournamentController {
         }
     }
 
-    /** 🎯 **Get Active Tournament** */
-    @GetMapping("/active")
-    public ResponseEntity<Object> getActiveTournament() {
-        Optional<Tournament> tournament = liveTournamentService.getActiveTournament();
+    /** 🎯 **Get All Active Tournaments** */
+    @GetMapping("/activeTournaments")
+    public ResponseEntity<List<Tournament>> getActiveTournaments() {
+        List<Tournament> activeTournaments = liveTournamentService.getAllActiveTournaments();
 
-        return tournament.<ResponseEntity<Object>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.ok("No active tournament."));
+        if (activeTournaments.isEmpty()) {
+            log.info("📂 No active tournaments found.");
+            return ResponseEntity.ok(List.of()); // ✅ Return empty list instead of 404
+        }
+
+        return ResponseEntity.ok(activeTournaments);
     }
-
 
     /** 🎯 **End Tournament** */
     @PostMapping("/end")
@@ -92,6 +95,33 @@ public class TournamentController {
         List<Team> standings = liveTournamentService.getStandings();
         return ResponseEntity.ok(standings);
     }
+
+    /** 🎯 **Get Matches by Tournament ID** */
+    @GetMapping("/{tournamentId}/matches")
+    public ResponseEntity<?> getMatchesByTournament(@PathVariable String tournamentId) {
+        try {
+            Optional<Tournament> tournament = liveTournamentService.getTournamentById(tournamentId);
+
+            if (tournament.isEmpty()) {
+                log.warn("⚠️ Tournament not found: {}", tournamentId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tournament not found.");
+            }
+
+            List<Match> matches = liveTournamentService.getMatchesByTournamentId(tournamentId);
+
+            if (matches.isEmpty()) {
+                log.warn("⚠️ No matches found for Tournament ID: {}", tournamentId);
+                return ResponseEntity.ok().body(List.of()); // ✅ Return empty list instead of 404
+            }
+
+            return ResponseEntity.ok(matches);
+        } catch (Exception e) {
+            log.error("❌ Error fetching matches for Tournament ID {}: {}", tournamentId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch matches.");
+        }
+    }
+
 
     /** 🎯 **Get All Matches** */
     @GetMapping("/matches")
