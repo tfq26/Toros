@@ -30,72 +30,84 @@ public class LiveTournamentService {
         this.tournamentRepository = tournamentRepository;
     }
 
-    /** 🎾 Get Active Tournament */
-    public Optional<Tournament> getActiveTournament() {
-        Optional<Tournament> tournament = tournamentRepository.findByIsActive(true);
-        tournament.ifPresentOrElse(
-                t -> log.info("🎾 Active Tournament: {}", t.getName()),
-                () -> log.warn("⚠️ No active tournament found.")
-        );
-        return tournament;
+    /** 🎾 Get Active Tournament ID */
+    public Optional<String> getActiveTournament() {
+        Optional<String> tournamentId = tournamentRepository.findByIsActive(true)
+                .map(t -> {
+                    log.info("🎾 Active Tournament: {}", t.getName());
+                    return t.getId();
+                });
+        if (tournamentId.isEmpty()) {
+            log.warn("⚠️ No active tournament found.");
+        }
+        return tournamentId;
     }
 
-    /** 📂 Retrieve All Tournaments */
+    /** 📂 Retrieve All Tournaments (unchanged, as Tournament remains unchanged) */
     public List<Tournament> getAllTournaments() {
         List<Tournament> tournaments = tournamentRepository.findAll();
         log.info("📂 Retrieved {} tournaments from the database.", tournaments.size());
         return tournaments;
     }
 
-    /** 📋 Retrieve All Matches */
-    public List<Match> getAllMatches() {
+    /** 📋 Retrieve All Matches IDs */
+    public List<String> getAllMatches() {
         List<Match> matches = matchRepository.findAll();
         log.info(matches.isEmpty() ? "⚠️ No matches found." : "✅ Retrieved {} matches.", matches.size());
-        return matches;
-    }
-
-    /** 📊 Get Standings */
-    public List<Team> getStandings() {
-        List<Team> teams = teamRepository.findAll();
-        log.info(teams.isEmpty() ? "⚠️ No teams found." : "✅ Retrieved {} teams.", teams.size());
-
-        return teams.stream()
-                .sorted(Comparator.comparingInt(Team::getWins).reversed()
-                        .thenComparingInt(Team::getLosses))
+        return matches.stream()
+                .map(Match::getId)
                 .collect(Collectors.toList());
     }
 
-    /** 🎯 Get Matches by Team ID */
-    public List<Match> getMatchesByTeam(String teamId) {
+    /** 📊 Get Standings as Team IDs */
+    public List<String> getStandings() {
+        List<Team> teams = teamRepository.findAll();
+        log.info(teams.isEmpty() ? "⚠️ No teams found." : "✅ Retrieved {} teams.", teams.size());
+        return teams.stream()
+                .sorted(Comparator.comparingInt(Team::getWins).reversed()
+                        .thenComparingInt(Team::getLosses))
+                .map(Team::getId)
+                .collect(Collectors.toList());
+    }
+
+    /** 🎯 Get Matches by Team ID as a List of Match IDs */
+    public List<String> getMatchesByTeam(String teamId) {
         if (!teamRepository.existsById(teamId)) {
             log.error("❌ Team not found with ID: {}", teamId);
             throw new IllegalArgumentException("Team not found with ID: " + teamId);
         }
         List<Match> matches = matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId);
         log.info("✅ Found {} matches for Team ID: {}", matches.size(), teamId);
-        return matches;
+        return matches.stream()
+                .map(Match::getId)
+                .collect(Collectors.toList());
     }
 
-    /** ✅ Fetch a Tournament by ID */
+    /** ✅ Fetch a Tournament by ID (unchanged) */
     public Optional<Tournament> getTournamentById(String tournamentId) {
         return tournamentRepository.findById(tournamentId);
     }
 
-    /** ✅ Fetch Matches by Tournament ID */
-    public List<Match> getMatchesByTournamentId(String tournamentId) {
+    /** ✅ Fetch Matches by Tournament ID as a List of Match IDs */
+    public List<String> getMatchesByTournamentId(String tournamentId) {
         return matchRepository.findAll().stream()
                 .filter(match -> match.getTournament() != null && tournamentId.equals(match.getTournament().getId()))
+                .map(Match::getId)
                 .collect(Collectors.toList());
     }
 
-    /** ✅ Fetch a List of All Active Tournaments */
-    public List<Tournament> getAllActiveTournaments() {
-        return tournamentRepository.findByIsActiveTrue(); // ✅ Fetch all active tournaments
+    public Optional<Match> getMatchById(String matchId) {
+        return matchRepository.findById(matchId);
     }
 
-    /** 🎯 Update Match */
+    /** ✅ Fetch a List of All Active Tournaments (unchanged) */
+    public List<Tournament> getAllActiveTournaments() {
+        return tournamentRepository.findByIsActiveTrue();
+    }
+
+    /** 🎯 Update Match and return the Match ID */
     @Transactional
-    public Match updateMatch(String matchId, UpdateMatchRequest request) {
+    public String updateMatch(String matchId, UpdateMatchRequest request) {
         log.info("🔄 Updating Match ID: {} | Scores: {}-{} | Status: {}", matchId, request.getTeam1Score(), request.getTeam2Score(), request.getStatus());
 
         if (matchId == null || matchId.isBlank()) {
@@ -151,9 +163,8 @@ public class LiveTournamentService {
         teamRepository.save(team2);
 
         log.info("✅ Match {} updated successfully.", match.getId());
-        return match;
+        return match.getId();
     }
-
 
     /** 🏆 Helper Method to Update Team Standings */
     private void updateTeamStandings(Match match) {
@@ -184,13 +195,21 @@ public class LiveTournamentService {
         teamRepository.save(team2);
     }
 
-    /** 🏁 End Tournament */
+    /** 🏁 End Active Tournament */
     @Transactional
     public void endTournament() {
-        getActiveTournament().ifPresent(tournament -> {
+        // Retrieve all active tournaments
+        List<Tournament> activeTournaments = tournamentRepository.findByIsActiveTrue();
+
+        // Convert the list to an Optional by selecting the first tournament if available
+        Optional<Tournament> activeTournamentOpt = activeTournaments.stream().findFirst();
+
+        activeTournamentOpt.ifPresentOrElse(tournament -> {
             tournament.setActive(false);
             tournamentRepository.save(tournament);
             log.info("🏆 Tournament '{}' marked as COMPLETED.", tournament.getName());
+        }, () -> {
+            log.warn("⚠️ No active tournament found.");
         });
     }
 }

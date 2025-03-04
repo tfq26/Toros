@@ -5,6 +5,7 @@ import MatchTabs from "./MatchTabs";
 import Sidebar from "./Sidebar.jsx";
 import SlidingWindow from "../SlidingWindow.jsx";
 import { PiArrowSquareLeftBold } from "react-icons/pi";
+import { loadMatchDetails } from "../utils/dataUtils.js"; // Import our helper function
 
 const LiveTournament = ({ tournamentConfig }) => {
     const [matches, setMatches] = useState([]);
@@ -17,12 +18,17 @@ const LiveTournament = ({ tournamentConfig }) => {
         fetchMatches();
     }, []);
 
-    /** ✅ Fetch Matches */
+    /** ✅ Fetch Matches using the helper function */
     const fetchMatches = async () => {
         setLoading(true);
         try {
+            // Get an array of match IDs from the backend
             const response = await axios.get("http://localhost:8080/api/tournament/matches");
-            setMatches(response.data);
+            const matchIds = response.data; // expecting an array of match ID strings
+            console.log("Match IDs received:", matchIds);
+            // Use the helper function to fetch full match details for each ID
+            const fullMatches = await loadMatchDetails(matchIds);
+            setMatches(fullMatches);
         } catch (err) {
             console.error("❌ Error fetching matches:", err);
         } finally {

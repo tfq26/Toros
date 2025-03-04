@@ -14,7 +14,6 @@ public class Match {
     // Getters and Setters
     @Id
     private String id;
-    private String tournamentName;
     private Tournament tournament;
     private int courtNumber;
     private Team team1;

@@ -1,30 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import MatchTable from "./MatchTable";
 import MatchCard from "./MatchCard";
-import axios from "axios";
 
-const MatchTabs = ({ sortOrder, refreshMatches, updateMatch }) => {
-    const [matches, setMatches] = useState([]);
-    const [selectedTab, setSelectedTab] = useState("all"); // ✅ Tracks active tab
-    const [viewMode, setViewMode] = useState("table"); // ✅ Toggle between Table and Card views
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetchMatches();
-    }, []);
-
-    /** ✅ Fetch Matches */
-    const fetchMatches = async () => {
-        setLoading(true);
-        try {
-            const response = await axios.get("http://localhost:8080/api/tournament/matches");
-            setMatches(response.data);
-        } catch (error) {
-            console.error("❌ Error fetching matches:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+const MatchTabs = ({ matches, sortOrder, refreshMatches, updateMatch }) => {
+    const [selectedTab, setSelectedTab] = useState("all"); // Tracks active tab
+    const [viewMode, setViewMode] = useState("table"); // Toggle between Table and Card views
 
     /** ✅ Filter matches based on selected tab */
     const filteredMatches = matches.filter((match) => {
@@ -60,16 +40,19 @@ const MatchTabs = ({ sortOrder, refreshMatches, updateMatch }) => {
 
             {/* View Mode Toggle */}
             <div className="flex justify-between items-center mb-2">
-                {/*<span className="text-gray-300">View Mode:</span>*/}
                 <div className="flex gap-2">
                     <button
-                        className={`px-3 py-1 rounded ${viewMode === "table" ? "bg-green-500 text-white" : "bg-green-300 dark:bg-gray-700"}`}
+                        className={`px-3 py-1 rounded ${
+                            viewMode === "table" ? "bg-green-500 text-white" : "bg-green-300 dark:bg-gray-700"
+                        }`}
                         onClick={() => setViewMode("table")}
                     >
                         Table
                     </button>
                     <button
-                        className={`px-3 py-1 rounded ${viewMode === "card" ? "bg-green-500 text-white" : "bg-green-300 dark:bg-gray-700"}`}
+                        className={`px-3 py-1 rounded ${
+                            viewMode === "card" ? "bg-green-500 text-white" : "bg-green-300 dark:bg-gray-700"
+                        }`}
                         onClick={() => setViewMode("card")}
                     >
                         Card
@@ -77,11 +60,13 @@ const MatchTabs = ({ sortOrder, refreshMatches, updateMatch }) => {
                 </div>
             </div>
 
-            {/* Loading Indicator */}
-            {loading ? (
-                <p className="text-center text-gray-500">Loading matches...</p>
-            ) : viewMode === "table" ? (
-                <MatchTable matches={sortedMatches} refreshMatches={fetchMatches} updateMatch={updateMatch} />
+            {/* Render matches based on view mode */}
+            {viewMode === "table" ? (
+                <MatchTable
+                    matches={sortedMatches}
+                    refreshMatches={refreshMatches}
+                    updateMatch={updateMatch}
+                />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {sortedMatches.map((match) => (

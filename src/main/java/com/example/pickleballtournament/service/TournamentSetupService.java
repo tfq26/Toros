@@ -37,7 +37,7 @@ public class TournamentSetupService {
      * ✅ Setup the Tournament without deleting previous data:
      * - Generates new teams and matches.
      * - Assigns the Tournament object to each match.
-     * - Saves the tournament with references to new teams and matches.
+     * - Saves the tournament with references to new teams and matches (using IDs only).
      */
     @Transactional
     public Tournament setupTournament(String tournamentName, int numCourts, int gamesPerTeam, boolean useExistingPlayers,
@@ -56,7 +56,7 @@ public class TournamentSetupService {
             throw new IllegalStateException("No teams available for the tournament.");
         }
 
-        // ✅ Create and Save Tournament First
+        // ✅ Create and Save Tournament First, storing only team IDs
         Tournament tournament = new Tournament();
         tournament.setName(tournamentName);
         tournament.setDateHeld(LocalDate.now());
@@ -64,19 +64,21 @@ public class TournamentSetupService {
         tournament.setNumCourts(numCourts);
         tournament.setGamesPerTeam(gamesPerTeam);
         tournament.setTiered(tiered);
-        tournament.setTeams(teams);
+        // Store team IDs instead of full team objects
+        List<String> teamIds = teams.stream()
+                .map(Team::getId)
+                .collect(Collectors.toList());
+        tournament.setTeams(teamIds);
         tournament.setStatus("LIVE");
 
         tournament = tournamentRepository.save(tournament);
         log.info("✅ Tournament '{}' saved successfully with ID: {}", tournament.getName(), tournament.getId());
 
-        // ✅ Generate matches and assign the Tournament object
-        List<Match> matches = generateMatches(tournament, teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
-        matchRepository.saveAll(matches);
-        log.info("✅ Saved {} matches for Tournament '{}'", matches.size(), tournament.getName());
+        // ✅ Generate matches and assign the Tournament object, then return match IDs
+        List<String> matchIds = generateMatches(tournament, teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
 
-        // ✅ Update Tournament with matches
-        tournament.setMatches(matches);
+        // ✅ Update Tournament with match IDs
+        tournament.setMatches(matchIds);
         tournamentRepository.save(tournament);
 
         return tournament;
@@ -104,9 +106,12 @@ public class TournamentSetupService {
         return teams;
     }
 
-    /** ✅ Generate Matches and Assign the Tournament Object */
-    private List<Match> generateMatches(Tournament tournament, List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered,
-                                        LocalTime startTime, int matchDuration) {
+    /**
+     * ✅ Generate Matches and assign the Tournament object.
+     * Saves the matches to the match repository and returns a list of match IDs.
+     */
+    private List<String> generateMatches(Tournament tournament, List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered,
+                                         LocalTime startTime, int matchDuration) {
         log.info("Generating matches for Tournament '{}' (ID: {}) | {} teams with {} courts.",
                 tournament.getName(), tournament.getId(), teams.size(), numCourts);
 
@@ -159,7 +164,13 @@ public class TournamentSetupService {
             }
         }
 
-        log.info("✅ Generated {} matches for Tournament '{}'", matches.size(), tournament.getName());
-        return matches;
+        // ✅ Save matches to repository before returning the IDs
+        List<Match> savedMatches = matchRepository.saveAll(matches);
+        List<String> matchIds = savedMatches.stream()
+                .map(Match::getId)
+                .collect(Collectors.toList());
+
+        log.info("✅ Generated and saved {} matches for Tournament '{}'", matchIds.size(), tournament.getName());
+        return matchIds;
     }
 }

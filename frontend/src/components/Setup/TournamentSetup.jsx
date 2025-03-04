@@ -9,6 +9,8 @@ import axios from "axios";
 import PlayerStats from "../Players/PlayerStats.jsx";
 import { PiArrowSquareLeftBold } from "react-icons/pi";
 import { convertLevel, calculateStats } from "../utils/playerUtils.js";
+// Import our new API helper functions
+import { fetchTournamentById, loadTeamDetails, loadMatchDetails } from "../utils/dataUtils.js";
 
 const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
@@ -24,6 +26,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
 
     const [players, setPlayers] = useState([]); // ✅ Stores player list
     const [error, setError] = useState(null);
+    const [tournamentDetails, setTournamentDetails] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // ✅ Sidebar state
     const navigate = useNavigate();
 
@@ -79,8 +82,23 @@ const TournamentSetup = ({ onSetupComplete }) => {
         }
 
         try {
+            // Create the tournament using axios as before
             const response = await axios.post("http://localhost:8080/api/tournament/setup", tournamentConfig);
             console.log("✅ Tournament setup successful:", response.data);
+
+            // Using the new helper function to fetch the complete tournament details by ID
+            const tournamentId = response.data.id;
+            const fullTournament = await fetchTournamentById(tournamentId);
+            setTournamentDetails(fullTournament);
+            console.log("✅ Fetched complete tournament details:", fullTournament);
+
+            // If needed, you can use the helper functions loadTeamDetails and loadMatchDetails to fetch
+            // full team or match objects from the IDs stored in the tournament details.
+            // Example:
+            // const teams = await loadTeamDetails(fullTournament.teams);
+            // const matches = await loadMatchDetails(fullTournament.matches);
+            // console.log("Teams:", teams, "Matches:", matches);
+
             onSetupComplete();
             navigate("/tournament/list");
         } catch (err) {

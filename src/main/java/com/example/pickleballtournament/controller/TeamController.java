@@ -37,22 +37,4 @@ public class TeamController {
                     .body(Collections.singletonMap("error", "Failed to reset standings."));
         }
     }
-
-    /**
-     * Retrieve all valid team standings.
-     *
-     * @return List of valid teams
-     */
-    @GetMapping("/standings")
-    public ResponseEntity<List<Team>> getTeamStandings() {
-        try {
-            // Use the existing getStandings method in tournamentService
-            List<Team> validTeams = tournamentService.getStandings();
-            return ResponseEntity.ok(validTeams);
-        } catch (Exception e) {
-            // Log the exception for debugging purposes
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.emptyList());
-        }
-    }
 }
