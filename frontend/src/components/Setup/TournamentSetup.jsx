@@ -9,8 +9,8 @@ import axios from "axios";
 import PlayerStats from "../Players/PlayerStats.jsx";
 import { PiArrowSquareLeftBold } from "react-icons/pi";
 import { convertLevel, calculateStats } from "../utils/playerUtils.js";
-// Import our new API helper functions
-import { fetchTournamentById, loadTeamDetails, loadMatchDetails } from "../utils/dataUtils.js";
+import { toast, ToastContainer } from "react-toastify"; // ✅ Fixed Toast import
+import "react-toastify/dist/ReactToastify.css";
 
 const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
@@ -24,10 +24,9 @@ const TournamentSetup = ({ onSetupComplete }) => {
         tiered: false,
     });
 
-    const [players, setPlayers] = useState([]); // ✅ Stores player list
+    const [players, setPlayers] = useState([]);
     const [error, setError] = useState(null);
-    const [tournamentDetails, setTournamentDetails] = useState(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // ✅ Sidebar state
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const navigate = useNavigate();
 
     /** ✅ Fetch Players */
@@ -35,9 +34,8 @@ const TournamentSetup = ({ onSetupComplete }) => {
         const fetchPlayers = async () => {
             try {
                 const response = await axios.get("http://localhost:8080/api/players/all");
-                const allPlayers = response.data || []; // ✅ Prevents `null`
+                const allPlayers = response.data || [];
 
-                // ✅ Filter only registered players
                 const registeredPlayers = allPlayers.filter(player => player.isRegistered);
                 setPlayers(registeredPlayers);
 
@@ -78,37 +76,32 @@ const TournamentSetup = ({ onSetupComplete }) => {
 
         if (!tournamentConfig.tournamentName.trim()) {
             setError("⚠️ Tournament name is required.");
+            toast.error("⚠️ Tournament name is required!"); // 🔔 Show error toast
             return;
         }
 
         try {
-            // Create the tournament using axios as before
+            toast.info("⏳ Creating Tournament...");
+
             const response = await axios.post("http://localhost:8080/api/tournament/setup", tournamentConfig);
+
+            toast.success("✅ Tournament created successfully!");
             console.log("✅ Tournament setup successful:", response.data);
-
-            // Using the new helper function to fetch the complete tournament details by ID
-            const tournamentId = response.data.id;
-            const fullTournament = await fetchTournamentById(tournamentId);
-            setTournamentDetails(fullTournament);
-            console.log("✅ Fetched complete tournament details:", fullTournament);
-
-            // If needed, you can use the helper functions loadTeamDetails and loadMatchDetails to fetch
-            // full team or match objects from the IDs stored in the tournament details.
-            // Example:
-            // const teams = await loadTeamDetails(fullTournament.teams);
-            // const matches = await loadMatchDetails(fullTournament.matches);
-            // console.log("Teams:", teams, "Matches:", matches);
 
             onSetupComplete();
             navigate("/tournament/list");
         } catch (err) {
             console.error("❌ Error setting up tournament:", err);
             setError(err.response?.data?.message || "Failed to set up tournament.");
+
+            toast.error("❌ Failed to create tournament.");
         }
     };
 
     return (
         <div className="flex justify-center items-center min-h-screen p-6">
+            <ToastContainer position="top-right" autoClose={3000} />
+
             <div className="w-full max-w-3xl bg-white dark:bg-gray-700 p-8 rounded-2xl shadow-lg">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
@@ -179,7 +172,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                 </form>
             </div>
 
-            {/* Sliding Window for Player List & Stats */}
+            {/* ✅ Sliding Window for Player List & Stats */}
             <SlidingWindow
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}

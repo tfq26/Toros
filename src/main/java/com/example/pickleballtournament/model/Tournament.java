@@ -28,13 +28,11 @@ public class Tournament {
     // OR
     private Map<String, Object> setupPropertiesMap; // If you prefer key-value pairs
 
-
-    private List<String> teams; // Stores teams playing in the tournament
-
-
-    private List<String> matches; // Matches played within the tournament
-
-    private List<String> finalPlacements; // Final ranking after tournament completion
+    @DBRef
+    private List<Team> teams; // Stores teams playing in the tournament
+    @DBRef
+    private List<Match> matches; // Matches played within the tournament
+    private List<Team> finalPlacements; // Final ranking after tournament completion
 
     // ✅ Helper Method to check if tournament is live
     public boolean isLive() {
