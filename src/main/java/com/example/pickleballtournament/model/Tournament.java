@@ -30,10 +30,8 @@ public class Tournament {
 
     @DBRef
     private List<Team> teams; // Stores teams playing in the tournament
-
     @DBRef
     private List<Match> matches; // Matches played within the tournament
-
     private List<Team> finalPlacements; // Final ranking after tournament completion
 
     // ✅ Helper Method to check if tournament is live
