@@ -24,7 +24,7 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
                 phone: player.phone || "",
                 teamNumber: player.teamNumber || "",
                 clubName: player.clubName || "",
-                placement: player.placement || "",
+                placement: player.SkillLevel || "",
                 registered: player.registered || false, // ✅ Load registered status
             });
         } else {

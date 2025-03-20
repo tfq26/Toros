@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../utils/authUtils.js";
+import {Button} from "../../components/ui/button.jsx"
+import {Input} from "../../components/ui/input.jsx"
 
 const Login = ({ setAuthToken }) => {
     const [username, setUsername] = useState("");
@@ -43,22 +45,22 @@ const Login = ({ setAuthToken }) => {
     return (
         <div className="relative h-screen flex justify-center items-center bg-cover bg-center"
              style={{
-                 backgroundImage: `url('https://images.axios.com/tEKRllKFCtdUQx34QOndSiLQxKM=/0x306:3936x2520/1920x1080/2021/11/04/1636048442154.jpg?w=3840')`
+                 backgroundImage: `frontend/public/login_img.webp`
              }}
         >
             <div className="absolute inset-0 bg-black opacity-60"></div>
 
             <form
                 onSubmit={handleLogin}
-                className="relative z-10 bg-red-900 dark:bg-gray-800 bg-opacity-90 p-6 rounded-lg shadow-xl w-80 space-y-4"
+                className="relative z-10 bg-red-900 dark:bg-gray-800 bg-opacity-90 p-6 rounded-lg shadow-xl w-90 space-y-4"
             >
                 <h2 className="text-2xl font-bold text-center text-white mb-4">Login</h2>
 
                 {error && <p className="text-red-500 text-center">{error}</p>}
 
                 <div>
-                    <label className="block text-white font-semibold">Username</label>
-                    <input
+                    <label className="block text-white font-semibold mb-2">Username</label>
+                    <Input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -69,8 +71,8 @@ const Login = ({ setAuthToken }) => {
                 </div>
 
                 <div>
-                    <label className="block text-white font-semibold">Password</label>
-                    <input
+                    <label className="block text-white font-semibold mb-2">Password</label>
+                    <Input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -80,22 +82,22 @@ const Login = ({ setAuthToken }) => {
                     />
                 </div>
 
-                <button
+                <Button
                     type="submit"
-                    className="w-full bg-emerald-500 text-white py-2 rounded-lg hover:bg-emerald-600 transition font-semibold"
+                    className="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-500 transition font-semibold"
                     disabled={isLoading}
                 >
                     {isLoading ? "Logging in..." : "Login"}
-                </button>
+                </Button>
 
                 {/* Sign Up Button */}
-                <button
+                <Button
                     type="button"
                     onClick={() => navigate("/auth/signup")}
                     className="w-full bg-amber-500 text-gray-100 py-2 rounded-lg hover:bg-amber-600 transition font-semibold mt-2"
                 >
                     Sign Up
-                </button>
+                </Button>
             </form>
         </div>
     );

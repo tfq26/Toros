@@ -3,12 +3,14 @@ import Home from "./Home.jsx";
 import PlayerList from "./Players/PlayerList.jsx";
 import TournamentList from "./Tournament/TournamentList.jsx"; // ✅ New Tournament Selection View
 import TournamentSetup from "./Setup/TournamentSetup.jsx";
+import { GalleryVerticalEnd } from "lucide-react"
 import TournamentBracket from "./Standings/TeamStandings.jsx";
 import LiveTournament from "./Tournament/LiveTournament.jsx";
 import ErrorPage from "./Error.jsx";
-import LoginPage from "./Auth/Login.jsx";
+import LoginPage from "./Auth/beta_login.jsx";
 import SignupPage from "./Auth/Signup.jsx";
 import MatchTest from "./Tournament/MatchTest.jsx";
+import WindowView from "./Tournament/Viewer/WindowView.jsx"; // New viewer page
 
 const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tournamentConfig, setTournamentConfig }) => {
     return (
@@ -26,7 +28,6 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
             />
             <Route path="/bracket" element={<TournamentBracket />} />
             <Route path="/test-matches" element={<MatchTest />} />
-
             {/* ✅ Tournament Selection Step */}
             <Route path="/tournament/list" element={<TournamentList />} />
             <Route
@@ -38,23 +39,24 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
                     />
                 }
             />
-
+            {/* Viewer Route */}
+            <Route path="/viewer" element={<WindowView />} />
             {/* Authentication Routes */}
             <Route
                 path="/auth/login"
                 element={
-                    <LoginPage
-                        onLogin={(token) => {
-                            setAuthToken(token);
-                            localStorage.setItem("authToken", token);
-                        }}
-                    />
+                    // <LoginPage
+                    //     onLogin={(token) => {
+                    //         setAuthToken(token);
+                    //         localStorage.setItem("authToken", token);
+                    //     }}
+                    // />
+                    <LoginPage/>
                 }
             />
-            <Route path="/auth/signup" element={<SignupPage />} />
-
+            <Route path="/auth/signup" element={<SignupPage/>}/>
             {/* Error Handling */}
-            <Route path="*" element={<ErrorPage statusCode={404} />} />
+            <Route path="*" element={<ErrorPage statusCode={404}/>}/>
         </Routes>
     );
 };

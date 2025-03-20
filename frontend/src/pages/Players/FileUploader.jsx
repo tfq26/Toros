@@ -57,7 +57,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                     name: player.name || DEFAULT_VALUES.name,
                     teamNumber: player.teamNumber || DEFAULT_VALUES.teamNumber,
                     clubName: player.clubName || DEFAULT_VALUES.clubName,
-                    placement: player.placement || DEFAULT_VALUES.placement,
+                    SkillLevel: player.SkillLevel || DEFAULT_VALUES.SkillLevel,
                     registered: player.registered !== undefined ? player.registered : false, // Ensure registered is included
                 }));
 

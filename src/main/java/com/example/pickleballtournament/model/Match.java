@@ -27,6 +27,7 @@ public class Match {
     private String loser;  // Loser of the match
     private int round; //Round Number
     private String nextMatchId; // Reference to the next match in the bracket
+    private int matchSkillLevel;
 
     // Custom ID generator
     public void generateCustomId() {

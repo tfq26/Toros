@@ -3,7 +3,6 @@ package com.example.pickleballtournament.model;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,18 +22,16 @@ public class Tournament {
     private int gamesPerTeam;
     private boolean tiered;
 
-    // ✅ Store setup properties as a List<String> or Map<String, Object>
+    // Store setup properties as a List<String> or Map<String, Object>
     private List<String> setupProperties; // Example: ["Match Duration: 15min", "Double Elimination: true"]
-    // OR
     private Map<String, Object> setupPropertiesMap; // If you prefer key-value pairs
 
-    @DBRef
-    private List<Team> teams; // Stores teams playing in the tournament
-    @DBRef
-    private List<Match> matches; // Matches played within the tournament
-    private List<Team> finalPlacements; // Final ranking after tournament completion
+    // Now storing only IDs rather than full objects
+    private List<String> teams; // Stores team IDs
+    private List<String> matches; // Stores match IDs
+    private List<String> finalPlacements; // Final ranking after tournament completion
 
-    // ✅ Helper Method to check if tournament is live
+    // Helper method to check if tournament is live
     public boolean isLive() {
         return "LIVE".equalsIgnoreCase(status);
     }

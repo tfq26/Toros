@@ -5,7 +5,7 @@ import PlayerStats from "./PlayerStats";
 import PlayerListSettings from "./PlayerSettings";
 import PlayerSearch from "./PlayerSearch.jsx";
 import LoadingModal from "../LoadingModal";
-import PlayerModal from "./PlayerModal";
+import PlayerModal from "../Modals/playerModal.jsx";
 import SlidingWindow from "../SlidingWindow";
 import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/playerUtils.js";
 import {PiArrowSquareLeftBold} from "react-icons/pi";
@@ -57,7 +57,7 @@ const PlayerList = () => {
         }
 
         if (selectedLevel) {
-            filtered = filtered.filter((player) => convertLevel(player.placement) === selectedLevel);
+            filtered = filtered.filter((player) => convertLevel(player.SkillLevel) === selectedLevel);
         }
 
         if (searchQuery) {
@@ -80,7 +80,7 @@ const PlayerList = () => {
 
     const stats = calculateStats(filteredPlayers);
     const clubs = [...new Set(players.map((player) => player.clubName))];
-    const levels = [...new Set(players.map((player) => convertLevel(player.placement)))];
+    const levels = [...new Set(players.map((player) => convertLevel(player.SkillLevel)))];
 
     return (
         <div className="relative">
@@ -123,9 +123,9 @@ const PlayerList = () => {
             {/* Floating Button for Sliding Window (Ensures it stays above everything) */}
             <button
                 onClick={() => setIsSlidingWindowOpen(true)}
-                className="fixed right-2 top-1/2 transform -translate-y-1/2 text-center bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition z-50"
+                className="fixed right-6 top-11 transform -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg transition duration-200 ease-in-out z-50"
             >
-                <PiArrowSquareLeftBold className="text-3xl" />
+                <PiArrowSquareLeftBold className="text-2xl"/>
             </button>
 
             {/* Player Modal */}

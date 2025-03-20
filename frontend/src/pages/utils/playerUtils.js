@@ -71,7 +71,11 @@ export const formatTo12HourTime = (time) => {
 export const validateAndPreviewPlayers = (data) => {
     const requiredFields = ["Name", "Email", "Club", "Placement"];
     if (!data || data.length === 0) {
-        return { valid: false, message: "Error: No valid player data found in the file.", data: [] };
+        return {
+            valid: false,
+            message: "Error: No valid player data found in the file.",
+            data: [],
+        };
     }
 
     const processedData = [];
@@ -79,14 +83,20 @@ export const validateAndPreviewPlayers = (data) => {
         const player = data[i];
         for (let field of requiredFields) {
             if (!player[field]) {
-                return { valid: false, message: `Error: Missing '${field}' in row ${i + 1}.`, data: [] };
+                return {
+                    valid: false,
+                    message: `Error: Missing '${field}' in row ${i + 1}.`,
+                    data: [],
+                };
             }
         }
         processedData.push({
             name: player.Name,
             email: player.Email,
             clubName: player.Club,
-            placement: convertLevel(player.Placement),
+            // Convert the raw placement value to a number (if needed)
+            // and store it as skillLevel for consistency with the backend.
+            skillLevel: Number(player.Placement),
         });
     }
     return { valid: true, message: "Valid data", data: processedData };
@@ -104,7 +114,8 @@ export const calculateStats = (players) => {
 
     const rankCounts = flatPlayers.reduce(
         (acc, player) => {
-            const rank = convertLevel(player.placement);
+            // Using skillLevel to compute the rank
+            const rank = convertLevel(player.skillLevel);
             acc[rank] = (acc[rank] || 0) + 1;
             return acc;
         },
@@ -127,9 +138,7 @@ export const calculateStats = (players) => {
  */
 export const filterPlayersBySearch = (players, searchQuery) => {
     const lowerCaseQuery = searchQuery.toLowerCase();
-
     return players.filter((player) =>
         player.name && player.name.toLowerCase().includes(lowerCaseQuery)
     );
 };
-

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import Navbar from "./components/Navbar.jsx";
-import AppRoutes from "./components/AppRouting.jsx";
-import DevTools from "./components/DevTools/DevTools.jsx"; // ✅ DevTools integration
+import Navbar from "./pages/Navbar.jsx";
+import AppRoutes from "./pages/AppRouting.jsx";
+import DevTools from "./pages/DevTools/DevTools.jsx"; // ✅ DevTools integration
 import "./index.css";
 
 const App = () => {
@@ -31,7 +31,7 @@ const App = () => {
     useEffect(() => {
         const fetchTournamentStatus = async () => {
             try {
-                const response = await fetch("/api/tournament/activeTournaments", {
+                const response = await fetch("/api/tournament/activeTournament", {
                     headers: { Authorization: `Bearer ${authToken}` },
                 });
                 const data = await response.json();

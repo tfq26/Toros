@@ -2,6 +2,7 @@ package com.example.pickleballtournament.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.AccessLevel;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,7 +13,6 @@ public class Team {
 
     @Id
     private String id;
-
     private String name;
     private Player player1;
     private Player player2;
@@ -20,13 +20,16 @@ public class Team {
     private int wins;
     private int losses;
     private int matchesPlayed;
-    private String skillLevel;
+    // Remove Lombok-generated setter for skillLevel so we can provide a custom one.
+    @Setter(AccessLevel.NONE)
+    private int skillLevel;
     private Integer placement;
-    private int totalPoints; // ✅ Tracks total points won by the team
+    private int totalPoints; // Tracks total points won by the team
 
-    // ✅ Constructor with null safety checks
+    // Default constructor
     public Team() {}
 
+    // Constructor with parameters and null safety checks
     public Team(String name, Player player1, Player player2) {
         this.name = name;
         this.player1 = player1;
@@ -35,29 +38,70 @@ public class Team {
         this.wins = 0;
         this.losses = 0;
         this.matchesPlayed = 0;
-        this.totalPoints = 0; // ✅ Initialize total points
-        this.skillLevel = calculateSkillLevel(
-                player1 != null ? player1.getPlacement() : 0,
-                player2 != null ? player2.getPlacement() : 0
-        );
+        this.totalPoints = 0;
+        // Use safe values for players' skill levels: default to 0 if null
+        int p1Skill = (player1 != null && player1.getSkillLevel() != null) ? player1.getSkillLevel() : 0;
+        int p2Skill = (player2 != null && player2.getSkillLevel() != null) ? player2.getSkillLevel() : 0;
+        this.skillLevel = calculateSkillLevel(p1Skill, p2Skill);
     }
 
     /**
-     * ✅ Calculate skill level based on player placements.
+     * Calculate skill level as an integer based on players' skill levels.
+     * Returns 1 for Beginner, 2 for Intermediate, 3 for Advanced.
      */
-    private String calculateSkillLevel(int player1Placement, int player2Placement) {
-        double averagePlacement = (player1Placement + player2Placement) / 2.0;
-        if (averagePlacement <= 1.5) {
-            return "Beginner";
-        } else if (averagePlacement <= 2.5) {
-            return "Intermediate";
+    private int calculateSkillLevel(int player1Skill, int player2Skill) {
+        double averageSkill = (player1Skill + player2Skill) / 2.0;
+        if (averageSkill <= 1.5) {
+            return 1; // Beginner
+        } else if (averageSkill <= 2.5) {
+            return 2; // Intermediate
         } else {
-            return "Advanced";
+            return 3; // Advanced
         }
     }
 
     /**
-     * ✅ Increment team's win count and update skill level.
+     * Custom setter for skillLevel that can accept either an Integer or a String.
+     * If a string is provided, it converts "Beginner" to 1, "Intermediate" to 2, and "Advanced" to 3.
+     */
+    public void setSkillLevel(Object value) {
+        if (value instanceof String) {
+            String level = ((String) value).trim();
+            if ("Beginner".equalsIgnoreCase(level)) {
+                this.skillLevel = 1;
+            } else if ("Intermediate".equalsIgnoreCase(level)) {
+                this.skillLevel = 2;
+            } else if ("Advanced".equalsIgnoreCase(level)) {
+                this.skillLevel = 3;
+            } else {
+                this.skillLevel = 0; // default or unknown
+            }
+        } else if (value instanceof Number) {
+            this.skillLevel = ((Number) value).intValue();
+        } else {
+            this.skillLevel = 0;
+        }
+    }
+
+    /**
+     * Returns the skill level as a string.
+     * Frontend can call this method to display the skill level.
+     */
+    public String getSkillLevelString() {
+        switch (this.skillLevel) {
+            case 1:
+                return "Beginner";
+            case 2:
+                return "Intermediate";
+            case 3:
+                return "Advanced";
+            default:
+                return "Unknown";
+        }
+    }
+
+    /**
+     * Increment the team's win count, update matches played and recalculate skill level.
      */
     public void incrementWins() {
         this.wins++;
@@ -66,7 +110,7 @@ public class Team {
     }
 
     /**
-     * ✅ Increment team's loss count.
+     * Increment the team's loss count and update matches played.
      */
     public void incrementLosses() {
         this.losses++;
@@ -74,32 +118,32 @@ public class Team {
     }
 
     /**
-     * ✅ Update the team's skill level dynamically based on performance.
+     * Update the team's skill level dynamically based on performance.
+     * For example, if wins >= 8, set to Advanced (3); if wins >= 4, set to Intermediate (2); otherwise, Beginner (1).
      */
     private void updateSkillLevel() {
         if (wins >= 8) {
-            this.skillLevel = "Advanced";
+            this.skillLevel = 3; // Advanced
         } else if (wins >= 4) {
-            this.skillLevel = "Intermediate";
+            this.skillLevel = 2; // Intermediate
         } else {
-            this.skillLevel = "Beginner";
+            this.skillLevel = 1; // Beginner
         }
     }
 
     /**
-     * ✅ Ensure players are set safely, avoiding NullPointerException.
+     * Safely set players and update the skill level.
      */
     public void setPlayers(Player player1, Player player2) {
         this.player1 = player1;
         this.player2 = player2;
-        this.skillLevel = calculateSkillLevel(
-                player1 != null ? player1.getPlacement() : 0,
-                player2 != null ? player2.getPlacement() : 0
-        );
+        int p1Skill = (player1 != null && player1.getSkillLevel() != null) ? player1.getSkillLevel() : 0;
+        int p2Skill = (player2 != null && player2.getSkillLevel() != null) ? player2.getSkillLevel() : 0;
+        this.skillLevel = calculateSkillLevel(p1Skill, p2Skill);
     }
 
     /**
-     * ✅ Add points to team's totalPoints.
+     * Add points to the team's total points.
      * @param pointsScored The number of points the team won in a match.
      */
     public void addPoints(int pointsScored) {
@@ -117,8 +161,8 @@ public class Team {
                 ", wins=" + wins +
                 ", losses=" + losses +
                 ", matchesPlayed=" + matchesPlayed +
-                ", totalPoints=" + totalPoints + // ✅ Added toString for total points
-                ", skillLevel='" + skillLevel + '\'' +
+                ", totalPoints=" + totalPoints +
+                ", skillLevel=" + getSkillLevelString() +
                 '}';
     }
 }

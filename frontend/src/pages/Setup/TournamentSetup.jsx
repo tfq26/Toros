@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import InputField from "./InputField";
 import CheckboxField from "./CheckboxField";
 import SliderField from "./SliderField";
+import {Input} from "../../components/ui/input.jsx"
+import {Button} from "../../components/ui/button.jsx"
+import {Checkbox} from "../../components/ui/checkbox.jsx"
+import {Slider} from "../../components/ui/slider.jsx"
+import {Toaster} from "../../components/ui/sonner.jsx"
+
 import ErrorMessage from "../Error";
 import SlidingWindow from "../SlidingWindow";
 import axios from "axios";
@@ -136,39 +142,39 @@ const TournamentSetup = ({ onSetupComplete }) => {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <InputField label="Number of Courts" type="number" value={tournamentConfig.numCourts}
+                    <Input label="Number of Courts" type="number" value={tournamentConfig.numCourts}
                                 onChange={(e) => handleConfigChange("numCourts", e.target.value)} />
-                    <InputField label="Games per Team" type="number" value={tournamentConfig.gamesPerTeam}
+                    <Input label="Games per Team" type="number" value={tournamentConfig.gamesPerTeam}
                                 onChange={(e) => handleConfigChange("gamesPerTeam", e.target.value)} />
 
                     {/* Start Time Selection */}
                     <div className="flex items-center gap-4">
-                        <InputField label="Start Time" type="time" value={tournamentConfig.startTime}
+                        <Input label="Start Time" type="time" value={tournamentConfig.startTime}
                                     onChange={(e) => handleConfigChange("startTime", e.target.value)} />
-                        <button type="button" className="bg-emerald-500 mt-6 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition"
+                        <Button type="button" className="bg-emerald-500 mt-6 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition"
                                 onClick={handleSetCurrentTime}>
                             Use Current Time
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Checkboxes */}
                     <div className="grid grid-cols-2 gap-4">
-                        <CheckboxField label="Use Existing Player List" checked={tournamentConfig.useExistingPlayers}
+                        <Checkbox label="Use Existing Player List" checked={tournamentConfig.useExistingPlayers}
                                        onChange={(e) => handleConfigChange("useExistingPlayers", e.target.checked)} />
-                        <CheckboxField label="Divide Tournament into Tiers" checked={tournamentConfig.tiered}
+                        <Checkbox label="Divide Tournament into Tiers" checked={tournamentConfig.tiered}
                                        onChange={(e) => handleConfigChange("tiered", e.target.checked)} />
                     </div>
 
                     {/* Sliders */}
-                    <SliderField label="Match Duration (mins)" value={tournamentConfig.matchDuration} min="10" max="60"
-                                 step="5" onChange={(e) => handleConfigChange("matchDuration", e.target.value)} />
-                    <SliderField label="Break Time (mins)" value={tournamentConfig.breakTime} min="0" max="30"
-                                 step="5" onChange={(e) => handleConfigChange("breakTime", e.target.value)} />
+                    <Slider defaultValue={[33]} max={100} step={1} />
+
+                    <Slider defaultValue={[33]} max={100} step={1} />
+
 
                     {/* Submit Button */}
-                    <button type="submit" className="w-full bg-yellow-500 text-white py-3 px-6 rounded-lg hover:bg-yellow-600 transition text-xl font-semibold">
+                    <Button type="submit" className="w-full bg-yellow-500 text-white py-3 px-6 rounded-lg hover:bg-yellow-600 transition text-xl font-semibold">
                         Start Tournament 🚀
-                    </button>
+                    </Button>
                 </form>
             </div>
 
@@ -187,7 +193,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                     <ul className="space-y-2">
                                         {players.map((player) => (
                                             <li key={player.id} className="border-b pb-2">
-                                                {player.name} - {convertLevel(player.placement) ?? "Unranked"}
+                                                {player.name} - {convertLevel(player.SkillLevel) ?? "Unranked"}
                                             </li>
                                         ))}
                                     </ul>

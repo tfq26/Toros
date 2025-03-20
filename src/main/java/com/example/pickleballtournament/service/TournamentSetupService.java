@@ -6,6 +6,7 @@ import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.repository.MatchRepository;
 import com.example.pickleballtournament.repository.TeamRepository;
 import com.example.pickleballtournament.repository.TournamentRepository;
+import com.example.pickleballtournament.request.UpdateMatchRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,8 +37,7 @@ public class TournamentSetupService {
     /**
      * ✅ Setup the Tournament without deleting previous data:
      * - Generates new teams and matches.
-     * - Assigns the Tournament object to each match.
-     * - Saves the tournament with references to new teams and matches (using IDs only).
+     * - Saves the tournament with references to teams and matches (using IDs only).
      */
     @Transactional
     public Tournament setupTournament(String tournamentName, int numCourts, int gamesPerTeam, boolean useExistingPlayers,
@@ -56,7 +56,7 @@ public class TournamentSetupService {
             throw new IllegalStateException("No teams available for the tournament.");
         }
 
-        // ✅ Create and Save Tournament First, storing only team IDs
+        // ✅ Create and Save Tournament first, storing only team IDs
         Tournament tournament = new Tournament();
         tournament.setName(tournamentName);
         tournament.setDateHeld(LocalDate.now());
@@ -64,7 +64,7 @@ public class TournamentSetupService {
         tournament.setNumCourts(numCourts);
         tournament.setGamesPerTeam(gamesPerTeam);
         tournament.setTiered(tiered);
-        // Store team IDs instead of full team objects
+        // Convert team objects to team IDs
         List<String> teamIds = teams.stream()
                 .map(Team::getId)
                 .collect(Collectors.toList());
@@ -74,7 +74,7 @@ public class TournamentSetupService {
         tournament = tournamentRepository.save(tournament);
         log.info("✅ Tournament '{}' saved successfully with ID: {}", tournament.getName(), tournament.getId());
 
-        // ✅ Generate matches and assign the Tournament object, then return match IDs
+        // ✅ Generate matches and assign the tournament ID to each match
         List<String> matchIds = generateMatches(tournament, teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
 
         // ✅ Update Tournament with match IDs
@@ -107,7 +107,7 @@ public class TournamentSetupService {
     }
 
     /**
-     * ✅ Generate Matches and assign the Tournament object.
+     * ✅ Generate Matches and assign the Tournament ID.
      * Saves the matches to the match repository and returns a list of match IDs.
      */
     private List<String> generateMatches(Tournament tournament, List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered,
@@ -143,7 +143,10 @@ public class TournamentSetupService {
                     LocalTime matchEndTime = matchStartTime.plusMinutes(matchDuration);
 
                     Match match = new Match();
-                    match.setTournament(tournament); // ✅ Assign Tournament Object
+                    // Instead of setting the full Tournament, set only the tournament ID.
+                    // Ensure your Match model has a field like "private String tournamentId;"
+                    match.setId(tournament.getId());
+                    match.setTournament(tournament);
                     match.setTeam1(team1);
                     match.setTeam2(team2);
                     match.setTeam1Score(0);
@@ -164,7 +167,7 @@ public class TournamentSetupService {
             }
         }
 
-        // ✅ Save matches to repository before returning the IDs
+        // Save matches to repository and collect their IDs.
         List<Match> savedMatches = matchRepository.saveAll(matches);
         List<String> matchIds = savedMatches.stream()
                 .map(Match::getId)

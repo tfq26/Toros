@@ -40,6 +40,7 @@ public class PlayerService {
             Integer teamNumber = getNumericCellValue(row.getCell(4), "teamNumber", errors, row.getRowNum());
             String clubName = getCellValue(row.getCell(5), "clubName", errors, row.getRowNum());
             Integer placement = getNumericCellValue(row.getCell(6), "placement", errors, row.getRowNum());
+            System.out.println("Row " + row.getRowNum() + " placement: " + placement);
 
             // Ensure all required fields are available before adding to the list
             if (name != null && age != null && email != null && phone != null &&
@@ -53,7 +54,7 @@ public class PlayerService {
                 player.setPhone(phone);
                 player.setTeamNumber(teamNumber);
                 player.setClubName(clubName);
-                player.setPlacement(placement);
+                player.setSkillLevel(placement);
 
                 players.add(player);
             }
@@ -89,7 +90,7 @@ public class PlayerService {
         player.setPhone(updatedPlayer.getPhone());
         player.setTeamNumber(updatedPlayer.getTeamNumber());
         player.setClubName(updatedPlayer.getClubName());
-        player.setPlacement(updatedPlayer.getPlacement());
+        player.setSkillLevel(updatedPlayer.getSkillLevel());
 
         return playerRepository.save(player);
     }

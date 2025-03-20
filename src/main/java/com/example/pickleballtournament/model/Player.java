@@ -20,6 +20,6 @@ public class Player {
     private String phone;
     private Integer teamNumber;
     private String clubName;
-    private Integer placement;
+    private Integer skillLevel;
     private boolean registered;
 }

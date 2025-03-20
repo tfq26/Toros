@@ -1,10 +1,7 @@
 package com.example.pickleballtournament.controller;
 
-import com.example.pickleballtournament.model.Match;
-import com.example.pickleballtournament.model.Team;
 import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.request.TournamentSetupRequest;
-import com.example.pickleballtournament.request.UpdateMatchRequest;
 import com.example.pickleballtournament.service.TournamentSetupService;
 import com.example.pickleballtournament.service.LiveTournamentService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +15,7 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("/api/tournament")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173") // ✅ Allow frontend requests
 public class TournamentController {
 
     private final TournamentSetupService tournamentSetupService;
@@ -29,28 +26,11 @@ public class TournamentController {
         this.liveTournamentService = liveTournamentService;
     }
 
-    @GetMapping("/activeTournaments")
-    public ResponseEntity<List<Tournament>> getActiveTournaments() {
-        try {
-            List<Tournament> activeTournaments = liveTournamentService.getAllActiveTournaments();
-
-            if (activeTournaments.isEmpty()) {
-                log.info("📂 No active tournaments found.");
-            }
-
-            return ResponseEntity.ok(activeTournaments);
-        } catch (Exception e) {
-            log.error("❌ Error fetching active tournaments: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(List.of());
-        }
-    }
-
+    /** 🎯 Setup Tournament */
     @PostMapping("/setup")
     public ResponseEntity<?> setupTournament(@RequestBody TournamentSetupRequest request) {
         try {
             log.info("🛠️ Setting up tournament: {}", request.getTournamentName());
-
             Tournament tournament = tournamentSetupService.setupTournament(
                     request.getTournamentName(),
                     request.getNumCourts(),
@@ -60,7 +40,6 @@ public class TournamentController {
                     request.getStartTime(),
                     request.getMatchDuration()
             );
-
             log.info("✅ Tournament '{}' setup successfully!", tournament.getName());
             return ResponseEntity.ok(tournament);
         } catch (Exception e) {
@@ -69,6 +48,35 @@ public class TournamentController {
         }
     }
 
+    /** 🎯 Get All Active Tournaments */
+    @GetMapping("/activeTournament")
+    public ResponseEntity<?> getActiveTournamentFull() {
+        try {
+            List<Tournament> activeTournaments = liveTournamentService.getAllActiveTournaments();
+            log.info("🎾 Active Tournaments retrieved: {}", activeTournaments.size());
+            // Always return 200 OK with an empty list if none are active
+            return ResponseEntity.ok(activeTournaments);
+        } catch (Exception e) {
+            log.error("❌ Error fetching active tournaments: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch active tournaments.");
+        }
+    }
+
+    /** 🎯 Get Tournament by ID */
+    @GetMapping("/{tournamentId}")
+    public ResponseEntity<?> getTournamentById(@PathVariable String tournamentId) {
+        Optional<Tournament> tournamentOpt = liveTournamentService.getTournamentById(tournamentId);
+        if (tournamentOpt.isPresent()) {
+            log.info("✅ Found tournament: {}", tournamentOpt.get().getName());
+            return ResponseEntity.ok(tournamentOpt.get());
+        } else {
+            log.warn("⚠️ Tournament not found for ID: {}", tournamentId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tournament not found.");
+        }
+    }
+
+    /** 🎯 End Tournament */
     @PostMapping("/end")
     public ResponseEntity<String> endTournament() {
         try {
@@ -81,59 +89,20 @@ public class TournamentController {
         }
     }
 
+    /** 🎯 Get All Tournaments */
     @GetMapping("/all")
     public ResponseEntity<List<Tournament>> getAllTournaments() {
         List<Tournament> tournaments = liveTournamentService.getAllTournaments();
+        if (tournaments.isEmpty()) {
+            log.info("📂 No tournaments found.");
+        }
         return ResponseEntity.ok(tournaments);
     }
 
+    /** 🎯 Get Team Standings */
     @GetMapping("/standings")
-    public ResponseEntity<List<Team>> getTeamStandings() {
-        return ResponseEntity.ok(liveTournamentService.getStandings());
-    }
-
-    @GetMapping("/{tournamentId}/matches")
-    public ResponseEntity<?> getMatchesByTournament(@PathVariable String tournamentId) {
-        try {
-            Optional<Tournament> tournament = liveTournamentService.getTournamentById(tournamentId);
-            if (tournament.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tournament not found.");
-            }
-            return ResponseEntity.ok(liveTournamentService.getMatchesByTournamentId(tournamentId));
-        } catch (Exception e) {
-            log.error("❌ Error fetching matches for Tournament ID {}: {}", tournamentId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch matches.");
-        }
-    }
-
-    @GetMapping("/matches")
-    public ResponseEntity<List<Match>> getAllMatches() {
-        return ResponseEntity.ok(liveTournamentService.getAllMatches());
-    }
-
-    @GetMapping("/matches/team/{teamId}")
-    public ResponseEntity<?> getMatchesByTeam(@PathVariable String teamId) {
-        try {
-            return ResponseEntity.ok(liveTournamentService.getMatchesByTeam(teamId));
-        } catch (Exception e) {
-            log.error("❌ Error fetching matches for Team ID {}: {}", teamId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch matches.");
-        }
-    }
-
-    @PatchMapping("/match/{id}")
-    public ResponseEntity<?> updateMatch(@PathVariable String id, @RequestBody UpdateMatchRequest request) {
-        try {
-            log.info("📥 Received match update request: Match ID={}, Team1Score={}, Team2Score={}, Status={}",
-                    id, request.getTeam1Score(), request.getTeam2Score(), request.getStatus());
-
-            Match updatedMatch = liveTournamentService.updateMatch(id, request);
-            return ResponseEntity.ok(updatedMatch);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            log.error("❌ Error updating match {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update match.");
-        }
+    public ResponseEntity<List<String>> getTeamStandings() {
+        List<String> standings = liveTournamentService.getStandings();
+        return ResponseEntity.ok(standings);
     }
 }

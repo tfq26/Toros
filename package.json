@@ -1,6 +1,6 @@
 {
-  "name": "pickleball-tournament-app",
-  "version": "1.0.0",
+  "name": "Toros",
+  "version": "0.6.2",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -14,6 +14,7 @@
     "axios": "^1.4.0",
     "classnames": "^2.3.2",
     "dotenv": "^16.3.1",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.28.2",
