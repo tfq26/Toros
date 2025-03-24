@@ -7,40 +7,45 @@ const ScoreModal = ({ isOpen, onClose, match, onSubmit }) => {
     const [team2Score, setTeam2Score] = useState(match.team2Score || 0);
     const [status, setStatus] = useState(match.status || "Scheduled");
 
-    /** ✅ Ensure scores update when the modal opens with a new match */
+    // Ensure scores update when the modal opens with a new match
     useEffect(() => {
         setTeam1Score(match.team1Score || 0);
         setTeam2Score(match.team2Score || 0);
         setStatus(match.status || "Scheduled");
     }, [match]);
 
-    /** ✅ Handle score validation */
+    // Handle score validation and update
     const handleScoreChange = (team, value) => {
         let newValue = parseInt(value, 10);
         if (isNaN(newValue)) newValue = 0;
-        if (newValue <= 0) newValue = 0;
+        if (newValue < 0) newValue = 0;
         if (newValue > 21) newValue = 21;
 
-        if (team === "team1") setTeam1Score(newValue);
-        if (team === "team2") setTeam2Score(newValue);
+        if (team === "team1") {
+            setTeam1Score(newValue);
+        } else if (team === "team2") {
+            setTeam2Score(newValue);
+        }
     };
 
-    /** ✅ Handle submission */
+    // Handle submission with error logging
     const handleSubmit = () => {
-        if (!onSubmit) {
-            console.error("❌ `onSubmit` function is undefined in ScoreModal!");
-            return;
+        try {
+            if (!onSubmit) {
+                console.error("❌ `onSubmit` function is undefined in ScoreModal!");
+                return;
+            }
+            console.log("✅ Submitting Match Update from ScoreModal", match);
+            onSubmit({
+                ...match,
+                team1Score,
+                team2Score,
+                status,
+            });
+            onClose(); // Close modal after submission
+        } catch (error) {
+            console.error("Error in handleSubmit of ScoreModal:", error);
         }
-
-        console.log("✅ Submitting Match Update from ScoreModal", match);
-        onSubmit({
-            ...match,
-            team1Score,
-            team2Score,
-            status,
-        });
-
-        onClose(); // Close modal after submission
     };
 
     return (

@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import Navbar from "./pages/Navbar.jsx";
+import Layout from "./pages/Layout.jsx";
 import AppRoutes from "./pages/AppRouting.jsx";
-import DevTools from "./pages/DevTools/DevTools.jsx"; // ✅ DevTools integration
+import DevTools from "./pages/DevTools/DevTools.jsx";
 import "./index.css";
 
 const App = () => {
@@ -11,23 +11,11 @@ const App = () => {
     );
     const [tournamentConfig, setTournamentConfig] = useState(null);
     const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
-    const [isDarkMode, setIsDarkMode] = useState(window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-    /** ✅ Sync state with localStorage */
     useEffect(() => {
         localStorage.setItem("tournamentSetupComplete", JSON.stringify(tournamentSetupComplete));
     }, [tournamentSetupComplete]);
 
-    /** ✅ Detect system dark mode */
-    useEffect(() => {
-        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-        const handleChange = () => setIsDarkMode(mediaQuery.matches);
-
-        mediaQuery.addEventListener("change", handleChange);
-        return () => mediaQuery.removeEventListener("change", handleChange);
-    }, []);
-
-    /** ✅ Fetch Active Tournaments */
     useEffect(() => {
         const fetchTournamentStatus = async () => {
             try {
@@ -53,21 +41,8 @@ const App = () => {
 
     return (
         <Router>
-            <div className={`flex h-screen ${isDarkMode ? "dark" : ""}`}>
-                {/* Sidebar Navbar */}
-                <Navbar
-                    tournamentSetupComplete={tournamentSetupComplete}
-                    user={authToken ? { name: "John Doe" } : null}
-                    onLogout={() => {
-                        setAuthToken(null);
-                        localStorage.removeItem("authToken");
-                        localStorage.removeItem("tournamentSetupComplete");
-                        setTournamentSetupComplete(false);
-                    }}
-                />
-
-                {/* Main Content */}
-                <div className="flex-1 pl-20 overflow-y-auto min-h-screen bg-orange-50 dark:bg-gray-800 dark:text-gray-200">
+            <div className="flex h-screen dark:bg-gray-800">
+                <Layout>
                     <AppRoutes
                         setAuthToken={setAuthToken}
                         authToken={authToken}
@@ -75,9 +50,7 @@ const App = () => {
                         tournamentConfig={tournamentConfig}
                         setTournamentConfig={setTournamentConfig}
                     />
-                </div>
-
-                {/* ✅ Development Tools (Floating Window) */}
+                </Layout>
                 <div className="fixed bottom-4 right-4">
                     <DevTools />
                 </div>

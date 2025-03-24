@@ -1,18 +1,5 @@
 import axios from "axios";
 
-// Fetch a match by its ID using the new MatchController endpoint
-export async function fetchMatchById(matchId) {
-    try {
-        console.log(`Fetching match with ID: ${matchId}`);
-        const response = await axios.get(`http://localhost:8080/api/match/${matchId}`);
-        console.log(`Fetched match ${matchId}:`, response.data);
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching match ${matchId}:`, error);
-        return null;
-    }
-}
-
 // Load details for multiple matches given an array of match IDs
 export async function loadMatchDetails(matchIds) {
     try {
@@ -47,16 +34,23 @@ export async function fetchAllMatches() {
     }
 }
 
-// Fetch a team by its ID
-export async function fetchTeamById(teamId) {
+// Fetch matches for a tournament by tournament ID
+export async function fetchMatchesByTournament(tournamentId) {
     try {
-        console.log(`Fetching team with ID: ${teamId}`);
-        const response = await axios.get(`http://localhost:8080/api/team/${teamId}`);
-        console.log(`Fetched team ${teamId}:`, response.data);
-        return response.data;
+        console.log(`Fetching matches for tournament with ID: ${tournamentId}`);
+        // Call the TournamentController endpoint that returns match IDs for the tournament.
+        // Note: The URL here uses "/tournament/tournament/{tournamentId}" as defined in your controller.
+        const response = await axios.get(`http://localhost:8080/api/tournament/tournament/${tournamentId}`);
+        console.log(`Fetched match IDs for tournament ${tournamentId}:`, response.data);
+        const matchIds = response.data; // expecting an array of match IDs
+
+        // Use the existing loadMatchDetails function to get the full match objects.
+        const matches = await loadMatchDetails(matchIds);
+        console.log("Fetched full match details:", matches);
+        return matches;
     } catch (error) {
-        console.error("Error fetching team:", error);
-        return null;
+        console.error(`Error fetching matches for tournament ${tournamentId}:`, error);
+        return [];
     }
 }
 
@@ -87,5 +81,25 @@ export async function fetchTournamentById(tournamentId) {
     } catch (error) {
         console.error("Error fetching tournament:", error);
         return null;
+    }
+}
+
+/**
+ * Update a match by its ID.
+ * This function sends a PATCH request with the updated scores and status.
+ *
+ * @param {string} matchId - The ID of the match to update.
+ * @param {object} updateData - The update data containing team1Score, team2Score, and status.
+ * @returns {object} The updated match data from the server.
+ */
+export async function updateMatch(matchId, updateData) {
+    try {
+        console.log(`Updating match with ID: ${matchId} with data:`, updateData);
+        const response = await axios.patch(`http://localhost:8080/api/match/${matchId}`, updateData);
+        console.log(`Updated match ${matchId}:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`Error updating match ${matchId}:`, error);
+        throw error;
     }
 }

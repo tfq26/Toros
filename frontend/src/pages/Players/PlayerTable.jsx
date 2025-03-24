@@ -1,66 +1,61 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { convertLevel } from "../utils/playerUtils";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.jsx";
 
 const PlayerTable = ({ players, error, onEdit }) => {
     const flatPlayers = Object.values(players).flat();
 
     return (
-        <div className="w-full">
+        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-lg">
             <div className="overflow-x-auto rounded-lg w-full flex-grow min-h-[600px]">
-                <table className="table-auto border-collapse border border-gray-300 w-full dark:border-gray-600">
-                    <thead>
-                    <tr className="bg-emerald-600 dark:bg-emerald-950 text-white uppercase text-lg font-semibold">
-                        {["Name", "Club", "Placement", "Actions"].map((header) => (
-                            <th
-                                key={header}
-                                className="border border-emerald-800 px-8 py-4 text-center dark:border-emerald-900"
-                            >
-                                {header}
-                            </th>
-                        ))}
-                    </tr>
-                    </thead>
-                    {!error && flatPlayers.length > 0 ? (
-                        <tbody>
-                        {flatPlayers.map((player, index) => (
-                            <tr
-                                key={`player-${index}`}
-                                className="odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition dark:odd:bg-green-800 dark:even:bg-green-700 dark:hover:bg-green-600"
-                            >
-                                <td className="border border-gray-300 px-8 py-4 text-center dark:border-green-900 dark:text-gray-200">
-                                    {player.name || "N/A"}
-                                </td>
-                                <td className="border border-gray-300 px-8 py-4 text-center dark:border-green-900 dark:text-gray-200">
-                                    {player.clubName || "N/A"}
-                                </td>
-                                <td className="border border-gray-300 px-8 py-4 text-center font-semibold dark:border-green-900 dark:text-gray-200">
-                                    {convertLevel(player.skillLevel)}
-                                </td>
-                                <td className="border border-gray-300 px-8 py-4 text-center dark:border-green-900">
-                                    <button
+                <Table className="w-full">
+                    <TableHeader className="flex text-center font-medium bg-transparent hover:bg-none">
+                        <TableRow className="flex py-5 text-center font-medium w-full bg-transparent hover:bg-muted/0">
+                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent">
+                                Name
+                            </TableHead>
+                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent">
+                                Placement
+                            </TableHead>
+                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent">
+                                ClubName
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {!error && flatPlayers.length > 0 ? (
+                            flatPlayers.map((player, index) => (
+                                <TableRow
+                                    key={`player-${index}`}
+                                    className="flex w-full odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition dark:odd:bg-green-800 dark:even:bg-green-700 dark:hover:bg-green-600"
+                                >
+                                    <TableCell
+                                        className="flex-1 text-center font-medium cursor-pointer hover:underline text-2xl"
                                         onClick={() => onEdit(player)}
-                                        className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-blue-600 dark:bg-yellow-600 dark:hover:bg-blue-800"
                                     >
-                                        Edit
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    ) : (
-                        <tbody>
-                        <tr>
-                            <td
-                                colSpan="4"
-                                className="text-center text-gray-600 dark:text-gray-300 py-6"
-                            >
-                                No players found.
-                            </td>
-                        </tr>
-                        </tbody>
-                    )}
-                </table>
+                                        {player.name || "N/A"}
+                                    </TableCell>
+                                    <TableCell className="flex-1 text-center text-xl">
+                                        {convertLevel(player.skillLevel)}
+                                    </TableCell>
+                                    <TableCell className="flex-1 text-center text-xl">
+                                        {player.clubName || "N/A"}
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow className="flex w-full">
+                                <TableCell
+                                    colSpan={3}
+                                    className="text-center py-6 text-gray-600 dark:text-gray-300"
+                                >
+                                    No players found.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </div>
         </div>
     );

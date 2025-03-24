@@ -8,7 +8,7 @@ import {Button} from "../../components/ui/button.jsx"
 import {Checkbox} from "../../components/ui/checkbox.jsx"
 import {Slider} from "../../components/ui/slider.jsx"
 import {Toaster} from "../../components/ui/sonner.jsx"
-
+import { FaClock } from "react-icons/fa";
 import ErrorMessage from "../Error";
 import SlidingWindow from "../SlidingWindow";
 import axios from "axios";
@@ -17,6 +17,7 @@ import { PiArrowSquareLeftBold } from "react-icons/pi";
 import { convertLevel, calculateStats } from "../utils/playerUtils.js";
 import { toast, ToastContainer } from "react-toastify"; // ✅ Fixed Toast import
 import "react-toastify/dist/ReactToastify.css";
+import {Label} from "@/components/ui/label.jsx";
 
 const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
@@ -141,38 +142,61 @@ const TournamentSetup = ({ onSetupComplete }) => {
                 {error && <ErrorMessage message={error} />}
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <Input label="Number of Courts" type="number" value={tournamentConfig.numCourts}
-                                onChange={(e) => handleConfigChange("numCourts", e.target.value)} />
-                    <Input label="Games per Team" type="number" value={tournamentConfig.gamesPerTeam}
-                                onChange={(e) => handleConfigChange("gamesPerTeam", e.target.value)} />
-
-                    {/* Start Time Selection */}
-                    <div className="flex items-center gap-4">
-                        <Input label="Start Time" type="time" value={tournamentConfig.startTime}
-                                    onChange={(e) => handleConfigChange("startTime", e.target.value)} />
-                        <Button type="button" className="bg-emerald-500 mt-6 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition"
-                                onClick={handleSetCurrentTime}>
-                            Use Current Time
-                        </Button>
+                <form onSubmit={handleSubmit} className="space-y-7">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <Label className="text-xl">Number of Courts</Label>
+                            <Label className="text-xl mt-4">Number of Games per Team</Label>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <Input type="number" defaultValue={[0]} max={20}/>
+                            <Input type="number" defaultValue={[0]} max={20}/>
+                        </div>
                     </div>
 
-                    {/* Checkboxes */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <Checkbox label="Use Existing Player List" checked={tournamentConfig.useExistingPlayers}
-                                       onChange={(e) => handleConfigChange("useExistingPlayers", e.target.checked)} />
-                        <Checkbox label="Divide Tournament into Tiers" checked={tournamentConfig.tiered}
-                                       onChange={(e) => handleConfigChange("tiered", e.target.checked)} />
+
+                    <div className="flex items-start gap-4">
+                        {/* Start Time Selection */}
+                        <div className="flex items-center gap-4">
+                            <Label className="text-xl">Start Time</Label>
+                            <Input
+                                type="time"
+                                value={tournamentConfig.startTime}
+                                onChange={(e) => handleConfigChange("startTime", e.target.value)}
+                                className="w-fit"
+                            />
+                            <Button
+                                type="button"
+                                className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition"
+                                onClick={handleSetCurrentTime}
+                            >
+                                <FaClock/>
+                            </Button>
+                        </div>
+
+                        {/* Checkboxes */}
+                        <div className="ml-auto flex flex-col gap-4 mr-[15%]">
+                            <div className="flex items-center gap-2">
+                                <Checkbox/>
+                                <Label className="text-md font-medium">Use Existing Player List</Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Checkbox/>
+                                <Label className="text-md font-medium">Divide Tournament into Tiers</Label>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Sliders */}
-                    <Slider defaultValue={[33]} max={100} step={1} />
-
-                    <Slider defaultValue={[33]} max={100} step={1} />
+                    <Label className="text-lg font-medium">Game Duration</Label>
+                    <Slider defaultValue={[33]} max={100} step={1}/>
+                    <Label className="text-lg font-medium">Break Time</Label>
+                    <Slider defaultValue={[33]} max={100} step={1}/>
 
 
                     {/* Submit Button */}
-                    <Button type="submit" className="w-full bg-yellow-500 text-white py-3 px-6 rounded-lg hover:bg-yellow-600 transition text-xl font-semibold">
+                    <Button type="submit"
+                            className="w-full bg-yellow-500 text-white py-3 px-6 rounded-lg hover:bg-yellow-600 transition text-xl font-semibold">
                         Start Tournament 🚀
                     </Button>
                 </form>

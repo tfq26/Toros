@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import {Button} from "@/components/ui/button.jsx";
 
 const Sidebar = ({
                      matchStats,
@@ -59,31 +60,38 @@ const Sidebar = ({
             <p><strong>Not Started:</strong> {matchStats?.notStarted ?? "N/A"}</p>
 
             {/* Sorting Button */}
-            <button
+            <Button
                 onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition w-full mt-4"
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition w-full mt-4 text-lg"
             >
                 {sortOrder === "desc" ? "🔽 Sort Descending" : "🔼 Sort Ascending"}
-            </button>
+            </Button>
+
+            <Button
+                onClick={() => window.open("/viewer", "_blank")}
+                className="bg-amber-400 hover:bg-amber-500 text-white px-3 py-2 rounded mt-4 w-full text-lg"
+            >
+                Open Viewer in New Tab
+            </Button>
 
             {/* Refresh Matches */}
-            <button
+            <Button
                 onClick={handleFetchMatches}
                 className={`bg-blue-500 text-white px-3 py-2 rounded mt-4 w-full ${
-                    isLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600 transition"
+                    isLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600 transition text-lg"
                 }`}
                 disabled={isLoading}
             >
                 {isLoading ? "Refreshing..." : "Refresh Matches"}
-            </button>
+            </Button>
 
             {/* End Tournament Button */}
-            <button
+            <Button
                 onClick={endTournament}
-                className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition mt-2 w-full"
+                className="bg-red-500 text-white px-3 py-2 rounded mt-4 w-full hover:bg-red-600 transition text-lg"
             >
                 End Tournament
-            </button>
+            </Button>
         </div>
     );
 };

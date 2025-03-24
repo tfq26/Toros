@@ -1,3 +1,5 @@
+import axios from "axios";
+
 /**
  * Convert placement number to a readable rank.
  * @param {number} placement - The placement number (e.g., 1, 2, 3).
@@ -24,13 +26,13 @@ export const convertLevel = (placement) => {
 export const getEmojiForRank = (rank) => {
     switch (rank) {
         case "Beginner":
-            return "🌱"; // Emoji for beginners
+            return "🌱";
         case "Intermediate":
-            return "🔥"; // Emoji for intermediate
+            return "🔥";
         case "Advanced":
-            return "🏆"; // Emoji for advanced
+            return "🏆";
         default:
-            return "❓"; // Emoji for unknown or other ranks
+            return "❓";
     }
 };
 
@@ -41,8 +43,6 @@ export const getEmojiForRank = (rank) => {
  */
 export const formatTo12HourTime = (time) => {
     if (!time) return "N/A";
-
-    // If time is a Date object, extract hours and minutes
     if (time instanceof Date) {
         return time.toLocaleString("en-US", {
             hour: "numeric",
@@ -50,12 +50,9 @@ export const formatTo12HourTime = (time) => {
             hour12: true,
         });
     }
-
-    // If time is a string, parse it into a Date object
     const [hours, minutes] = time.split(":").map(Number);
     const date = new Date();
     date.setHours(hours, minutes);
-
     return date.toLocaleString("en-US", {
         hour: "numeric",
         minute: "2-digit",
@@ -77,7 +74,6 @@ export const validateAndPreviewPlayers = (data) => {
             data: [],
         };
     }
-
     const processedData = [];
     for (let i = 0; i < data.length; i++) {
         const player = data[i];
@@ -94,8 +90,7 @@ export const validateAndPreviewPlayers = (data) => {
             name: player.Name,
             email: player.Email,
             clubName: player.Club,
-            // Convert the raw placement value to a number (if needed)
-            // and store it as skillLevel for consistency with the backend.
+            // Convert the raw placement value to a number for consistency.
             skillLevel: Number(player.Placement),
         });
     }
@@ -108,13 +103,13 @@ export const validateAndPreviewPlayers = (data) => {
  * @returns {Object} Stats including total players, teams, rank counts, and club counts.
  */
 export const calculateStats = (players) => {
+    // Flatten players array in case it's nested.
     const flatPlayers = Object.values(players).flat();
     const totalPlayers = flatPlayers.length;
     const totalTeams = new Set(flatPlayers.map((player) => player.teamNumber)).size;
 
     const rankCounts = flatPlayers.reduce(
         (acc, player) => {
-            // Using skillLevel to compute the rank
             const rank = convertLevel(player.skillLevel);
             acc[rank] = (acc[rank] || 0) + 1;
             return acc;
@@ -141,4 +136,62 @@ export const filterPlayersBySearch = (players, searchQuery) => {
     return players.filter((player) =>
         player.name && player.name.toLowerCase().includes(lowerCaseQuery)
     );
+};
+
+/**
+ * Saves player data.
+ *
+ * @param {Object} params
+ * @param {Object} params.formData - The form data from the modal.
+ * @param {Object} params.player - The player being edited (if any).
+ * @param {Function} params.refreshPlayers - Function to refresh the player list.
+ * @param {Function} params.setIsDirty - State setter for isDirty.
+ * @param {Function} params.setShowCheckmark - State setter for showing the checkmark.
+ */
+export const savePlayerData = async ({ formData, player, refreshPlayers, setIsDirty, setShowCheckmark }) => {
+    try {
+        const payload = {
+            ...formData,
+            age: parseInt(formData.age, 10) || 0,
+            teamNumber: parseInt(formData.teamNumber, 10) || 0,
+            placement: parseInt(formData.placement, 10) || 0,
+        };
+
+        if (player) {
+            await axios.put(`http://localhost:8080/api/players/${player.id}`, payload);
+        } else {
+            await axios.post(`http://localhost:8080/api/players`, payload);
+        }
+
+        refreshPlayers();
+        setIsDirty(false);
+        setShowCheckmark(true);
+
+        // Hide checkmark after 3 seconds
+        setTimeout(() => setShowCheckmark(false), 3000);
+    } catch (error) {
+        console.error("Error saving player:", error);
+        throw error;
+    }
+};
+
+/**
+ * Deletes a player.
+ *
+ * @param {Object} params
+ * @param {Object} params.player - The player to delete.
+ * @param {Function} params.refreshPlayers - Function to refresh the player list.
+ * @param {Function} params.onClose - Function to close the modal.
+ */
+export const deletePlayerData = async ({ player, refreshPlayers, onClose }) => {
+    if (!player) return;
+    if (!window.confirm("Are you sure you want to delete this player?")) return;
+    try {
+        await axios.delete(`http://localhost:8080/api/players/${player.id}`);
+        refreshPlayers();
+        onClose();
+    } catch (error) {
+        console.error("Error deleting player:", error);
+        throw error;
+    }
 };

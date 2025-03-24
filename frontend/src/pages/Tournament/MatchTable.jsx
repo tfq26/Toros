@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import ScoreModal from "./ScoreModal";
+import ScoreModal from "../Modals/ScoreModal.jsx";
+import ScoreModalUpdated from "@/pages/Modals/scoreModalUpdated.jsx";
 
 const MatchTable = ({ matches, refreshMatches, updateMatch }) => {
     const [selectedMatch, setSelectedMatch] = useState(null);
@@ -43,11 +44,11 @@ const MatchTable = ({ matches, refreshMatches, updateMatch }) => {
                 <table className="table-auto w-full dark:border-gray-600">
                     <thead>
                     <tr className="bg-emerald-600 dark:bg-emerald-950 text-white uppercase text-lg font-semibold">
-                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Team 1</th>
-                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Team 2</th>
-                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Score</th>
-                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Status</th>
-                        <th className="border px-6 py-3 text-center border-emerald-400 dark:border-emerald-900">Actions</th>
+                        <th className="border px-6 py-3 text-2xl text-center border-emerald-400 dark:border-emerald-900">Team 1</th>
+                        <th className="border px-6 py-3 text-2xl text-center border-emerald-400 dark:border-emerald-900">Team 2</th>
+                        <th className="border px-6 py-3 text-2xl text-center border-emerald-400 dark:border-emerald-900">Score</th>
+                        <th className="border px-6 py-3 text-2xl text-center border-emerald-400 dark:border-emerald-900">Status</th>
+                        <th className="border px-6 py-3 text-2xl text-center border-emerald-400 dark:border-emerald-900">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -98,7 +99,7 @@ const MatchTable = ({ matches, refreshMatches, updateMatch }) => {
             </div>
 
             {/* ✅ Score Modal with correct `onSubmit` */}
-            <ScoreModal
+            <ScoreModalUpdated
                 isOpen={isModalOpen}
                 match={selectedMatch}
                 onClose={closeModal}

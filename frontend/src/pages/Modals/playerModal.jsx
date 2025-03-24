@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { savePlayerData, deletePlayerData } from "../utils/playerUtils.js";
 
 const PlayerModal = ({ player, onClose, refreshPlayers }) => {
     const [formData, setFormData] = useState({
@@ -46,46 +46,30 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
         const { name, value, type, checked } = e.target;
         setFormData({
             ...formData,
-            [name]: type === "checkbox" ? checked : value, // ✅ Handles checkbox properly
+            [name]: type === "checkbox" ? checked : value,
         });
         setIsDirty(true);
     };
 
     const handleSave = async () => {
         try {
-            const payload = {
-                ...formData,
-                age: parseInt(formData.age, 10) || 0,
-                teamNumber: parseInt(formData.teamNumber, 10) || 0,
-                placement: parseInt(formData.placement, 10) || 0,
-            };
-
-            if (player) {
-                await axios.put(`http://localhost:8080/api/players/${player.id}`, payload);
-            } else {
-                await axios.post(`http://localhost:8080/api/players`, payload);
-            }
-
-            refreshPlayers();
-            setIsDirty(false);
-            setShowCheckmark(true);
-
-            // Hide checkmark after 3 seconds
-            setTimeout(() => setShowCheckmark(false), 3000);
+            await savePlayerData({
+                formData,
+                player,
+                refreshPlayers,
+                setIsDirty,
+                setShowCheckmark,
+            });
         } catch (error) {
-            console.error("Error saving player:", error);
+            // Optional: set error state or notify user
         }
     };
 
     const handleDelete = async () => {
-        if (!player) return;
-        if (!window.confirm("Are you sure you want to delete this player?")) return;
         try {
-            await axios.delete(`http://localhost:8080/api/players/${player.id}`);
-            refreshPlayers();
-            onClose();
+            await deletePlayerData({ player, refreshPlayers, onClose });
         } catch (error) {
-            console.error("Error deleting player:", error);
+            // Optional: handle error
         }
     };
 
@@ -107,7 +91,10 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
                     ❌
                 </button>
 
-                <h2 className="text-xl font-bold mb-4 dark:text-gray-800">{player ? "Edit Player" : "Add Player"}</h2>
+                <h2 className="text-xl font-bold mb-4 dark:text-gray-800">
+                    {player ? "Edit Player" : "Add Player"}
+                </h2>
+
                 <div className="space-y-4">
                     {/* Name */}
                     <div>
@@ -193,7 +180,7 @@ const PlayerModal = ({ player, onClose, refreshPlayers }) => {
                         />
                     </div>
 
-                    {/* ✅ Registered Checkbox */}
+                    {/* Registered Checkbox */}
                     <div className="flex items-center">
                         <input
                             type="checkbox"

@@ -5,9 +5,12 @@ import MatchTabs from "./MatchTabs";
 import Sidebar from "./Sidebar.jsx";
 import SlidingWindow from "../SlidingWindow.jsx";
 import { PiArrowSquareLeftBold } from "react-icons/pi";
-import { fetchAllMatches } from "../utils/dataUtils.js";
+// Import both functions from dataUtils
+import { fetchAllMatches, fetchMatchesByTournament } from "../utils/dataUtils.js";
 import WindowView from "./Viewer/WindowView.jsx";
-import EndTournamentModal from "../Modals/EndTournamentModal.jsx"; // Import the new modal
+import EndTournamentModal from "../Modals/EndTournamentModal.jsx";
+import {RxHamburgerMenu} from "react-icons/rx";
+import {Button} from "@/components/ui/button.jsx"; // Import the new modal
 
 const LiveTournament = ({ tournamentConfig }) => {
     const [matches, setMatches] = useState([]);
@@ -20,13 +23,20 @@ const LiveTournament = ({ tournamentConfig }) => {
 
     useEffect(() => {
         fetchMatches();
-    }, []);
+    }, [tournamentConfig]);
 
     const fetchMatches = async () => {
         setLoading(true);
         try {
-            const fullMatches = await fetchAllMatches();
-            setMatches(fullMatches);
+            // If tournamentConfig is provided and has an id, fetch matches by tournament.
+            if (tournamentConfig && tournamentConfig.id) {
+                const tournamentMatches = await fetchMatchesByTournament(tournamentConfig.id);
+                setMatches(tournamentMatches);
+            } else {
+                // Fallback: fetch all matches
+                const fullMatches = await fetchAllMatches();
+                setMatches(fullMatches);
+            }
         } catch (err) {
             console.error("❌ Error fetching matches:", err);
         } finally {
@@ -40,11 +50,14 @@ const LiveTournament = ({ tournamentConfig }) => {
             return;
         }
         try {
-            const response = await axios.patch(`http://localhost:8080/api/match/${updatedMatch.id}`, {
-                team1Score: updatedMatch.team1Score,
-                team2Score: updatedMatch.team2Score,
-                status: updatedMatch.status,
-            });
+            const response = await axios.patch(
+                `http://localhost:8080/api/tournament/${updatedMatch.id}`,
+                {
+                    team1Score: updatedMatch.team1Score,
+                    team2Score: updatedMatch.team2Score,
+                    status: updatedMatch.status,
+                }
+            );
             if (response.status === 200) {
                 console.log("✅ Match updated successfully:", response.data);
                 fetchMatches();
@@ -59,24 +72,28 @@ const LiveTournament = ({ tournamentConfig }) => {
 
     // Function to end tournament using backend endpoint
     const endTournament = async () => {
-        const response = await axios.post("http://localhost:8080/api/tournament/end");
-        if (response.status === 200) {
-            console.log("🏁 Tournament ended successfully.");
-        } else {
-            throw new Error("Failed to end tournament.");
+        try {
+            const response = await axios.post("http://localhost:8080/api/tournament/end");
+            if (response.status === 200) {
+                console.log("🏁 Tournament ended successfully.");
+            } else {
+                throw new Error("Failed to end tournament.");
+            }
+        } catch (error) {
+            console.error("❌ Error ending tournament:", error);
         }
     };
 
     return (
         <div className="w-auto h-screen flex flex-col md:flex-row relative">
             <div className="flex-grow flex flex-col overflow-auto px-6 py-6 pr-20">
-                <button
+                <Button
                     onClick={() => navigate("/tournament/list")}
-                    className="mb-4 flex items-center gap-2 text-red-600 hover:text-red-800 transition"
+                    className="mb-4 flex items-center gap-2 text-red-600 hover:text-red-800 transition w-fit bg-transparent hover:bg-transparent shadow-none"
                 >
                     <PiArrowSquareLeftBold className="text-2xl" />
                     <span className="text-lg font-semibold">Back to Tournament List</span>
-                </button>
+                </Button>
 
                 <h1 className="text-2xl font-bold">Live Tournament Matches</h1>
 
@@ -93,19 +110,14 @@ const LiveTournament = ({ tournamentConfig }) => {
                 )}
             </div>
 
-            <button
+            <Button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="fixed left-[95%] top-1/2 transform -translate-y-1/2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition z-50"
+                className={`fixed right-5 text-7xl top-11 transform -translate-y-1/2 hover:text-amber-200 w-[5%] h-auto transition duration-200 ease-in-out z-50 bg-transparent hover:opacity-75 ${
+                    isSidebarOpen ? "text-7xl" : "text-white"
+                }`}
             >
-                {isSidebarOpen ? "❌ Close" : <PiArrowSquareLeftBold className="text-3xl" />}
-            </button>
-
-            <button
-                onClick={() => window.open("/viewer", "_blank")}
-                className="fixed right-[2%] top-[5%] bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition z-50"
-            >
-                Open Viewer in New Tab
-            </button>
+                {isSidebarOpen ? "" : <RxHamburgerMenu />}
+            </Button>
 
             <SlidingWindow
                 isOpen={isSidebarOpen}

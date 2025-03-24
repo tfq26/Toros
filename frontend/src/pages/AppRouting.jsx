@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Home from "./Home.jsx";
-import PlayerList from "./Players/PlayerList.jsx";
+import Players from "./Players/Players.jsx";
 import TournamentList from "./Tournament/TournamentList.jsx"; // ✅ New Tournament Selection View
 import TournamentSetup from "./Setup/TournamentSetup.jsx";
 import { GalleryVerticalEnd } from "lucide-react"
@@ -16,7 +16,7 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
     return (
         <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/players" element={<PlayerList />} />
+            <Route path="/players" element={<Players />} />
             <Route
                 path="/tournament/setup"
                 element={

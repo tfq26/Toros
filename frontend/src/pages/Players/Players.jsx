@@ -1,16 +1,19 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import PlayerTable from "./PlayerTable";
+import PlayerTable from "./PlayerTable"; // <-- Imported PlayerTable here
 import PlayerStats from "./PlayerStats";
 import PlayerListSettings from "./PlayerSettings";
 import PlayerSearch from "./PlayerSearch.jsx";
 import LoadingModal from "../LoadingModal";
-import PlayerModal from "../Modals/playerModal.jsx";
 import SlidingWindow from "../SlidingWindow";
 import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/playerUtils.js";
-import {PiArrowSquareLeftBold} from "react-icons/pi";
+import { PiArrowSquareLeftBold } from "react-icons/pi";
+import { Separator } from "@/components/ui/separator";
+import { RxHamburgerMenu } from "react-icons/rx";
 
-const PlayerList = () => {
+import PlayerModalUpdated from "@/pages/Modals/playerModalUpdated.jsx";
+
+const Players = () => {
     const [players, setPlayers] = useState([]);
     const [filteredPlayers, setFilteredPlayers] = useState([]);
     const [selectedClub, setSelectedClub] = useState("");
@@ -19,7 +22,9 @@ const PlayerList = () => {
     const [successMessage, setSuccessMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-
+    const triggerRefresh = async () => {
+        await fetchPlayers();
+    };
     // States for modal & sliding window
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSlidingWindowOpen, setIsSlidingWindowOpen] = useState(false);
@@ -51,19 +56,15 @@ const PlayerList = () => {
 
     const filterPlayers = () => {
         let filtered = [...players];
-
         if (selectedClub) {
             filtered = filtered.filter((player) => player.clubName === selectedClub);
         }
-
         if (selectedLevel) {
-            filtered = filtered.filter((player) => convertLevel(player.SkillLevel) === selectedLevel);
+            filtered = filtered.filter((player) => convertLevel(player.skillLevel) === selectedLevel);
         }
-
         if (searchQuery) {
             filtered = filterPlayersBySearch(filtered, searchQuery);
         }
-
         setFilteredPlayers(filtered);
     };
 
@@ -72,7 +73,6 @@ const PlayerList = () => {
             setError("⚠️ No valid player data found in the imported file.");
             return;
         }
-
         setSuccessMessage(`✅ File imported successfully! ${importedPlayers.length} players added.`);
         setError(null);
         await fetchPlayers();
@@ -80,11 +80,17 @@ const PlayerList = () => {
 
     const stats = calculateStats(filteredPlayers);
     const clubs = [...new Set(players.map((player) => player.clubName))];
-    const levels = [...new Set(players.map((player) => convertLevel(player.SkillLevel)))];
+    const levels = [...new Set(players.map((player) => convertLevel(player.skillLevel)))];
+
+    // Dummy onSubmit for modal – in a real app, this would call an API to update player data.
+    const handlePlayerSubmit = (updatedPlayer) => {
+        console.log("Updated player:", updatedPlayer);
+        // Typically, you'd call a function here (e.g., savePlayerData) to update backend data.
+    };
 
     return (
         <div className="relative">
-            <div className="w-full px-6 py-6">
+            <div className="w-full px-6 py-12">
                 {error && (
                     <div className="mb-4 p-3 bg-red-100 text-red-800 border border-red-400 rounded">
                         {error}
@@ -97,46 +103,51 @@ const PlayerList = () => {
                 )}
 
                 <div className="flex flex-col lg:flex-row gap-6 w-full">
-                    <div className="relative flex-1 min-w-0 pr-12"> {/* Added `pr-16` to shrink the table width */}
+                    <div className="relative flex-1 min-w-0 pr-12">
                         {isLoading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
-                                <LoadingModal message="Loading Player List" description="Please wait..." />
+                            <div
+                                className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
+                                <LoadingModal message="Loading Player List" description="Please wait..."/>
                             </div>
                         )}
-
-                        <PlayerSearch onSearchChange={setSearchQuery} />
-                        <div className="min-w-full lg:w-[85%] h-fit bg-white dark:bg-gray-500 rounded-lg shadow-md ">
-                            <PlayerTable
-                                players={filteredPlayers}
-                                error={error}
-                                convertLevel={convertLevel}
-                                onEdit={(player) => {
-                                    setSelectedPlayer(player);
-                                    setIsModalOpen(true);
-                                }}
-                            />
+                        <PlayerSearch onSearchChange={setSearchQuery}/>
+                        <div className="flex flex-col gap-6 mt-4">
+                            {/* Table Section */}
+                            <div>
+                                <PlayerTable
+                                    players={filteredPlayers}
+                                    error={error}
+                                    convertLevel={convertLevel}
+                                    onEdit={(player) => {
+                                        setSelectedPlayer(player);
+                                        setIsModalOpen(true);
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Floating Button for Sliding Window (Ensures it stays above everything) */}
+            {/* Floating Button for Sliding Window */}
             <button
                 onClick={() => setIsSlidingWindowOpen(true)}
-                className="fixed right-6 top-11 transform -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg transition duration-200 ease-in-out z-50"
+                className="fixed right-2 top-11 transform -translate-y-1/2 hover:text-amber-200 text-white px-4 py-2 transition duration-200 ease-in-out z-50"
             >
-                <PiArrowSquareLeftBold className="text-2xl"/>
+                <RxHamburgerMenu className="text-3xl"/>
             </button>
 
             {/* Player Modal */}
             {isModalOpen && (
-                <PlayerModal
-                    player={selectedPlayer}
+                <PlayerModalUpdated
+                    isModalOpen={isModalOpen}
                     onClose={() => {
                         setIsModalOpen(false);
                         setSelectedPlayer(null);
                     }}
+                    selectedPlayer={selectedPlayer}
                     refreshPlayers={fetchPlayers}
+                    triggerRefresh={triggerRefresh}
                 />
             )}
 
@@ -179,4 +190,4 @@ const PlayerList = () => {
     );
 };
 
-export default PlayerList;
+export default Players;

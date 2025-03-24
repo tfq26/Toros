@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { formatTo12HourTime, convertLevel, getEmojiForRank } from "../utils/playerUtils";
-import ScoreModal from "./ScoreModal";
+import ScoreModal from "../Modals/ScoreModal.jsx";
 
 const MatchCard = ({ match, updateMatch }) => {
     const [isModalOpen, setModalOpen] = useState(false);
