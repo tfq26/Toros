@@ -221,31 +221,32 @@ function Sidebar({
 }
 
 function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}) {
-  const { toggleSidebar } = useSidebar()
+      className,
+      onClick,
+      ...props
+    }) {
+  const { open, toggleSidebar } = useSidebar(); // get open state
 
   return (
-    (<Button
-        data-sidebar="trigger"
-        data-slot="sidebar-trigger"
-        variant="ghost"
-        size="icon"
-        className={cn("size-10", className)}
-        onClick={(event) => {
-          onClick?.(event)
-          toggleSidebar()
-        }}
-        {...props}>
-      <img
-          src="/bull-svgrepo-com_black.svg"
-          alt="Home"
-          className=" cursor-pointer"
-      />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>)
+      <Button
+          data-sidebar="trigger"
+          data-slot="sidebar-trigger"
+          variant="ghost"
+          size="icon"
+          className={cn("size-10", className)}
+          onClick={(event) => {
+            onClick?.(event);
+            toggleSidebar();
+          }}
+          {...props}
+      >
+        <img
+            src={open ? "/bull-svgrepo-com_black.svg" : "/bull-svgrepo-com.svg"}
+            alt="Toggle Sidebar"
+            className="cursor-pointer transition-transform duration-200 ease-in-out"
+        />
+        <span className="sr-only">Toggle Sidebar</span>
+      </Button>
   );
 }
 

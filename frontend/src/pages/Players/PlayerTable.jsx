@@ -11,7 +11,7 @@ const PlayerTable = ({ players, error, onEdit }) => {
             <div className="overflow-x-auto rounded-lg w-full flex-grow min-h-[600px]">
                 <Table className="w-full">
                     <TableHeader className="flex text-center font-medium bg-transparent hover:bg-none">
-                        <TableRow className="flex py-5 text-center font-medium w-full bg-transparent hover:bg-muted/0">
+                        <TableRow className="flex py-5 text-center font-medium w-full bg-transparent hover:bg-muted/0 dark:bg-red-600">
                             <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent">
                                 Name
                             </TableHead>

@@ -51,22 +51,24 @@ const data = {
                 { title: "Live Tournament", url: "/tournament/live" },
             ],
         },
-        {
-            title: "Authentication",
-            items: [
-                { title: "Login", url: "/auth/login" },
-                { title: "Signup", url: "/auth/signup" },
-            ],
-        },
+        // {
+        //     title: "Authentication",
+        //     items: [
+        //         { title: "Login", url: "/auth/login" },
+        //         { title: "Signup", url: "/auth/signup" },
+        //     ],
+        // },
     ],
 };
 
 export function NavbarUpdated(props) {
     return (
         <Sidebar {...props}>
-            <SidebarHeader className="h-16">
-                <Label htmlFor="Title" className="mx-auto my-auto text-2xl">
-                    Toros
+            <SidebarHeader className="h-24">
+                <Label htmlFor="Title" className="mx-auto my-4 text-2xl">
+                    <Link to="/" className="hover:scale-110 transition duration-300 ease-in-out">
+                        Toros
+                    </Link>
                 </Label>
             </SidebarHeader>
             <SidebarContent className="gap-0">
@@ -79,7 +81,7 @@ export function NavbarUpdated(props) {
                             >
                                 <CollapsibleTrigger>
                                     {group.title}
-                                    <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                                    <ChevronRight className="ml-auto hover:scale-105 transition duration-300 ease-in-out transition-transform group-data-[state=open]/collapsible:rotate-90" />
                                 </CollapsibleTrigger>
                             </SidebarGroupLabel>
                             <CollapsibleContent>
@@ -87,7 +89,7 @@ export function NavbarUpdated(props) {
                                     <SidebarMenu>
                                         {group.items.map((item) => (
                                             <SidebarMenuItem key={item.title}>
-                                                <SidebarMenuButton asChild>
+                                                <SidebarMenuButton asChild className={"ml-4 w-[90%] hover:scale-105 transition duration-300 ease-in-out fade-in-5"}>
                                                     <a href={item.url}>{item.title}</a>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>

@@ -85,17 +85,17 @@ const LiveTournament = ({ tournamentConfig }) => {
     };
 
     return (
-        <div className="w-auto h-screen flex flex-col md:flex-row relative">
-            <div className="flex-grow flex flex-col overflow-auto px-6 py-6 pr-20">
-                <Button
-                    onClick={() => navigate("/tournament/list")}
-                    className="mb-4 flex items-center gap-2 text-red-600 hover:text-red-800 transition w-fit bg-transparent hover:bg-transparent shadow-none"
-                >
-                    <PiArrowSquareLeftBold className="text-2xl" />
-                    <span className="text-lg font-semibold">Back to Tournament List</span>
-                </Button>
+        <div className="ml-14 w-auto h-screen flex flex-col md:flex-row relative">
+            <div className="mb-18 flex-grow flex flex-col overflow-auto px-6 py-12 pr-20">
+                {/*<Button*/}
+                {/*    onClick={() => navigate("/tournament/list")}*/}
+                {/*    className="mt-4 flex items-center gap-2 text-red-600 hover:text-red-800 transition w-fit bg-transparent hover:bg-transparent shadow-none"*/}
+                {/*>*/}
+                {/*    <PiArrowSquareLeftBold className="text-2xl" />*/}
+                {/*    <span className="text-lg font-semibold">Back to Tournament List</span>*/}
+                {/*</Button>*/}
 
-                <h1 className="text-2xl font-bold">Live Tournament Matches</h1>
+                <h1 className="text-2xl font-bold dark:text-white">Live Tournament Matches</h1>
 
                 {loading ? (
                     <p className="text-center text-gray-500">Loading matches...</p>

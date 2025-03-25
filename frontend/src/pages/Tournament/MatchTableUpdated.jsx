@@ -63,19 +63,19 @@ const MatchTableUpdated = ({ matches, refreshMatches, updateMatch }) => {
                                     key={match.id}
                                     className="flex w-full odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition dark:odd:bg-green-800 dark:even:bg-green-700 dark:hover:bg-green-600 py-6"
                                 >
-                                    <TableCell className="flex-1 text-center dark:text-gray-200 text-2xl">
+                                    <TableCell className="flex-1 text-center dark:text-gray-200 text-xl">
                                         {match.team1?.name ?? "N/A"}
                                     </TableCell>
-                                    <TableCell className="flex-1 text-center dark:text-gray-200 text-2xl">
+                                    <TableCell className="flex-1 text-center dark:text-gray-200 text-xl">
                                         {match.team2?.name ?? "N/A"}
                                     </TableCell>
                                     <TableCell
-                                        className="flex-1 text-center font-semibold dark:text-gray-200 cursor-pointer hover:underline text-2xl"
+                                        className="flex-1 text-center font-semibold dark:text-gray-200 cursor-pointer hover:underline text-xl"
                                         onClick={() => openModal(match)}
                                     >
                                         {match.team1Score ?? "N/A"} - {match.team2Score ?? "N/A"}
                                     </TableCell>
-                                    <TableCell className="flex-1 text-center text-2xl">
+                                    <TableCell className="flex-1 text-center text-xl">
                                         {match.status}
                                     </TableCell>
                                 </TableRow>

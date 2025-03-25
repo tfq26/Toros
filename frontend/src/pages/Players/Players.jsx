@@ -90,7 +90,7 @@ const Players = () => {
 
     return (
         <div className="relative">
-            <div className="w-full px-6 py-12">
+            <div className="w-full pl-24 pr-8 py-2">
                 {error && (
                     <div className="mb-4 p-3 bg-red-100 text-red-800 border border-red-400 rounded">
                         {error}
@@ -132,7 +132,7 @@ const Players = () => {
             {/* Floating Button for Sliding Window */}
             <button
                 onClick={() => setIsSlidingWindowOpen(true)}
-                className="fixed right-2 top-11 transform -translate-y-1/2 hover:text-amber-200 text-white px-4 py-2 transition duration-200 ease-in-out z-50"
+                className="fixed right-2 top-8 transform -translate-y-1/2 hover:text-amber-200 text-white px-4 py-2 transition duration-200 ease-in-out z-50"
             >
                 <RxHamburgerMenu className="text-3xl"/>
             </button>
