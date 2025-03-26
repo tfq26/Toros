@@ -1,12 +1,13 @@
 import React from "react";
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar.jsx";
 import { NavbarUpdated } from "@/pages/NavbarUpdated.jsx";
+import {Toaster} from "sonner";
 
 function LayoutContent({ children }) {
     const { open } = useSidebar();
 
     return (
-        <div className="relative flex h-screen w-screen">
+        <div className="relative flex h-screen w-screen ">
             {/* Floating toggle button */}
             <div className="absolute top-4 left-6 z-50">
                 <SidebarTrigger className="hover:bg-muted/0 hover:scale-110 transition duration-300 ease-in-out" />
@@ -18,9 +19,10 @@ function LayoutContent({ children }) {
             </aside>
 
             {/* Main content (right) */}
-            <main className="flex-1 overflow-auto bg-gray-800 dark:bg-gray-900">
+            <main className="flex-1 overflow-auto">
                 {children}
             </main>
+            <Toaster />
         </div>
     );
 }

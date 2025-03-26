@@ -51,9 +51,14 @@ const TournamentList = () => {
         navigate(`/tournament/live/${tournamentId}`);
     };
 
+    // Set the tab title to "Viewer" on mount.
+    useEffect(() => {
+        document.title = "Tournament List";
+    }, []);
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-6">
-            <div className="w-full max-w-3xl bg-white dark:bg-gray-700 p-8 rounded-lg shadow-lg">
+            <div className="w-full max-w-3xl bg-white p-8 rounded-lg shadow-lg dark:bg-blue-950">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center">
                     Active Tournaments
                 </h2>
@@ -78,10 +83,10 @@ const TournamentList = () => {
                         {tournaments.map((tournament) => (
                             <li
                                 key={tournament.id} // Ensure unique key
-                                className="border p-4 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                className="border p-4 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-emerald-800 dark:bg-emerald-900 transition"
                                 onClick={() => handleSelectTournament(tournament.id)}
                             >
-                                <p className="text-lg font-semibold">{tournament.name}</p>
+                                <p className="text-lg font-semibold">{(tournament.name)}</p>
                                 <p className="text-gray-600 dark:text-gray-300">ID: {tournament.id}</p>
                                 <p className="text-gray-600 dark:text-gray-300">
                                     Started: {new Date(tournament.dateHeld).toLocaleString()}

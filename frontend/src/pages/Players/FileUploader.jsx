@@ -1,8 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
-import { confirmAlert } from "react-confirm-alert";
-import "react-confirm-alert/src/react-confirm-alert.css";
 import * as XLSX from "xlsx";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog.jsx";
 
 const DEFAULT_VALUES = {
     name: "Unknown Player",
@@ -13,24 +22,15 @@ const DEFAULT_VALUES = {
 
 const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const fileInputRef = useRef(null);
 
     const handleFileSelection = (event) => {
         const file = event.target.files[0];
         if (!file) return;
-
-        confirmAlert({
-            title: "Confirm Import",
-            message: "Importing a new file will overwrite all existing player data. Do you want to proceed?",
-            buttons: [
-                {
-                    label: "Yes",
-                    onClick: () => processFile(file),
-                },
-                {
-                    label: "No",
-                },
-            ],
-        });
+        setSelectedFile(file);
+        setShowConfirm(true);
     };
 
     const processFile = async (file) => {
@@ -58,7 +58,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                     teamNumber: player.teamNumber || DEFAULT_VALUES.teamNumber,
                     clubName: player.clubName || DEFAULT_VALUES.clubName,
                     SkillLevel: player.SkillLevel || DEFAULT_VALUES.SkillLevel,
-                    registered: player.registered !== undefined ? player.registered : false, // Ensure registered is included
+                    registered: player.registered !== undefined ? player.registered : false,
                 }));
 
                 console.log("🔍 Processed JSON Data:", jsonData);
@@ -71,6 +71,10 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
             onStatusUpdate("Error importing file. Please check the format.");
         } finally {
             setIsLoading(false);
+            // Reset the file input value so the same file can be uploaded again.
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         }
     };
 
@@ -97,10 +101,40 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
 
     return (
         <div>
-            <label className="cursor-pointer bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-600 hover:text-white transition duration-200">
-                Import Players
-                <input type="file" accept=".xlsx, .xls" onChange={handleFileSelection} className="hidden" />
-            </label>
+            <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+                <AlertDialogTrigger asChild>
+                    <label className="cursor-pointer bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-600 hover:text-white transition duration-200">
+                        Import Players
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".xlsx, .xls"
+                            onChange={handleFileSelection}
+                            className="hidden"
+                        />
+                    </label>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Import</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Importing a new file will <strong>overwrite all existing player data</strong>.
+                            Do you want to proceed?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (selectedFile) processFile(selectedFile);
+                                setShowConfirm(false);
+                            }}
+                        >
+                            Proceed
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {isLoading && <p className="text-blue-500 mt-2">Importing file, please wait...</p>}
         </div>

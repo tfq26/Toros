@@ -61,6 +61,7 @@ public class TournamentSetupService {
         tournament.setName(tournamentName);
         tournament.setDateHeld(LocalDate.now());
         tournament.setActive(true);
+        tournament.setId(UUID.randomUUID().toString());
         tournament.setNumCourts(numCourts);
         tournament.setGamesPerTeam(gamesPerTeam);
         tournament.setTiered(tiered);
@@ -143,8 +144,6 @@ public class TournamentSetupService {
                     LocalTime matchEndTime = matchStartTime.plusMinutes(matchDuration);
 
                     Match match = new Match();
-                    // Instead of setting the full Tournament, set only the tournament ID.
-                    // Ensure your Match model has a field like "private String tournamentId;"
                     match.setId(tournament.getId());
                     match.setTournament(tournament);
                     match.setTeam1(team1);
@@ -156,6 +155,12 @@ public class TournamentSetupService {
                     match.setStartTime(matchStartTime);
                     match.setEndTime(matchEndTime);
                     match.generateCustomId();
+
+                    if(team1.getSkillLevel() > team2.getSkillLevel()){
+                        match.setMatchSkillLevel(team1.getSkillLevelString());
+                    } else {
+                        match.setMatchSkillLevel(team2.getSkillLevelString());
+                    }
 
                     log.info("✅ Match Scheduled: {} vs {} on Court {} for Tournament '{}'",
                             team1.getName(), team2.getName(), assignedCourt, tournament.getName());

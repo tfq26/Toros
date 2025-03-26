@@ -42,8 +42,8 @@ const MatchTableUpdated = ({ matches, refreshMatches, updateMatch }) => {
         <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-lg">
             <div className="overflow-x-auto rounded-lg w-full flex-grow min-h-[600px]">
                 <Table className="w-full">
-                    <TableHeader className="flex text-center font-medium hover:bg-none">
-                        <TableRow className="flex py-5 text-center font-medium w-full hover:bg-muted/0">
+                    <TableHeader className="flex text-center font-medium hover:bg-none dark:bg-transparent">
+                        <TableRow className="flex py-5 text-center font-medium w-full hover:bg-muted/0 dark:bg-gray-950">
                             <TableHead className="flex-1 font-bold text-center text-4xl">Team 1</TableHead>
                             <TableHead className="flex-1 font-bold text-center text-4xl">Team 2</TableHead>
                             <TableHead className="flex-1 font-bold text-center text-4xl">Score</TableHead>
@@ -61,7 +61,7 @@ const MatchTableUpdated = ({ matches, refreshMatches, updateMatch }) => {
                             matches.map((match) => (
                                 <TableRow
                                     key={match.id}
-                                    className="flex w-full odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition dark:odd:bg-green-800 dark:even:bg-green-700 dark:hover:bg-green-600 py-6"
+                                    className="flex w-full odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-700 transition dark:odd:bg-emerald-900 dark:even:bg-emerald-800 dark:hover:bg-emerald-700 py-6"
                                 >
                                     <TableCell className="flex-1 text-center dark:text-gray-200 text-xl">
                                         {match.team1?.name ?? "N/A"}
@@ -70,7 +70,7 @@ const MatchTableUpdated = ({ matches, refreshMatches, updateMatch }) => {
                                         {match.team2?.name ?? "N/A"}
                                     </TableCell>
                                     <TableCell
-                                        className="flex-1 text-center font-semibold dark:text-gray-200 cursor-pointer hover:underline text-xl"
+                                        className="flex-1 text-center font-semibold dark:text-gray-200 cursor-pointer hover:underline text-xl w-fit"
                                         onClick={() => openModal(match)}
                                     >
                                         {match.team1Score ?? "N/A"} - {match.team2Score ?? "N/A"}

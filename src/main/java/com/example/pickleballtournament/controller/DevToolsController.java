@@ -24,7 +24,7 @@ public class DevToolsController {
         this.tournamentRepository = tournamentRepository;
     }
 
-    /** ✅ Delete All Data from a Collection */
+    /** ✅ Delete All Data from a Specific Collection */
     @DeleteMapping("/delete/{collection}")
     public ResponseEntity<Map<String, String>> deleteCollection(@PathVariable String collection) {
         switch (collection.toLowerCase()) {
@@ -43,7 +43,16 @@ public class DevToolsController {
             default:
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid collection name."));
         }
-
         return ResponseEntity.ok(Map.of("message", collection + " data deleted successfully."));
+    }
+
+    /** ✅ Delete All Data from All Collections */
+    @DeleteMapping("/deleteAll")
+    public ResponseEntity<Map<String, String>> deleteAllData() {
+        playerRepository.deleteAll();
+        matchRepository.deleteAll();
+        teamRepository.deleteAll();
+        tournamentRepository.deleteAll();
+        return ResponseEntity.ok(Map.of("message", "All data deleted successfully."));
     }
 }

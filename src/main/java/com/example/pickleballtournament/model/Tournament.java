@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,9 @@ public class Tournament {
     private int numCourts;
     private int gamesPerTeam;
     private boolean tiered;
+    private Integer breakDuration; // In minutes
+    private Integer matchDuration; // In minutes
+    private LocalDateTime startTime;
 
     // Store setup properties as a List<String> or Map<String, Object>
     private List<String> setupProperties; // Example: ["Match Duration: 15min", "Double Elimination: true"]

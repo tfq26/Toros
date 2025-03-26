@@ -10,15 +10,15 @@ const PlayerTable = ({ players, error, onEdit }) => {
         <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-lg">
             <div className="overflow-x-auto rounded-lg w-full flex-grow min-h-[600px]">
                 <Table className="w-full">
-                    <TableHeader className="flex text-center font-medium bg-transparent hover:bg-none">
-                        <TableRow className="flex py-5 text-center font-medium w-full bg-transparent hover:bg-muted/0 dark:bg-red-600">
-                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent">
+                    <TableHeader className="flex text-center font-medium bg-white dark:bg-emerald-950">
+                        <TableRow className="flex py-5 text-center font-medium w-full bg-transparent hover:bg-muted/0">
+                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent text-gray-800 dark:text-gray-100">
                                 Name
                             </TableHead>
-                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent">
+                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent text-gray-800 dark:text-gray-100">
                                 Placement
                             </TableHead>
-                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent">
+                            <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent text-gray-800 dark:text-gray-100">
                                 ClubName
                             </TableHead>
                         </TableRow>
@@ -28,28 +28,25 @@ const PlayerTable = ({ players, error, onEdit }) => {
                             flatPlayers.map((player, index) => (
                                 <TableRow
                                     key={`player-${index}`}
-                                    className="flex w-full odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition dark:odd:bg-green-800 dark:even:bg-green-700 dark:hover:bg-green-600"
+                                    className="flex w-full odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition dark:odd:bg-emerald-800 dark:even:bg-emerald-900 dark:hover:bg-emerald-600"
                                 >
                                     <TableCell
-                                        className="flex-1 text-center font-medium cursor-pointer hover:underline text-2xl"
+                                        className="flex-1 text-center font-medium cursor-pointer hover:underline text-2xl text-gray-800 dark:text-gray-100"
                                         onClick={() => onEdit(player)}
                                     >
                                         {player.name || "N/A"}
                                     </TableCell>
-                                    <TableCell className="flex-1 text-center text-xl">
+                                    <TableCell className="flex-1 text-center text-xl text-gray-800 dark:text-gray-100">
                                         {convertLevel(player.skillLevel)}
                                     </TableCell>
-                                    <TableCell className="flex-1 text-center text-xl">
+                                    <TableCell className="flex-1 text-center text-xl text-gray-800 dark:text-gray-100">
                                         {player.clubName || "N/A"}
                                     </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow className="flex w-full">
-                                <TableCell
-                                    colSpan={3}
-                                    className="text-center py-6 text-gray-600 dark:text-gray-300"
-                                >
+                                <TableCell colSpan={3} className="text-center py-6 text-gray-600 dark:text-gray-300">
                                     No players found.
                                 </TableCell>
                             </TableRow>

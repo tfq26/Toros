@@ -196,10 +196,10 @@ function Sidebar({
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
         )} />
       <div
-        data-slot="sidebar-container"
-        className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
-          side === "left"
+          data-slot="sidebar-container"
+          className={cn(
+              "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-500 ease-linear md:flex",
+                  side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
           // Adjust the padding for floating and inset variants.
@@ -220,12 +220,27 @@ function Sidebar({
   );
 }
 
-function SidebarTrigger({
-      className,
-      onClick,
-      ...props
-    }) {
-  const { open, toggleSidebar } = useSidebar(); // get open state
+function SidebarTrigger({ className, onClick, ...props }) {
+  const { toggleSidebar } = useSidebar();
+  const [isDarkMode, setIsDarkMode] = React.useState(
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event) => setIsDarkMode(event.matches);
+
+    // Add event listener for changes to dark mode
+    mediaQuery.addEventListener("change", handleChange);
+    // Set initial value in case it changed before mounting
+    setIsDarkMode(mediaQuery.matches);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
+
+  const imgSrc = isDarkMode ? "/bull-svgrepo-com.svg" : "/bull-svgrepo-com_black.svg";
 
   return (
       <Button
@@ -241,7 +256,7 @@ function SidebarTrigger({
           {...props}
       >
         <img
-            src={open ? "/bull-svgrepo-com_black.svg" : "/bull-svgrepo-com.svg"}
+            src={imgSrc}
             alt="Toggle Sidebar"
             className="cursor-pointer transition-transform duration-200 ease-in-out"
         />
