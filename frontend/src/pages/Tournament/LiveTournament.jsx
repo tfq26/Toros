@@ -10,7 +10,8 @@ import { fetchAllMatches, fetchMatchesByTournament } from "../utils/dataUtils.js
 import WindowView from "./Viewer/WindowView.jsx";
 import EndTournamentModal from "../Modals/EndTournamentModal.jsx";
 import {RxHamburgerMenu} from "react-icons/rx";
-import {Button} from "@/components/ui/button.jsx"; // Import the new modal
+import {Button} from "@/components/ui/button.jsx";
+import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx"; // Import the new modal
 
 const LiveTournament = ({ tournamentConfig }) => {
     const [matches, setMatches] = useState([]);
@@ -43,6 +44,11 @@ const LiveTournament = ({ tournamentConfig }) => {
             setLoading(false);
         }
     };
+
+    // Set the tab title to "Viewer" on mount.
+    useEffect(() => {
+        document.title = "Tournament Live";
+    }, []);
 
     const updateMatch = async (updatedMatch) => {
         if (!updatedMatch.id) {
@@ -86,16 +92,8 @@ const LiveTournament = ({ tournamentConfig }) => {
 
     return (
         <div className="ml-14 w-auto h-screen flex flex-col md:flex-row relative">
-            <div className="mb-18 flex-grow flex flex-col overflow-auto px-6 py-12 pr-20">
-                {/*<Button*/}
-                {/*    onClick={() => navigate("/tournament/list")}*/}
-                {/*    className="mt-4 flex items-center gap-2 text-red-600 hover:text-red-800 transition w-fit bg-transparent hover:bg-transparent shadow-none"*/}
-                {/*>*/}
-                {/*    <PiArrowSquareLeftBold className="text-2xl" />*/}
-                {/*    <span className="text-lg font-semibold">Back to Tournament List</span>*/}
-                {/*</Button>*/}
-
-                <h1 className="text-2xl font-bold dark:text-white">Live Tournament Matches</h1>
+            <div className="mb-18 flex-grow flex flex-col overflow-auto px-10 py-4 pr-20">
+                <h1 className="text-2xl font-bold dark:text-white text-center">Live Tournament Matches</h1>
 
                 {loading ? (
                     <p className="text-center text-gray-500">Loading matches...</p>
@@ -110,14 +108,14 @@ const LiveTournament = ({ tournamentConfig }) => {
                 )}
             </div>
 
-            <Button
+            <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className={`fixed right-5 text-7xl top-11 transform -translate-y-1/2 hover:text-amber-200 w-[5%] h-auto transition duration-200 ease-in-out z-50 bg-transparent hover:opacity-75 ${
-                    isSidebarOpen ? "text-7xl" : "text-white"
+                className={`fixed right-10 text-7xl top-11 transform -translate-y-1/2 hover:text-amber-200 h-auto transition duration-200 ease-in-out z-50 bg-transparent hover:bg-muted/0 ${
+                    isSidebarOpen ? "text-3xl" : "text-white"
                 }`}
             >
-                {isSidebarOpen ? "" : <RxHamburgerMenu />}
-            </Button>
+                {isSidebarOpen ? "" : <RxHamburgerMenu className={"text-3xl"} />}
+            </button>
 
             <SlidingWindow
                 isOpen={isSidebarOpen}
@@ -147,7 +145,7 @@ const LiveTournament = ({ tournamentConfig }) => {
             )}
 
             {/* End Tournament Modal */}
-            <EndTournamentModal
+            <EndTournamentModalUpdated
                 isOpen={showEndModal}
                 onClose={() => setShowEndModal(false)}
                 endTournament={endTournament}

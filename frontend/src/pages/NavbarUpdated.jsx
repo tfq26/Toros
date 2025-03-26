@@ -48,7 +48,6 @@ const data = {
                 { title: "Bracket", url: "/bracket" },
                 // Note: The live tournament route includes a dynamic parameter.
                 // You might need to adjust this if you want a specific live tournament link.
-                { title: "Live Tournament", url: "/tournament/live" },
             ],
         },
         // {
@@ -77,7 +76,7 @@ export function NavbarUpdated(props) {
                         <SidebarGroup>
                             <SidebarGroupLabel
                                 asChild
-                                className="group/label text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm"
+                                className="group/label text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-2xl m-4"
                             >
                                 <CollapsibleTrigger>
                                     {group.title}
@@ -89,7 +88,7 @@ export function NavbarUpdated(props) {
                                     <SidebarMenu>
                                         {group.items.map((item) => (
                                             <SidebarMenuItem key={item.title}>
-                                                <SidebarMenuButton asChild className={"ml-4 w-[90%] hover:scale-105 transition duration-300 ease-in-out fade-in-5"}>
+                                                <SidebarMenuButton asChild className={"m-4 text-xl w-[90%] hover:scale-105 transition duration-300 ease-in-out fade-in-5"}>
                                                     <a href={item.url}>{item.title}</a>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
@@ -106,7 +105,7 @@ export function NavbarUpdated(props) {
                     <SidebarMenuItem>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton className={"mt-"}>
+                                <SidebarMenuButton className={"m-4 text-xl w-[90%] hover:scale-105 transition duration-300 ease-in-out fade-in-5"}>
                                     <User2 /> Username
                                     <ChevronsUpDown/>
                                 </SidebarMenuButton>
@@ -120,12 +119,6 @@ export function NavbarUpdated(props) {
                                         <a href="/auth/Login">Login</a>
                                     </SidebarMenuButton>
                                 </DropdownMenuItem>
-                                {/*<DropdownMenuItem>*/}
-                                {/*    <span>Billing</span>*/}
-                                {/*</DropdownMenuItem>*/}
-                                {/*<DropdownMenuItem>*/}
-                                {/*    <span>Sign out</span>*/}
-                                {/*</DropdownMenuItem>*/}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </SidebarMenuItem>

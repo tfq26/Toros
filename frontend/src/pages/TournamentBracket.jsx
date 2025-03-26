@@ -27,6 +27,11 @@ function TeamStandings() {
         }
     };
 
+    // Set the tab title to "Viewer" on mount.
+    useEffect(() => {
+        document.title = "Bracket";
+    }, []);
+
     // Fetch all matches for bracket data
     const fetchAllMatches = async () => {
         try {

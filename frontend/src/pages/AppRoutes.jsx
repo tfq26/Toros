@@ -12,7 +12,8 @@ import LoginPage from "./Auth/beta_login.jsx";
 import SignupPage from "./Auth/Signup.jsx";
 import MatchTest from "./Tournament/MatchTest.jsx";
 import WindowView from "./Tournament/Viewer/WindowView.jsx";
-import {NavbarUpdated} from "@/pages/NavbarUpdated.jsx";
+import { NavbarUpdated } from "@/pages/NavbarUpdated.jsx";
+import Page from "./Page.jsx";
 
 const AppRoutes = ({
                        setAuthToken,
@@ -24,38 +25,105 @@ const AppRoutes = ({
     return (
         <SidebarProvider>
             <div className="flex h-screen w-screen">
-                {/* Sidebar will persist on the left */}
+                {/* Persistent Sidebar */}
                 <NavbarUpdated />
-                {/* Main content area for routing */}
+                {/* Main Content Area for Routing */}
                 <main className="flex-1 overflow-y-auto">
                     <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/players" element={<Players />} />
+                        <Route
+                            path="/"
+                            element={
+                                <Page title="Home">
+                                    <Home />
+                                </Page>
+                            }
+                        />
+                        <Route
+                            path="/players"
+                            element={
+                                <Page title="Players">
+                                    <Players />
+                                </Page>
+                            }
+                        />
                         <Route
                             path="/tournament/setup"
                             element={
-                                <TournamentSetup
-                                    onSetupComplete={() => setTournamentSetupComplete(true)}
-                                    setTournamentConfig={setTournamentConfig}
-                                />
+                                <Page title="Tournament Setup">
+                                    <TournamentSetup
+                                        onSetupComplete={() => setTournamentSetupComplete(true)}
+                                        setTournamentConfig={setTournamentConfig}
+                                    />
+                                </Page>
                             }
                         />
-                        <Route path="/bracket" element={<TournamentBracket />} />
-                        <Route path="/test-matches" element={<MatchTest />} />
-                        <Route path="/tournament/list" element={<TournamentList />} />
+                        <Route
+                            path="/bracket"
+                            element={
+                                <Page title="Bracket">
+                                    <TournamentBracket />
+                                </Page>
+                            }
+                        />
+                        <Route
+                            path="/test-matches"
+                            element={
+                                <Page title="Test Matches">
+                                    <MatchTest />
+                                </Page>
+                            }
+                        />
+                        <Route
+                            path="/tournament/list"
+                            element={
+                                <Page title="Tournament List">
+                                    <TournamentList />
+                                </Page>
+                            }
+                        />
                         <Route
                             path="/tournament/live/:tournamentId"
                             element={
-                                <LiveTournament
-                                    setTournamentSetupComplete={setTournamentSetupComplete}
-                                    tournamentConfig={tournamentConfig}
-                                />
+                                <Page title="Live Tournament">
+                                    <LiveTournament
+                                        setTournamentSetupComplete={setTournamentSetupComplete}
+                                        tournamentConfig={tournamentConfig}
+                                    />
+                                </Page>
                             }
                         />
-                        <Route path="/viewer" element={<WindowView />} />
-                        <Route path="/auth/login" element={<LoginPage />} />
-                        <Route path="/auth/signup" element={<SignupPage />} />
-                        <Route path="*" element={<ErrorPage statusCode={404} />} />
+                        <Route
+                            path="/viewer"
+                            element={
+                                <Page title="Viewer">
+                                    <WindowView />
+                                </Page>
+                            }
+                        />
+                        <Route
+                            path="/auth/login"
+                            element={
+                                <Page title="Login">
+                                    <LoginPage />
+                                </Page>
+                            }
+                        />
+                        <Route
+                            path="/auth/signup"
+                            element={
+                                <Page title="Signup">
+                                    <SignupPage />
+                                </Page>
+                            }
+                        />
+                        <Route
+                            path="*"
+                            element={
+                                <Page title="Error">
+                                    <ErrorPage statusCode={404} />
+                                </Page>
+                            }
+                        />
                     </Routes>
                 </main>
             </div>

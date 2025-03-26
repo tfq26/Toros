@@ -13,4 +13,5 @@ public class TournamentSetupRequest {
     private boolean tiered;
     private LocalTime startTime;
     private int matchDuration;
+    private int breakDuration;
 }
