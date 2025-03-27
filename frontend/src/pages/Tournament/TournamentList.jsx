@@ -57,7 +57,7 @@ const TournamentList = () => {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6">
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-orange-50">
             <div className="w-full max-w-3xl bg-white p-8 rounded-lg shadow-lg dark:bg-blue-950">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center">
                     Active Tournaments
@@ -83,7 +83,7 @@ const TournamentList = () => {
                         {tournaments.map((tournament) => (
                             <li
                                 key={tournament.id} // Ensure unique key
-                                className="border p-4 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-emerald-800 dark:bg-emerald-900 transition"
+                                className="border p-4 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-800 dark:bg-emerald-900 transition duration-200"
                                 onClick={() => handleSelectTournament(tournament.id)}
                             >
                                 <p className="text-lg font-semibold">{(tournament.name)}</p>

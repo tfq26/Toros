@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const DevTools = () => {
+const useDevTools = () => {
     const [windowRef, setWindowRef] = useState(null);
 
-    /** ✅ Open DevTools in a new window */
-    const openDetachedWindow = () => {
+    const openDevTools = () => {
         if (windowRef && !windowRef.closed) {
             windowRef.focus();
             return;
@@ -13,7 +12,7 @@ const DevTools = () => {
         const newWindow = window.open(
             "",
             "DevTools",
-            "width=400,height=400,left=100,top=100"
+            "width=400,height=500,left=100,top=100"
         );
 
         if (newWindow) {
@@ -42,11 +41,9 @@ const DevTools = () => {
               <option value="teams">Teams</option>
               <option value="tournaments">Tournaments</option>
             </select>
-
             <button id="deleteButton" style="background: red; color: white;">Delete Selected</button>
             <button id="deleteAllButton" style="background: darkred; color: white;">Delete All</button>
             <button id="refreshButton" style="background: green; color: white;">Refresh Main</button>
-
             <script>
               document.getElementById("deleteButton").addEventListener("click", async () => {
                 const selected = document.getElementById("collectionSelect").value;
@@ -68,7 +65,7 @@ const DevTools = () => {
                   alert("Error deleting data.");
                 }
               });
-
+              
               document.getElementById("deleteAllButton").addEventListener("click", async () => {
                 if (!confirm("Are you sure you want to delete ALL data?")) return;
                 try {
@@ -83,7 +80,7 @@ const DevTools = () => {
                   alert("Error deleting all data.");
                 }
               });
-
+              
               document.getElementById("refreshButton").addEventListener("click", () => {
                 window.opener?.postMessage({ type: "DEV_COMMAND", command: "REFRESH_MAIN" }, "*");
               });
@@ -91,18 +88,12 @@ const DevTools = () => {
           </body>
         </html>
       `);
+            newWindow.document.close();
             setWindowRef(newWindow);
         }
     };
 
-    return (
-        <button
-            onClick={openDetachedWindow}
-            className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded shadow-lg hover:bg-blue-600 transition"
-        >
-            Open Dev Tools
-        </button>
-    );
+    return { openDevTools };
 };
 
-export default DevTools;
+export default useDevTools;

@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -21,8 +23,8 @@ public class Match {
     private int team1Score;
     private int team2Score;
     private String status; // e.g., "Scheduled", "In Progress", "Completed"
-    private LocalTime startTime; // Start time of the match
-    private LocalTime endTime;   // End time of the match
+    private LocalDateTime startTime; // Start time of the match
+    private LocalDateTime endTime;   // End time of the match
     private String winner; // Winner of the match
     private String loser;  // Loser of the match
     private int round; //Round Number

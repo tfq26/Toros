@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -76,7 +77,7 @@ public class TournamentSetupService {
         log.info("✅ Tournament '{}' saved successfully with ID: {}", tournament.getName(), tournament.getId());
 
         // ✅ Generate matches and assign the tournament ID to each match
-        List<String> matchIds = generateMatches(tournament, teams, numCourts, gamesPerTeam, tiered, startTime, matchDuration);
+        List<String> matchIds = generateMatches(tournament, teams, numCourts, gamesPerTeam, tiered, LocalDateTime.from(startTime), matchDuration);
 
         // ✅ Update Tournament with match IDs
         tournament.setMatches(matchIds);
@@ -112,7 +113,7 @@ public class TournamentSetupService {
      * Saves the matches to the match repository and returns a list of match IDs.
      */
     private List<String> generateMatches(Tournament tournament, List<Team> teams, int numCourts, int gamesPerTeam, boolean tiered,
-                                         LocalTime startTime, int matchDuration) {
+                                         LocalDateTime startTime, int matchDuration) {
         log.info("Generating matches for Tournament '{}' (ID: {}) | {} teams with {} courts.",
                 tournament.getName(), tournament.getId(), teams.size(), numCourts);
 
@@ -126,7 +127,7 @@ public class TournamentSetupService {
                 : Collections.singletonMap(0, teams);
 
         AtomicInteger courtNumber = new AtomicInteger(1);
-        Map<Integer, LocalTime> courtTimes = new HashMap<>();
+        Map<Integer, LocalDateTime> courtTimes = new HashMap<>();
         for (int i = 1; i <= numCourts; i++) {
             courtTimes.put(i, startTime);
         }
@@ -140,8 +141,8 @@ public class TournamentSetupService {
                     Team team1 = group.get(i);
                     Team team2 = group.get(j);
                     int assignedCourt = courtNumber.get();
-                    LocalTime matchStartTime = courtTimes.get(assignedCourt);
-                    LocalTime matchEndTime = matchStartTime.plusMinutes(matchDuration);
+                    LocalDateTime matchStartTime = courtTimes.get(assignedCourt);
+                    LocalDateTime matchEndTime = matchStartTime.plusMinutes(matchDuration);
 
                     Match match = new Match();
                     match.setId(tournament.getId());

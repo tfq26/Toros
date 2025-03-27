@@ -51,9 +51,6 @@ const App = () => {
                         setTournamentConfig={setTournamentConfig}
                     />
                 </Layout>
-                <div className="fixed bottom-4 right-4">
-                    <DevTools />
-                </div>
             </div>
         </Router>
     );

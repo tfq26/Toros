@@ -1,16 +1,8 @@
-import * as React from "react";
-import {ChevronsUpDown , ChevronRight , User2} from "lucide-react";
-import { Link } from "react-router-dom";
-import { SearchForm } from "@/components/search-form";
-import { VersionSwitcher } from "@/components/version-switcher";
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import React from "react";
 import {
     Sidebar,
-    SidebarContent, SidebarFooter,
+    SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
@@ -18,17 +10,20 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarRail, SidebarTrigger,
+    SidebarRail,
 } from "@/components/ui/sidebar";
 import {
     DropdownMenu,
+    DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.jsx";
-import {Label} from "@/components/ui/label.jsx";
+import { ChevronsUpDown, ChevronRight, User2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Label } from "@/components/ui/label.jsx";
+import useDevTools from "@/pages/DevTools/DevTools.jsx";
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible.jsx"; // Import our hook
 
-// Navigation data updated to match AppRoutes
 const data = {
     versions: ["1.0.1", "1.1.0", "2.0.0"],
     navMain: [
@@ -44,23 +39,16 @@ const data = {
             title: "Tournament",
             items: [
                 { title: "Setup", url: "/tournament/setup" },
-                { title: "Tournament List", url: "/tournament/list" },
+                { title: "My Tournaments", url: "/tournament/list" },
                 { title: "Bracket", url: "/bracket" },
-                // Note: The live tournament route includes a dynamic parameter.
-                // You might need to adjust this if you want a specific live tournament link.
             ],
         },
-        // {
-        //     title: "Authentication",
-        //     items: [
-        //         { title: "Login", url: "/auth/login" },
-        //         { title: "Signup", url: "/auth/signup" },
-        //     ],
-        // },
     ],
 };
 
 export function NavbarUpdated(props) {
+    const { openDevTools } = useDevTools();
+
     return (
         <Sidebar {...props}>
             <SidebarHeader className="h-24">
@@ -76,7 +64,7 @@ export function NavbarUpdated(props) {
                         <SidebarGroup>
                             <SidebarGroupLabel
                                 asChild
-                                className="group/label text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-2xl m-4"
+                                className="group/label text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-2xl"
                             >
                                 <CollapsibleTrigger>
                                     {group.title}
@@ -88,7 +76,10 @@ export function NavbarUpdated(props) {
                                     <SidebarMenu>
                                         {group.items.map((item) => (
                                             <SidebarMenuItem key={item.title}>
-                                                <SidebarMenuButton asChild className={"m-4 text-xl w-[90%] hover:scale-105 transition duration-300 ease-in-out fade-in-5"}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    className="m-4 w-[90%] hover:scale-105 transition duration-300 ease-in-out text-xl"
+                                                >
                                                     <a href={item.url}>{item.title}</a>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
@@ -100,23 +91,33 @@ export function NavbarUpdated(props) {
                     </Collapsible>
                 ))}
             </SidebarContent>
-            <SidebarFooter className={"w-full"}>
+            <SidebarFooter className="w-full">
                 <SidebarMenu>
+                    {/* Dev Tools Button */}
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            onClick={(e) => {
+                                e.preventDefault();
+                                openDevTools();
+                            }}
+                            className="m-4 w-[90%] hover:scale-105 transition duration-300 ease-in-out text-xl"
+                        >
+                            Dev Tools
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    {/* Existing Dropdown Menu */}
                     <SidebarMenuItem>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton className={"m-4 text-xl w-[90%] hover:scale-105 transition duration-300 ease-in-out fade-in-5"}>
+                                <SidebarMenuButton>
                                     <User2 /> Username
-                                    <ChevronsUpDown/>
+                                    <ChevronsUpDown />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                side="top"
-                                className="w-[--radix-popper-anchor-width]"
-                            >
+                            <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
                                 <DropdownMenuItem>
                                     <SidebarMenuButton asChild>
-                                        <a href="/auth/Login">Login</a>
+                                        <a href="/auth/login">Login</a>
                                     </SidebarMenuButton>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -128,3 +129,5 @@ export function NavbarUpdated(props) {
         </Sidebar>
     );
 }
+
+export default NavbarUpdated;
