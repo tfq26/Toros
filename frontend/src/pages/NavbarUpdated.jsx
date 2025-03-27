@@ -50,7 +50,7 @@ export function NavbarUpdated(props) {
     const { openDevTools } = useDevTools();
 
     return (
-        <Sidebar {...props}>
+        <Sidebar {...props} className={"bg-emerald-400 dark:bg-gray-800"}>
             <SidebarHeader className="h-24">
                 <Label htmlFor="Title" className="mx-auto my-4 text-2xl">
                     <Link to="/" className="hover:scale-110 transition duration-300 ease-in-out">
@@ -64,11 +64,11 @@ export function NavbarUpdated(props) {
                         <SidebarGroup>
                             <SidebarGroupLabel
                                 asChild
-                                className="group/label text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-2xl"
+                                className="group/label text-sidebar-foreground text-2xl mb-2"
                             >
                                 <CollapsibleTrigger>
                                     {group.title}
-                                    <ChevronRight className="ml-auto hover:scale-105 transition duration-300 ease-in-out transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                                    <ChevronRight className="ml-auto hover:scale-105 duration-300 ease-in-out transition-transform group-data-[state=open]/collapsible:rotate-90" />
                                 </CollapsibleTrigger>
                             </SidebarGroupLabel>
                             <CollapsibleContent>
@@ -78,7 +78,7 @@ export function NavbarUpdated(props) {
                                             <SidebarMenuItem key={item.title}>
                                                 <SidebarMenuButton
                                                     asChild
-                                                    className="m-4 w-[90%] hover:scale-105 transition duration-300 ease-in-out text-xl"
+                                                    className="m-4 w-[90%] hover:scale-105 transition duration-300 ease-in-out text-xl hover:bg-emerald-200 dark:hover:bg-gray-700"
                                                 >
                                                     <a href={item.url}>{item.title}</a>
                                                 </SidebarMenuButton>

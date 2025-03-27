@@ -13,7 +13,7 @@ function LayoutContent({ children }) {
                 <SidebarTrigger className="hover:bg-muted/0 hover:scale-110 transition duration-300 ease-in-out" />
             </div>
 
-            {/* Sidebar (left) */}
+            {/* TournamentSidebar (left) */}
             <aside className={`transition-width duration-200 ease-in-out flex-shrink-0 overflow-hidden ${open ? "w-64" : "w-0"}`}>
                 {open && <NavbarUpdated />}
             </aside>

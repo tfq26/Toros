@@ -41,7 +41,7 @@ const App = () => {
 
     return (
         <Router>
-            <div className="flex h-screen w-screen ">
+            <div className="flex h-screen w-screen bg-orange-100 dark:bg-gray-800">
                 <Layout>
                     <AppRoutes
                         setAuthToken={setAuthToken}

@@ -2,36 +2,33 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MatchTabs from "./MatchTabs";
-import Sidebar from "./Sidebar.jsx";
+import TournamentSidebar from "../TournamentSidebar.jsx";
 import SlidingWindow from "../SlidingWindow.jsx";
 import { PiArrowSquareLeftBold } from "react-icons/pi";
-// Import both functions from dataUtils
 import { fetchAllMatches, fetchMatchesByTournament } from "../utils/dataUtils.js";
 import WindowView from "./Viewer/WindowView.jsx";
-import EndTournamentModal from "../Modals/EndTournamentModal.jsx";
-import {RxHamburgerMenu} from "react-icons/rx";
-import {Button} from "@/components/ui/button.jsx";
 import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx"; // Import the new modal
+import { RxHamburgerMenu } from "react-icons/rx";
+import { Button } from "@/components/ui/button.jsx";
 
-const LiveTournament = ({ tournamentConfig }) => {
+const LiveTournament = ({ setupProperties, tournamentId }) => {
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sortOrder, setSortOrder] = useState("desc");
     const [showWindowView, setShowWindowView] = useState(false);
-    const [showEndModal, setShowEndModal] = useState(false); // state for end tournament modal
+    const [showEndModal, setShowEndModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         fetchMatches();
-    }, [tournamentConfig]);
+    }, [tournamentId]);
 
     const fetchMatches = async () => {
         setLoading(true);
         try {
-            // If tournamentConfig is provided and has an id, fetch matches by tournament.
-            if (tournamentConfig && tournamentConfig.id) {
-                const tournamentMatches = await fetchMatchesByTournament(tournamentConfig.id);
+            if (tournamentId) {
+                const tournamentMatches = await fetchMatchesByTournament(tournamentId);
                 setMatches(tournamentMatches);
             } else {
                 // Fallback: fetch all matches
@@ -45,7 +42,7 @@ const LiveTournament = ({ tournamentConfig }) => {
         }
     };
 
-    // Set the tab title to "Viewer" on mount.
+    // Set the tab title on mount.
     useEffect(() => {
         document.title = "Tournament Live";
     }, []);
@@ -95,6 +92,18 @@ const LiveTournament = ({ tournamentConfig }) => {
             <div className="mb-18 flex-grow flex flex-col overflow-auto px-10 py-4 pr-20">
                 <h1 className="text-2xl font-bold dark:text-white text-center">Live Tournament Matches</h1>
 
+                {/* Display Tournament Setup Properties */}
+                {setupProperties && setupProperties.length > 0 && (
+                    <div className="mb-4">
+                        <h2 className="text-xl font-semibold">Tournament Setup</h2>
+                        <ul>
+                            {setupProperties.map((prop, index) => (
+                                <li key={index} className="text-gray-600">{prop}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
                 {loading ? (
                     <p className="text-center text-gray-500">Loading matches...</p>
                 ) : (
@@ -125,12 +134,11 @@ const LiveTournament = ({ tournamentConfig }) => {
                         id: "sidebar",
                         label: "Sidebar",
                         content: (
-                            <Sidebar
+                            <TournamentSidebar
                                 sortOrder={sortOrder}
                                 setSortOrder={setSortOrder}
                                 fetchMatches={fetchMatches}
-                                tournamentConfig={tournamentConfig}
-                                // Instead of ending tournament immediately, open the modal
+                                tournamentId={tournamentId}
                                 endTournament={() => setShowEndModal(true)}
                             />
                         ),

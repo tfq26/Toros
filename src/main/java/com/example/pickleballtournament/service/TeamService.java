@@ -105,33 +105,32 @@ public class TeamService {
     public List<Team> generateTeams() {
         log.info("Generating teams...");
 
-        // Retrieve all players
-        List<Player> players = playerRepository.findAll();
-        if (players.size() < 2) {
-            throw new IllegalStateException("Not enough players to form teams.");
-        }
-
-        // Group players based on predefined logic (example: pairing by order)
+        // Retrieve the list of players (assuming you have a playerRepository)
+        List<Player> players = playerRepository.findAll();  // Make sure to inject playerRepository
         List<Team> teams = new ArrayList<>();
-        for (int i = 0; i < players.size(); i += 2) {
-            if (i + 1 < players.size()) {
-                Player player1 = players.get(i);
-                Player player2 = players.get(i + 1);
 
-                Team team = new Team();
-                team.setId(generateUniqueTeamId());
-                team.setName(player1.getName() + " & " + player2.getName());
-                team.setPlayers(player1, player2);
-                team.setWins(0);
-                team.setLosses(0);
-                teams.add(team);
+        // Pair players sequentially to form teams
+        for (int i = 0; i < players.size(); i += 2) {
+            Team team = new Team();
+            team.setPlayer1(players.get(i));
+            // If there is an odd number of players, the last team might have only one player.
+            if (i + 1 < players.size()) {
+                team.setPlayer2(players.get(i + 1));
             }
+            teams.add(team);
         }
 
-        // Save teams
-        teamRepository.saveAll(teams);
-        log.info("Generated and saved {} teams.", teams.size());
+        // Set team names based on players if not already set
+        teams.forEach(team -> {
+            if (team.getName() == null || team.getName().isEmpty()) {
+                String player1Name = team.getPlayer1() != null ? team.getPlayer1().getName() : "Unknown";
+                String player2Name = team.getPlayer2() != null ? team.getPlayer2().getName() : "Unknown";
+                team.setName(player1Name + " & " + player2Name);
+            }
+        });
 
+        teamRepository.saveAll(teams);
+        log.info("Successfully saved {} new teams.", teams.size());
         return teams;
     }
 }

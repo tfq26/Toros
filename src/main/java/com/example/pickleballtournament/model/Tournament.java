@@ -35,8 +35,4 @@ public class Tournament {
     private List<String> matches; // Stores match IDs
     private List<String> finalPlacements; // Final ranking after tournament completion
 
-    // Helper method to check if tournament is live
-    public boolean isLive() {
-        return "LIVE".equalsIgnoreCase(status);
-    }
 }

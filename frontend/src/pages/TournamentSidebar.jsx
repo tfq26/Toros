@@ -1,27 +1,39 @@
 import React, { useState, useEffect } from "react";
-import {Button} from "@/components/ui/button.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import axios from "axios";
 
-const Sidebar = ({
+const TournamentSidebar = ({
+                     tournamentID,
                      matchStats,
                      endTournament,
-                     tournamentConfig,
                      fetchMatches,
                      sortOrder, // ✅ Receive sorting order
                      setSortOrder, // ✅ Function to update sorting order
                  }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [setupProperties, setSetupProperties] = useState([]);
 
-    /** ✅ Log tournamentConfig on render */
-    console.log("🎾 Received tournamentConfig:", tournamentConfig);
-
-    /** ✅ Effect to log updates in tournamentConfig */
+    /** ✅ Fetch tournament setupProperties by tournamentID */
     useEffect(() => {
-        if (!tournamentConfig) {
-            console.warn("⚠️ tournamentConfig is NULL! Waiting for data...");
-        } else {
-            console.log("✅ Loaded tournamentConfig:", tournamentConfig);
+        if (!tournamentID) {
+            console.warn("⚠️ tournamentID is missing!");
+            return;
         }
-    }, [tournamentConfig]);
+        axios
+            .get(`http://localhost:8080/api/tournament/${tournamentID}`)
+            .then((response) => {
+                const tournament = response.data;
+                if (tournament && tournament.setupProperties) {
+                    setSetupProperties(tournament.setupProperties);
+                    console.log("✅ Loaded setupProperties:", tournament.setupProperties);
+                } else {
+                    console.warn("⚠️ No setupProperties found for tournament with ID:", tournamentID);
+                }
+            })
+            .catch((err) => {
+                console.error("❌ Error fetching tournament data:", err);
+            });
+    }, [tournamentID]);
 
     /** ✅ Refresh Matches */
     const handleFetchMatches = async () => {
@@ -29,10 +41,9 @@ const Sidebar = ({
             console.error("❌ fetchMatches function is missing!");
             return;
         }
-
         setIsLoading(true);
         try {
-            await fetchMatches(); // ✅ Correctly calling the function from `MatchTabs`
+            await fetchMatches();
             console.log("✅ Matches refreshed successfully.");
         } catch (err) {
             console.error("❌ Error fetching matches:", err);
@@ -43,21 +54,34 @@ const Sidebar = ({
     };
 
     return (
-        <div className="sticky top-4 border p-4 rounded shadow bg-white dark:bg-gray-800 flex flex-col items-center h-fit">
+        <div className="sticky top-4 border p-4 rounded shadow bg-orange-200 dark:bg-gray-800 flex flex-col items-center h-fit">
             <h2 className="text-xl font-bold mb-4 text-center">Tournament Overview</h2>
-            <p><strong>Number of Courts:</strong> {tournamentConfig?.numCourts || "N/A"}</p>
-            <p><strong>Games Per Team:</strong> {tournamentConfig?.gamesPerTeam || "N/A"}</p>
-            <p><strong>Start Time:</strong> {tournamentConfig?.startTime || "N/A"}</p>
-            <p><strong>Match Duration:</strong> {tournamentConfig?.matchDuration || "N/A"} minutes</p>
-            <p><strong>Break Time:</strong> {tournamentConfig?.breakTime || "N/A"} minutes</p>
-            <p><strong>Use Existing Players:</strong> {tournamentConfig?.useExistingPlayers ? "Yes" : "No"}</p>
-            <p><strong>Tournament Tiered:</strong> {tournamentConfig?.tiered ? "Yes" : "No"}</p>
+
+            {/* Display Tournament Setup Properties */}
+            <div className="w-full mb-4">
+                <h3 className="text-lg font-semibold mb-2">Tournament Setup</h3>
+                {setupProperties && setupProperties.length > 0 ? (
+                    <ul className="list-disc list-inside text-gray-600">
+                        {setupProperties.map((prop, index) => (
+                            <li key={index}>{prop}</li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-gray-500">No setup properties available.</p>
+                )}
+            </div>
 
             {/* Match Statistics */}
             <h3 className="text-lg font-semibold mt-4">Match Statistics</h3>
-            <p><strong>Completed:</strong> {matchStats?.complete ?? "N/A"}</p>
-            <p><strong>In Progress:</strong> {matchStats?.inProgress ?? "N/A"}</p>
-            <p><strong>Not Started:</strong> {matchStats?.notStarted ?? "N/A"}</p>
+            <p>
+                <strong>Completed:</strong> {matchStats?.complete ?? "N/A"}
+            </p>
+            <p>
+                <strong>In Progress:</strong> {matchStats?.inProgress ?? "N/A"}
+            </p>
+            <p>
+                <strong>Not Started:</strong> {matchStats?.notStarted ?? "N/A"}
+            </p>
 
             {/* Sorting Button */}
             <Button
@@ -96,4 +120,4 @@ const Sidebar = ({
     );
 };
 
-export default Sidebar;
+export default TournamentSidebar;

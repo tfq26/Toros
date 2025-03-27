@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +22,14 @@ public class PlayerService {
         this.playerRepository = playerRepository;
     }
 
-    public List<Player> importPlayersFromExcel(InputStream inputStream) throws Exception {
+    /**
+     * Imports players from an Excel file.
+     *
+     * @param inputStream the input stream of the Excel file
+     * @return a list of players parsed from the file
+     * @throws Exception if an error occurs during import
+     */
+    private List<Player> importPlayersFromExcel(InputStream inputStream) throws Exception {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -40,7 +46,6 @@ public class PlayerService {
             Integer teamNumber = getNumericCellValue(row.getCell(4), "teamNumber", errors, row.getRowNum());
             String clubName = getCellValue(row.getCell(5), "clubName", errors, row.getRowNum());
             Integer placement = getNumericCellValue(row.getCell(6), "placement", errors, row.getRowNum());
-            System.out.println("Row " + row.getRowNum() + " placement: " + placement);
 
             // Ensure all required fields are available before adding to the list
             if (name != null && age != null && email != null && phone != null &&
@@ -69,9 +74,19 @@ public class PlayerService {
         return players;
     }
 
-    public void savePlayers(List<Player> players) {
+    /**
+     * Combines importing players from an Excel file and saving them to the database.
+     * It deletes all existing players before saving the newly imported ones.
+     *
+     * @param inputStream the input stream of the Excel file
+     * @return the list of players saved to the database
+     * @throws Exception if an error occurs during import or save
+     */
+    public List<Player> importAndSavePlayers(InputStream inputStream) throws Exception {
+        List<Player> players = importPlayersFromExcel(inputStream);
+        // Clear existing players and save new ones
         playerRepository.deleteAll();
-        playerRepository.saveAll(players);
+        return playerRepository.saveAll(players);
     }
 
     public Player createPlayer(Player player) {
@@ -79,11 +94,8 @@ public class PlayerService {
     }
 
     public Player updatePlayer(String id, Player updatedPlayer) {
-        Optional<Player> optionalPlayer = playerRepository.findById(id);
-        if (optionalPlayer.isEmpty()) {
-            throw new RuntimeException("Player not found with id: " + id);
-        }
-        Player player = optionalPlayer.get();
+        Player player = playerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Player not found with id: " + id));
         player.setName(updatedPlayer.getName());
         player.setAge(updatedPlayer.getAge());
         player.setEmail(updatedPlayer.getEmail());
@@ -91,7 +103,6 @@ public class PlayerService {
         player.setTeamNumber(updatedPlayer.getTeamNumber());
         player.setClubName(updatedPlayer.getClubName());
         player.setSkillLevel(updatedPlayer.getSkillLevel());
-
         return playerRepository.save(player);
     }
 
@@ -130,7 +141,6 @@ public class PlayerService {
                 .limit(2)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
-
         String randomString = RandomStringUtils.randomAlphanumeric(4).toUpperCase();
         return initials + "-" + teamNumber + "-" + randomString;
     }
@@ -141,7 +151,9 @@ public class PlayerService {
                 errors.add("Row " + (rowNum + 1) + ": Missing value for " + fieldName);
                 return null;
             }
-            return cell.getCellType() == CellType.STRING ? cell.getStringCellValue() : String.valueOf(cell.getNumericCellValue());
+            return cell.getCellType() == CellType.STRING
+                    ? cell.getStringCellValue()
+                    : String.valueOf(cell.getNumericCellValue());
         } catch (Exception e) {
             errors.add("Row " + (rowNum + 1) + ": Error reading " + fieldName + ": " + e.getMessage());
             return null;

@@ -25,7 +25,7 @@ const AppRoutes = ({
     return (
         <SidebarProvider>
             <div className="flex h-screen w-screen">
-                {/* Persistent Sidebar */}
+                {/* Persistent TournamentSidebar */}
                 <NavbarUpdated />
                 {/* Main Content Area for Routing */}
                 <main className="flex-1 overflow-y-auto">

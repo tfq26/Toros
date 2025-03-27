@@ -37,12 +37,9 @@ public class PlayerController {
         logger.info("🔍 Received file: " + file.getOriginalFilename());
 
         try {
-            // Convert MultipartFile to InputStream and import players
+            // Convert MultipartFile to InputStream and import/save players
             InputStream inputStream = file.getInputStream();
-            List<Player> players = playerService.importPlayersFromExcel(inputStream);
-
-            // Save players to the database
-            playerService.savePlayers(players);
+            List<Player> players = playerService.importAndSavePlayers(inputStream);
 
             logger.info("✅ Successfully imported {} players.", players.size());
             return ResponseEntity.ok("Players imported successfully! Number of players: " + players.size());
@@ -109,12 +106,11 @@ public class PlayerController {
         return ResponseEntity.ok(players);
     }
 
-
     /**
-     * Create a new player.
+     * Add a new player.
      */
-    @PostMapping
-    public ResponseEntity<Player> createPlayer(@RequestBody Player player) {
+    @PostMapping("/add")
+    public ResponseEntity<Player> addPlayer(@RequestBody Player player) {
         try {
             Player createdPlayer = playerService.createPlayer(player);
             logger.info("Created new player with id {}.", createdPlayer.getId());
@@ -124,6 +120,22 @@ public class PlayerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+//    /**
+//     * Add a new player to a specific tournament.
+//     */
+//    @PostMapping("/tournament/{tournamentId}/add")
+//    public ResponseEntity<Player> addPlayerToTournament(@PathVariable String tournamentId, @RequestBody Player player) {
+//        try {
+//            // This method assumes that the playerService has a method to add a player to a tournament.
+//            Player createdPlayer = playerService.addPlayerToTournament(tournamentId, player);
+//            logger.info("Added new player with id {} to tournament {}.", createdPlayer.getId(), tournamentId);
+//            return ResponseEntity.status(HttpStatus.CREATED).body(createdPlayer);
+//        } catch (Exception e) {
+//            logger.error("Error adding player to tournament:", e);
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
 
     /**
      * Update an existing player.
@@ -153,14 +165,5 @@ public class PlayerController {
             logger.error("Error deleting player:", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    /**
-     * Welcome endpoint for quick testing.
-     */
-    @GetMapping("/welcome")
-    public ResponseEntity<String> welcome() {
-        logger.info("Welcome endpoint accessed.");
-        return ResponseEntity.ok("Welcome to the Pickleball Player Management System! Upload your Excel file at /import.");
     }
 }

@@ -1,25 +1,27 @@
 import React from "react";
 import FileUploader from "./FileUploader";
+import AddPlayer from "./AddPlayer"; // Ensure correct path to AddPlayer component
+import { Button } from "@/components/ui/button.jsx";
 
-const PlayerListSettings = ({
-                                isLoading,
-                                onFileSelect,
-                                onStatusUpdate,
-                                clubs,
-                                levels,
-                                selectedClub,
-                                selectedLevel,
-                                onFilterChange,
-                                onAddPlayer // New prop to handle adding a player
-                            }) => {
+const PlayerSettings = ({
+                            isLoading,
+                            onFileSelect,
+                            onStatusUpdate,
+                            clubs,
+                            levels,
+                            selectedClub,
+                            selectedLevel,
+                            onFilterChange,
+                            onAddPlayer // This can now be passed as onPlayerAdded to the AddPlayer component
+                        }) => {
     return (
         <aside className="w-full bg-red-600 dark:bg-gray-900 p-4 rounded shadow-md h-fit border-gray-300">
             <h3 className="text-xl text-orange-200 font-bold mb-4 text-center">
                 Player List Settings
             </h3>
 
-            {/* File Import Button */}
-            <div className="flex items-center gap-4">
+            {/* File Import and Add Player Section */}
+            <div className="flex flex-col items-center gap-4">
                 <div>
                     <FileUploader
                         isLoading={isLoading}
@@ -27,12 +29,12 @@ const PlayerListSettings = ({
                         onStatusUpdate={onStatusUpdate}
                     />
                 </div>
-                <button
-                    className="cursor-pointer bg-amber-300 text-amber-800 px-4 py-2 rounded hover:bg-amber-600 hover:text-white transition duration-200 h-10 flex items-center"
-                    onClick={onAddPlayer}
-                >
-                    Add Player
-                </button>
+                <div>
+                    <AddPlayer
+                        onPlayerAdded={onAddPlayer}
+                        onStatusUpdate={onStatusUpdate}
+                    />
+                </div>
             </div>
 
             {/* Club Filter */}
@@ -76,4 +78,4 @@ const PlayerListSettings = ({
     );
 };
 
-export default PlayerListSettings;
+export default PlayerSettings;

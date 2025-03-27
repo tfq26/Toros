@@ -12,6 +12,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.jsx";
+import { Label } from "@/components/ui/label.jsx";
+import { toast } from "sonner";
+import {Input} from "@/components/ui/input.jsx";
 
 const DEFAULT_VALUES = {
     name: "Unknown Player",
@@ -35,20 +38,18 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
 
     const processFile = async (file) => {
         setIsLoading(true);
-        onStatusUpdate("Processing file...");
-
+        toast.info("Processing file...", { duration: 5000 });
         try {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: "array" });
-
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
                 let jsonData = XLSX.utils.sheet_to_json(sheet, { defval: null });
 
                 if (jsonData.length === 0) {
-                    onStatusUpdate("Error: No data found in the file.");
+                    toast.error("Error: No data found in the file.", { duration: 5000 });
                     setIsLoading(false);
                     return;
                 }
@@ -68,10 +69,9 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
             reader.readAsArrayBuffer(file);
         } catch (error) {
             console.error("Error processing file:", error);
-            onStatusUpdate("Error importing file. Please check the format.");
+            toast.error("Error importing file. Please check the format.", { duration: 5000 });
         } finally {
             setIsLoading(false);
-            // Reset the file input value so the same file can be uploaded again.
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
@@ -88,14 +88,14 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
             });
 
             if (response.status === 200) {
-                onStatusUpdate(`✅ Players uploaded successfully! (${players.length} players added)`);
+                toast.success(`✅ Players uploaded successfully! (${players.length} players added)`, { duration: 5000 });
                 onFileSelect(players);
             } else {
-                onStatusUpdate("⚠️ Error uploading players. Please try again.");
+                toast.error("⚠️ Error uploading players. Please try again.", { duration: 5000 });
             }
         } catch (error) {
             console.error("Upload error:", error);
-            onStatusUpdate("❌ Failed to upload players. Check the server.");
+            toast.error("❌ Failed to upload players. Check the server.", { duration: 5000 });
         }
     };
 
@@ -103,22 +103,28 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
         <div>
             <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
                 <AlertDialogTrigger asChild>
-                    <label className="cursor-pointer bg-emerald-300 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-600 hover:text-white transition duration-200">
-                        Import Players
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".xlsx, .xls"
-                            onChange={handleFileSelection}
-                            className="hidden"
-                        />
-                    </label>
+                    {/*<Label htmlFor={"import"}*/}
+                    {/*       className="cursor-pointer bg-emerald-500 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-600 hover:text-white transition duration-200 h-10 flex items-center">*/}
+                    {/*    Import Players*/}
+                    {/*    <Input*/}
+                    {/*        id="file"*/}
+                    {/*        ref={fileInputRef}*/}
+                    {/*        type="file"*/}
+                    {/*        accept=".xlsx, .xls"*/}
+                    {/*        onChange={handleFileSelection}*/}
+                    {/*        className="hidden"*/}
+                    {/*    />*/}
+                    {/*</Label>*/}
+                    <div className="grid w-full max-w-sm items-center gap-1.5">
+                        <Label htmlFor="import" className={"mb-2 text-white"}>File</Label>
+                        <Input id="excelFile" className={"dark:bg-emerald-900 bg-emerald-200 text-emerald-900 border-emerald-900"} type="file"/>
+                    </div>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Import</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Importing a new file will <strong>overwrite all existing player data</strong>.
+                        Importing a new file will <strong>overwrite all existing player data</strong>.
                             Do you want to proceed?
                         </AlertDialogDescription>
                     </AlertDialogHeader>

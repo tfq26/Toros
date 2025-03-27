@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import PlayerTable from "./PlayerTable"; // <-- Imported PlayerTable here
 import PlayerStats from "./PlayerStats";
-import PlayerListSettings from "./PlayerSettings";
+import PlayerSettings from "./PlayerSettings";
 import PlayerSearch from "./PlayerSearch.jsx";
 import LoadingModal from "../Modals/LoadingModal.jsx";
 import SlidingWindow from "../SlidingWindow";
@@ -10,6 +10,8 @@ import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/pl
 import { RxHamburgerMenu } from "react-icons/rx";
 
 import PlayerModalUpdated from "@/pages/Modals/playerModalUpdated.jsx";
+import {Label} from "@/components/ui/label.jsx";
+import {Input} from "@/components/ui/input.jsx";
 
 const Players = () => {
     const [players, setPlayers] = useState([]);
@@ -89,16 +91,16 @@ const Players = () => {
     return (
         <div className="relative">
             <div className="w-full pl-24 pr-8 py-4">
-                {error && (
-                    <div className="mb-4 p-3 bg-red-100 text-red-800 border border-red-400 rounded w-[98%]">
-                        {error}
-                    </div>
-                )}
-                {successMessage && (
-                    <div className="mb-4 p-3 bg-green-100 text-green-800 border border-green-400 rounded w-[98%]">
-                        {successMessage}
-                    </div>
-                )}
+                {/*{error && (*/}
+                {/*    <div className="mb-4 p-3 bg-red-100 text-red-800 border border-red-400 rounded w-[98%]">*/}
+                {/*        {error}*/}
+                {/*    </div>*/}
+                {/*)}*/}
+                {/*{successMessage && (*/}
+                {/*    <div className="mb-4 p-3 bg-green-100 text-green-800 border border-green-400 rounded w-[98%]">*/}
+                {/*        {successMessage}*/}
+                {/*    </div>*/}
+                {/*)}*/}
 
                 <div className="flex flex-col lg:flex-row gap-6 w-full">
                     <div className="relative flex-1 min-w-0 pr-12">
@@ -130,7 +132,7 @@ const Players = () => {
             {/* Floating Button for Sliding Window */}
             <button
                 onClick={() => setIsSlidingWindowOpen(true)}
-                className="fixed right-2 top-8 transform -translate-y-1/2 hover:text-amber-200 text-white px-4 py-2 transition duration-200 ease-in-out z-50"
+                className="fixed right-2 top-8 transform -translate-y-1/2 dark:hover:text-amber-200 dark:text-gray-100 hover:text-orange-700 text-gray-500 px-4 py-2 transition duration-200 ease-in-out z-50"
             >
                 <RxHamburgerMenu className="text-3xl"/>
             </button>
@@ -158,7 +160,7 @@ const Players = () => {
                         id: "settings",
                         label: "Settings",
                         content: (
-                            <PlayerListSettings
+                            <PlayerSettings
                                 isLoading={isLoading}
                                 onFileSelect={handleFileImport}
                                 onStatusUpdate={setSuccessMessage}
@@ -174,7 +176,9 @@ const Players = () => {
                                     setSelectedPlayer(null);
                                     setIsModalOpen(true);
                                 }}
+
                             />
+
                         ),
                     },
                     {

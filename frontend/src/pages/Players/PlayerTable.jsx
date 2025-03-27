@@ -46,8 +46,8 @@ const PlayerTable = ({ players, error, onEdit }) => {
                             ))
                         ) : (
                             <TableRow className="flex w-full">
-                                <TableCell colSpan={3} className="text-center py-6 text-gray-600 dark:text-gray-300">
-                                    No players found.
+                                <TableCell colSpan={3} className="mx-auto py-6 text-gray-600 dark:text-gray-300 text-3xl">
+                                    No players found
                                 </TableCell>
                             </TableRow>
                         )}

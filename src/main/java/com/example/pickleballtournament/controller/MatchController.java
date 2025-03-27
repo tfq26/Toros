@@ -3,12 +3,14 @@ package com.example.pickleballtournament.controller;
 import com.example.pickleballtournament.model.Match;
 import com.example.pickleballtournament.request.UpdateMatchRequest;
 import com.example.pickleballtournament.service.LiveTournamentService;
+import com.example.pickleballtournament.service.MatchService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -17,17 +19,17 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:5173")
 public class MatchController {
 
-    private final LiveTournamentService liveTournamentService;
+    private final MatchService matchService;
 
-    public MatchController(LiveTournamentService liveTournamentService) {
-        this.liveTournamentService = liveTournamentService;
+    public MatchController(MatchService matchService) {
+        this.matchService = matchService;
     }
 
     /** 🎯 Get Match by ID */
     @GetMapping("/{matchId}")
     public ResponseEntity<?> getMatchById(@PathVariable String matchId) {
         try {
-            Optional<Match> matchOpt = liveTournamentService.getMatchById(matchId);
+            Optional<Match> matchOpt = matchService.getMatchById(matchId);
             if (matchOpt.isPresent()) {
                 log.info("✅ Found match: {}", matchOpt.get().getId());
                 return ResponseEntity.ok(matchOpt.get());
@@ -46,7 +48,7 @@ public class MatchController {
     /** 🎯 Get All Matches */
     @GetMapping
     public ResponseEntity<List<String>> getAllMatches() {
-        List<String> matchIds = liveTournamentService.getAllMatches();
+        List<String> matchIds = matchService.getAllMatches();
         if (matchIds.isEmpty()) {
             log.warn("⚠️ No matches found.");
             return ResponseEntity.ok(List.of());
@@ -59,7 +61,7 @@ public class MatchController {
     @GetMapping("/team/{teamId}")
     public ResponseEntity<?> getMatchesByTeam(@PathVariable String teamId) {
         try {
-            List<String> matchIds = liveTournamentService.getMatchesByTeam(teamId);
+            List<String> matchIds = matchService.getMatchesByTeam(teamId);
             if (matchIds.isEmpty()) {
                 log.warn("⚠️ No matches found for Team ID: {}", teamId);
                 return ResponseEntity.ok(List.of());
@@ -82,7 +84,7 @@ public class MatchController {
                 log.error("❌ Received null request body!");
                 return ResponseEntity.badRequest().body("Invalid JSON request.");
             }
-            String updatedMatchId = liveTournamentService.updateMatch(id, request);
+            String updatedMatchId = matchService.updateMatch(id, request);
             log.info("✅ Match {} updated successfully.", id);
             return ResponseEntity.ok(updatedMatchId);
         } catch (IllegalArgumentException e) {

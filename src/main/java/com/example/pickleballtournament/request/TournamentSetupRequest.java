@@ -1,17 +1,16 @@
 package com.example.pickleballtournament.request;
 
 import lombok.Data;
-
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Data
 public class TournamentSetupRequest {
     private String tournamentName;
     private int numCourts;
     private int gamesPerTeam;
-    private boolean useExistingPlayers;
-    private boolean tiered;
-    private LocalTime startTime;
+    private LocalDateTime startTime;
     private int matchDuration;
-    private int breakDuration;
+    private int breakTime;
+    private boolean skillBased;
+    private Boolean confirmDelete;
 }

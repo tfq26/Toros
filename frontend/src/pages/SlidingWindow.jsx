@@ -22,7 +22,7 @@ const SlidingWindow = ({ isOpen, onClose, sections }) => {
                     isOpen ? "translate-x-0" : "translate-x-full"
                 }`}
             >
-                <div className="h-full bg-white dark:bg-gray-700 shadow-lg w-96 p-4 rounded-l-lg relative">
+                <div className="h-full bg-orange-200 dark:bg-gray-700 shadow-lg w-96 p-4 rounded-l-lg relative">
                     {/* Close Button - rendered only when open */}
                     {isOpen && (
                         <button
@@ -34,14 +34,14 @@ const SlidingWindow = ({ isOpen, onClose, sections }) => {
                     )}
 
                     {/* Tab Buttons */}
-                    <div className="flex border-b dark:border-gray-500">
+                    <div className="flex border-b dark:border-gray-500 ">
                         {sections.map((section) => (
                             <button
                                 key={section.id}
                                 className={`flex-1 p-2 text-center text-lg font-semibold ${
                                     activeSection === section.id
-                                        ? "bg-red-500 text-white"
-                                        : "bg-gray-100 dark:bg-gray-600 dark:text-gray-300"
+                                        ? "bg-red-500 text-white rounded-l-sm rounded-r-sm"
+                                        : "bg-gray-100 dark:bg-gray-600 dark:text-gray-300  rounded-r-sm rounded-r-sm"
                                 }`}
                                 onClick={() => setActiveSection(section.id)}
                             >

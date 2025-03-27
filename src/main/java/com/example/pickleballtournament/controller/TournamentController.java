@@ -2,6 +2,7 @@ package com.example.pickleballtournament.controller;
 
 import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.request.TournamentSetupRequest;
+import com.example.pickleballtournament.service.MatchService;
 import com.example.pickleballtournament.service.TournamentSetupService;
 import com.example.pickleballtournament.service.LiveTournamentService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +21,13 @@ public class TournamentController {
 
     private final TournamentSetupService tournamentSetupService;
     private final LiveTournamentService liveTournamentService;
+    private final MatchService matchService;
 
-    public TournamentController(TournamentSetupService tournamentSetupService, LiveTournamentService liveTournamentService) {
+
+    public TournamentController(TournamentSetupService tournamentSetupService, LiveTournamentService liveTournamentService, MatchService matchService) {
         this.tournamentSetupService = tournamentSetupService;
         this.liveTournamentService = liveTournamentService;
+        this.matchService = matchService;
     }
 
     /** 🎯 Setup Tournament */
@@ -35,10 +39,11 @@ public class TournamentController {
                     request.getTournamentName(),
                     request.getNumCourts(),
                     request.getGamesPerTeam(),
-                    request.isUseExistingPlayers(),
-                    request.isTiered(),
+                    request.isSkillBased(),
                     request.getStartTime(),
-                    request.getMatchDuration()
+                    request.getMatchDuration(),
+                    request.getBreakTime(),
+                    request.getConfirmDelete()
             );
             log.info("✅ Tournament '{}' setup successfully!", tournament.getName());
             return ResponseEntity.ok(tournament);
@@ -52,7 +57,7 @@ public class TournamentController {
     @GetMapping("/activeTournament")
     public ResponseEntity<?> getActiveTournamentFull() {
         try {
-            List<Tournament> activeTournaments = liveTournamentService.getAllActiveTournaments();
+            List<Tournament> activeTournaments = liveTournamentService.getTournaments(true);
             log.info("🎾 Active Tournaments retrieved: {}", activeTournaments.size());
             // Always return 200 OK with an empty list if none are active
             return ResponseEntity.ok(activeTournaments);
@@ -92,7 +97,8 @@ public class TournamentController {
     /** 🎯 Get All Tournaments */
     @GetMapping("/all")
     public ResponseEntity<List<Tournament>> getAllTournaments() {
-        List<Tournament> tournaments = liveTournamentService.getAllTournaments();
+        List<Tournament> tournaments = liveTournamentService.getTournaments(true);
+        tournaments.addAll(liveTournamentService.getTournaments(false));
         if (tournaments.isEmpty()) {
             log.info("📂 No tournaments found.");
         }
@@ -110,7 +116,7 @@ public class TournamentController {
     @GetMapping("/tournament/{tournamentId}")
     public ResponseEntity<?> getMatchesByTournament(@PathVariable String tournamentId) {
         try {
-            List<String> matchIds = liveTournamentService.getMatchesByTournamentId(tournamentId);
+            List<String> matchIds = matchService.getMatchesByTournamentId(tournamentId);
             if (matchIds.isEmpty()) {
                 log.warn("⚠️ No matches found for Tournament ID: {}", tournamentId);
                 return ResponseEntity.ok(List.of()); // return an empty list if no matches are found
