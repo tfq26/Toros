@@ -7,10 +7,10 @@ const PlayerTable = ({ players, error, onEdit }) => {
     const flatPlayers = Object.values(players).flat();
 
     return (
-        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <div className="w-full rounded-lg">
             <div className="overflow-x-auto rounded-lg w-full flex-grow min-h-[600px]">
                 <Table className="w-full">
-                    <TableHeader className="flex text-center font-medium bg-white dark:bg-emerald-950">
+                    <TableHeader className="flex text-center font-medium bg-white dark:bg-emerald-950/50">
                         <TableRow className="flex py-5 text-center font-medium w-full bg-transparent hover:bg-muted/0">
                             <TableHead className="flex-1 font-bold text-center text-4xl bg-transparent text-gray-800 dark:text-gray-100">
                                 Name
@@ -28,7 +28,7 @@ const PlayerTable = ({ players, error, onEdit }) => {
                             flatPlayers.map((player, index) => (
                                 <TableRow
                                     key={`player-${index}`}
-                                    className="flex w-full odd:bg-emerald-50 even:bg-emerald-100 hover:bg-emerald-200 transition dark:odd:bg-emerald-800 dark:even:bg-emerald-900 dark:hover:bg-emerald-600"
+                                    className="flex w-full odd:bg-emerald-50 even:bg-emerald-100/20 hover:bg-emerald-200 transition dark:odd:bg-emerald-800/30 dark:even:bg-emerald-900/30 dark:hover:bg-emerald-600/50"
                                 >
                                     <TableCell
                                         className="flex-1 text-center font-medium cursor-pointer hover:underline text-2xl text-gray-800 dark:text-gray-100"

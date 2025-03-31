@@ -14,7 +14,7 @@ function LayoutContent({ children }) {
             </div>
 
             {/* TournamentSidebar (left) */}
-            <aside className={`transition-width duration-200 ease-in-out flex-shrink-0 overflow-hidden ${open ? "w-64" : "w-0"}`}>
+            <aside className={`transition-all duration-200 ease-in-out flex-shrink-0 overflow-hidden ${open ? "w-64" : "w-0"}`}>
                 {open && <NavbarUpdated />}
             </aside>
 

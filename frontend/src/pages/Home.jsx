@@ -24,7 +24,7 @@ function Home() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-[#0f2027] to-[#203a43] dark:from-[#0f2027] dark:to-[#2c5364] text-gray-800 px-6">
+        <div className="flex flex-col items-center justify-center min-h-screen text-gray-800 px-6">
             {/* Animated Title */}
             <motion.h1
                 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-center mb-6 text-amber-100 dark:text-amber-300 drop-shadow-lg"

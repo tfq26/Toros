@@ -57,8 +57,8 @@ const TournamentList = () => {
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-orange-50">
-            <div className="w-full max-w-3xl bg-white p-8 rounded-lg shadow-lg dark:bg-blue-950">
+        <div className="flex flex-col items-center justify-center min-h-screen p-6">
+            <div className="w-full max-w-3xl bg-white p-8 rounded-lg shadow-lg dark:bg-gray-900/50">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center">
                     Active Tournaments
                 </h2>
@@ -70,13 +70,23 @@ const TournamentList = () => {
                 ) : tournaments.length === 0 ? (
                     // Change: Handle empty list by showing a friendly message instead of an error response.
                     <div className="text-center">
-                        <p className="text-lg font-semibold text-gray-800 dark:text-white text-center">No active tournaments found.</p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                        >
-                            Refresh
-                        </button>
+                        <p className="text-lg font-semibold text-gray-800 dark:text-white">
+                            No active tournaments found.
+                        </p>
+                        <div className="mt-4 flex justify-center gap-4">
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                            >
+                                Refresh
+                            </button>
+                            <button
+                                onClick={() => (window.location.href = "/tournament/setup")}
+                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                            >
+                                Setup
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <ul className="mt-4 space-y-3">

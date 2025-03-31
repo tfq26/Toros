@@ -24,7 +24,8 @@ import { Label } from "@/components/ui/label.jsx";
 import useDevTools from "@/pages/DevTools/DevTools.jsx";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible.jsx";
 import {cn} from "@/lib/utils.js";
-import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/components/ui/sheet.jsx"; // Import our hook
+import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/components/ui/sheet.jsx";
+import {LoginFooter} from "@/pages/Auth/LoginFooter.jsx"; // Import our hook
 
 const data = {
     versions: ["1.0.1", "1.1.0", "2.0.0"],
@@ -52,7 +53,7 @@ export function NavbarUpdated(props) {
     const { openDevTools } = useDevTools();
 
     return (
-        <Sidebar {...props} className={"bg-emerald-400 dark:bg-gray-800"}>
+        <Sidebar {...props} className={"bg-emerald-400 dark:bg-gray-950"}>
             <SidebarHeader className="h-24">
                 <Label htmlFor="Title" className="mx-auto my-4 text-2xl">
                     <Link to="/" className="hover:scale-110 transition duration-300 ease-in-out">
@@ -102,7 +103,7 @@ export function NavbarUpdated(props) {
                                 e.preventDefault();
                                 openDevTools();
                             }}
-                            className="m-4 w-[90%] hover:scale-105 transition duration-300 ease-in-out text-xl"
+                            className="mx-4 mb-10 w-[90%] hover:scale-105 transition duration-300 ease-in-out text-xl"
                         >
                             Dev Tools
                         </SidebarMenuButton>
@@ -111,17 +112,15 @@ export function NavbarUpdated(props) {
                     <SidebarMenuItem>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton>
+                                <SidebarMenuButton
+                                    className="m-4 w-[90%] hover:scale-105 transition duration-300 ease-in-out
+                                     text-xl hover:bg-emerald-200 dark:hover:bg-gray-700 mx-auto"
+                                >
                                     <User2 /> Username
-                                    <ChevronsUpDown />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
-                                <DropdownMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <a href="/auth/login">Login</a>
-                                    </SidebarMenuButton>
-                                </DropdownMenuItem>
+                            <DropdownMenuContent side="right" className="w-[--radix-popper-anchor-width]">
+                                <LoginFooter/>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </SidebarMenuItem>

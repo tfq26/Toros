@@ -7,10 +7,11 @@ import { GalleryVerticalEnd } from "lucide-react"
 import TournamentBracket from "./Standings/TeamStandings.jsx";
 import LiveTournament from "./Tournament/LiveTournament.jsx";
 import ErrorPage from "./Error.jsx";
-import LoginPage from "./Auth/beta_login.jsx";
+import LoginPage from "./Auth/LoginUpdated.jsx";
 import SignupPage from "./Auth/Signup.jsx";
 import MatchTest from "./Tournament/MatchTest.jsx";
-import WindowView from "./Tournament/Viewer/WindowView.jsx"; // New viewer page
+import WindowView from "./Tournament/Viewer/WindowView.jsx";
+import SignupUpdated from "@/pages/Auth/SignupUpdated.jsx"; // New viewer page
 
 const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tournamentConfig, setTournamentConfig }) => {
     return (
@@ -54,7 +55,7 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
                     <LoginPage/>
                 }
             />
-            <Route path="/auth/signup" element={<SignupPage/>}/>
+            <Route path="/auth/signup" element={<SignupUpdated/>}/>
             {/* Error Handling */}
             <Route path="*" element={<ErrorPage statusCode={404}/>}/>
         </Routes>

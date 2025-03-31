@@ -4,6 +4,7 @@ import Layout from "./pages/Layout.jsx";
 import AppRoutes from "./pages/AppRouting.jsx";
 import DevTools from "./pages/DevTools/DevTools.jsx";
 import "./index.css";
+import Background from "@/assets/Background.jsx";
 
 const App = () => {
     const [tournamentSetupComplete, setTournamentSetupComplete] = useState(
@@ -41,7 +42,8 @@ const App = () => {
 
     return (
         <Router>
-            <div className="flex h-screen w-screen bg-orange-100 dark:bg-gray-800">
+            <div className="flex h-screen w-screen">
+                <Background />
                 <Layout>
                     <AppRoutes
                         setAuthToken={setAuthToken}

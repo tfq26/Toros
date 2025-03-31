@@ -1,79 +1,102 @@
 package com.example.pickleballtournament.config;
 
-import com.example.pickleballtournament.repository.UserRepository;
-import com.example.pickleballtournament.security.JwtAuthenticationFilter;
-import com.example.pickleballtournament.utility.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
-
-    @Value("${spring.profiles.active:prod}") // Default to "prod" if not set
+    @Value("${spring.profiles.active:prod}") // Defaults to "prod" if not set
     private String activeProfile;
 
-    public SecurityConfig(JwtUtil jwtUtil, UserRepository userRepository) { // ✅ Correct constructor injection
-        this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
-    }
+    @Value("${spring.security.oauth2.resourceserver.jwt.audience}")
+    private String audience;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private String issuerUri;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        logger.info("SecurityConfig - Active Profile: {}", activeProfile);
 
         if ("dev".equals(activeProfile)) {
-            logger.info("Running in DEV mode - Allowing all requests.");
             http.csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth
-                            .anyRequest().permitAll()
-                    );
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         } else {
-            logger.info("Running in PROD mode - Enforcing authentication.");
             http.csrf(csrf -> csrf.disable())
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers("/auth/**").permitAll()
                             .requestMatchers("/api/tournament/**").authenticated()
                             .requestMatchers("/api/bracket/**").authenticated()
                             .requestMatchers("/api/players/**").authenticated()
-                            .anyRequest().authenticated()
-                    )
-                    .sessionManagement(session -> session
-                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                    )
-                    .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                            .anyRequest().authenticated())
+                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    .oauth2ResourceServer(oauth2 -> oauth2
+                            .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
         }
 
         return http.build();
     }
 
+    /**
+     * Configures the JwtDecoder to use the issuer-uri provided by Auth0 and
+     * validates that the JWT's audience contains the expected value.
+     */
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public JwtDecoder jwtDecoder() {
+        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromOidcIssuerLocation(issuerUri);
+
+        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
+        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+
+        jwtDecoder.setJwtValidator(validator);
+        return jwtDecoder;
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    /**
+     * Optionally customize how granted authorities are extracted from the JWT.
+     */
+    private JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // Optionally, adjust the claim name and authority prefix if needed:
+        // grantedAuthoritiesConverter.setAuthoritiesClaimName("permissions");
+        // grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
+        authenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return authenticationConverter;
     }
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtUtil, userRepository);
+    /**
+     * Custom validator to ensure the JWT contains the expected audience.
+     */
+    static class AudienceValidator implements OAuth2TokenValidator<Jwt> {
+        private final String audience;
+
+        AudienceValidator(String audience) {
+            this.audience = audience;
+        }
+
+        @Override
+        public OAuth2TokenValidatorResult validate(Jwt jwt) {
+            if (jwt.getAudience().contains(audience)) {
+                return OAuth2TokenValidatorResult.success();
+            }
+            OAuth2Error error = new OAuth2Error("invalid_token", "The required audience is missing", null);
+            return OAuth2TokenValidatorResult.failure(error);
+        }
     }
 }

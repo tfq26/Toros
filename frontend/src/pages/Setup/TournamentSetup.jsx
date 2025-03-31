@@ -9,10 +9,9 @@ import ErrorMessage from "../Error";
 import SlidingWindow from "../SlidingWindow";
 import axios from "axios";
 import PlayerStats from "../Players/PlayerStats.jsx";
-import {PiArrowCircleLeftFill, PiArrowSquareLeftBold} from "react-icons/pi";
+import { PiArrowCircleLeftFill } from "react-icons/pi";
 import { convertLevel, calculateStats } from "../utils/playerUtils.js";
-// import { toast, ToastContainer } from "react-toastify"; // Old Toast import
-import { toast } from "sonner"; // ✅ Fixed Toast import
+import { toast } from "sonner";
 import "react-toastify/dist/ReactToastify.css";
 import { Label } from "@/components/ui/label.jsx";
 
@@ -21,6 +20,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
         tournamentName: "",
         numCourts: 1,
         gamesPerTeam: 3,
+        startDate: "",
         startTime: "",
         matchDuration: 30,
         breakTime: 5,
@@ -33,29 +33,24 @@ const TournamentSetup = ({ onSetupComplete }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const navigate = useNavigate();
 
-    /** ✅ Fetch Players */
+    // Fetch registered players
     useEffect(() => {
         const fetchPlayers = async () => {
             try {
                 const response = await axios.get("http://localhost:8080/api/players/all");
                 const allPlayers = response.data || [];
-
                 const registeredPlayers = allPlayers.filter((player) => player.isRegistered);
                 setPlayers(registeredPlayers);
-
-                console.log("✅ Registered Players fetched successfully:", registeredPlayers);
             } catch (err) {
-                console.error("❌ Error fetching players:", err);
+                console.error("Error fetching players:", err);
                 setError("Failed to fetch players.");
             }
         };
         fetchPlayers();
     }, []);
 
-    /** ✅ Compute Player Stats */
     const playerStats = calculateStats(players);
 
-    /** ✅ Update Config Values */
     const handleConfigChange = (field, value) => {
         setTournamentConfig((prev) => ({
             ...prev,
@@ -63,168 +58,197 @@ const TournamentSetup = ({ onSetupComplete }) => {
         }));
     };
 
-    /** ✅ Set Start Time to Current Time */
+    // Set the current date and time
     const handleSetCurrentTime = () => {
         const now = new Date();
+        const formattedDate = now.toISOString().split("T")[0];
         const hours = now.getHours().toString().padStart(2, "0");
         const minutes = now.getMinutes().toString().padStart(2, "0");
-        const formattedTime = `${hours}:${minutes}`;
-
-        handleConfigChange("startTime", formattedTime);
+        handleConfigChange("startDate", formattedDate);
+        handleConfigChange("startTime", `${hours}:${minutes}`);
     };
 
-    /** ✅ Submit Tournament Setup */
+    // Submit tournament configuration
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("🚀 Submitting tournamentConfig:", tournamentConfig);
 
         if (!tournamentConfig.tournamentName.trim()) {
-            setError("⚠️ Tournament name is required.");
-            toast.error("⚠️ Tournament name is required!");
+            setError("Tournament name is required.");
+            toast.error("Tournament name is required!");
             return;
         }
 
+        // Combine date and time to an ISO string for the backend
+        const combinedStartTime =
+            tournamentConfig.startDate && tournamentConfig.startTime
+                ? `${tournamentConfig.startDate}T${tournamentConfig.startTime}:00`
+                : "";
+
+        const submissionConfig = {
+            ...tournamentConfig,
+            startTime: combinedStartTime,
+        };
+
         try {
-            toast.info("⏳ Creating Tournament...");
-
-            const response = await axios.post("http://localhost:8080/api/tournament/setup", tournamentConfig);
-
-            toast.success("✅ Tournament created successfully!");
-            console.log("✅ Tournament setup successful:", response.data);
-            console.log("Tournament config after setup:", tournamentConfig);
-
+            toast.info("Creating Tournament...");
+            const response = await axios.post("http://localhost:8080/api/tournament/setup", submissionConfig);
+            toast.success("Tournament created successfully!");
             onSetupComplete();
             navigate("/tournament/list");
         } catch (err) {
-            console.error("❌ Error setting up tournament:", err);
+            console.error("Error setting up tournament:", err);
             setError(err.response?.data?.message || "Failed to set up tournament.");
-            toast.error("❌ Failed to create tournament.");
+            toast.error("Failed to create tournament.");
         }
     };
 
-    // Set the tab title to "Viewer" on mount.
     useEffect(() => {
         document.title = "Tournament Setup";
     }, []);
 
     return (
-        <div className="flex justify-center items-center min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
-            {/*<ToastContainer position="top-right" autoClose={3000} />*/}
-
-            <div className="w-full max-w-3xl bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg dark:shadow-none">
+        <div className="min-h-screen flex items-center justify-center p-6">
+            <div className="w-full max-w-4xl bg-white dark:bg-gray-900 p-10 rounded-xl shadow-2xl">
                 {/* Header */}
-                <div className="flex items-center mb-6 space-x-4">
+                <div className="flex items-center justify-between mb-8">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center mt-2 gap-2 text-gray-700 dark:text-gray-100 hover:text-red-500 dark:hover:text-red-400 transition ease-in-out duration-75"
+                        className="text-gray-700 dark:text-gray-100 hover:text-red-700 transition duration-200"
                     >
-                        <PiArrowCircleLeftFill size={30}/>
+                        <PiArrowCircleLeftFill size={32} />
                     </button>
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                        Tournament Setup
-                    </h2>
+                    <div className="text-center flex-grow">
+                        <h2 className="text-4xl font-extrabold text-gray-800 dark:text-gray-100">Tournament Setup</h2>
+                        <p className="text-lg text-gray-500 dark:text-gray-400 mt-2">Configure your tournament details below</p>
+                    </div>
+                    <div className="w-10"></div>
                 </div>
 
-                {/* Tournament Name */}
-                <div className="mb-4">
-                    <input
-                        type="text"
-                        value={tournamentConfig.tournamentName}
-                        onChange={(e) => handleConfigChange("tournamentName", e.target.value)}
-                        placeholder="Enter Tournament Name"
-                        className="w-full text-3xl font-bold text-center p-2 mb-6 border rounded-lg bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring focus:ring-gray-500 focus:border-red-500"
-                    />
-                </div>
-                <form onSubmit={handleSubmit} className="space-y-7">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-2">
-                            <Label className="text-xl text-gray-700 dark:text-gray-200">Number of Courts</Label>
-                            <Label className="text-xl text-gray-700 dark:text-gray-200">Number of Games per Team</Label>
-                        </div>
-                        <div className="flex flex-col gap-2">
+                {error && <ErrorMessage message={error} />}
+
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* Tournament Name */}
+                    <div>
+                        <Input
+                            type="text"
+                            value={tournamentConfig.tournamentName}
+                            onChange={(e) => handleConfigChange("tournamentName", e.target.value)}
+                            placeholder="Enter Tournament Name"
+                            className="w-full text-2xl p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+                    </div>
+
+                    {/* Courts and Games */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <Label className="block text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Number of Courts
+                            </Label>
                             <Input
                                 type="number"
                                 value={tournamentConfig.numCourts}
                                 onChange={(e) => handleConfigChange("numCourts", parseInt(e.target.value, 10))}
                                 max={20}
-                                className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                             />
+                        </div>
+                        <div>
+                            <Label className="block text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Games per Team
+                            </Label>
                             <Input
                                 type="number"
                                 value={tournamentConfig.gamesPerTeam}
                                 onChange={(e) => handleConfigChange("gamesPerTeam", parseInt(e.target.value, 10))}
                                 max={20}
-                                className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                             />
                         </div>
                     </div>
 
-                    <div className="flex items-start gap-4">
-                        <div className="flex items-center gap-4">
-                            <Label className="text-xl text-gray-700 dark:text-gray-200">Start Time</Label>
+                    {/* Start Date & Time */}
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className="flex flex-col md:flex-row items-center gap-4 mx-auto">
+                            <Label className="text-xl text-gray-700 dark:text-gray-300">Start Date</Label>
+                            <Input
+                                type="date"
+                                value={tournamentConfig.startDate}
+                                onChange={(e) => handleConfigChange("startDate", e.target.value)}
+                                className="p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+                            />
+                        </div>
+                        <div className="flex flex-col md:flex-row items-center gap-4 mx-auto">
+                            <Label className="text-xl text-gray-700 dark:text-gray-300">Start Time</Label>
                             <Input
                                 type="time"
                                 value={tournamentConfig.startTime}
                                 onChange={(e) => handleConfigChange("startTime", e.target.value)}
-                                className="w-fit dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                className="p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                             />
-                            <Button
-                                type="button"
-                                className="bg-emerald-200 hover:bg-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:text-white text-emerald-500 px-4 py-2 rounded-lg transition"
-                                onClick={handleSetCurrentTime}
-                            >
-                                <FaClock/>
-                            </Button>
                         </div>
+                        <Button
+                            type="button"
+                            onClick={handleSetCurrentTime}
+                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
+                        >
+                            <FaClock />
+                            Now
+                        </Button>
+                    </div>
 
-                        <div className="ml-auto flex flex-col gap-4 mr-[15%]">
-                            <div className="flex items-center gap-2">
-                                <Checkbox
-                                    checked={tournamentConfig.useExistingPlayers}
-                                    onChange={(e) => handleConfigChange("useExistingPlayers", e.target.checked)}
-                                    className="dark:border-gray-600"
-                                />
-                                <Label className="text-md font-medium text-gray-700 dark:text-gray-200">
-                                    Use Existing Player List
-                                </Label>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Checkbox
-                                    checked={tournamentConfig.tiered}
-                                    onChange={(e) => handleConfigChange("tiered", e.target.checked)}
-                                    className="dark:border-gray-600"
-                                />
-                                <Label className="text-md font-medium text-gray-700 dark:text-gray-200">
-                                    Divide Tournament into Tiers
-                                </Label>
-                            </div>
+                    {/* Match Duration & Break Time */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <Label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Match Duration (min)
+                            </Label>
+                            <Slider
+                                value={[tournamentConfig.matchDuration]}
+                                max={120}
+                                step={5}
+                                onValueChange={(newValue) => handleConfigChange("matchDuration", newValue[0])}
+                            />
+                            <p className="mt-2 text-gray-600 dark:text-gray-400">{tournamentConfig.matchDuration} minutes</p>
+                        </div>
+                        <div>
+                            <Label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Break Time (min)
+                            </Label>
+                            <Slider
+                                value={[tournamentConfig.breakTime]}
+                                max={60}
+                                step={5}
+                                onValueChange={(newValue) => handleConfigChange("breakTime", newValue[0])}
+                            />
+                            <p className="mt-2 text-gray-600 dark:text-gray-400">{tournamentConfig.breakTime} minutes</p>
                         </div>
                     </div>
 
-                    <div>
-                        <Label className="text-lg font-medium text-gray-700 dark:text-gray-200 pb-4">Game
-                            Duration</Label>
-                        <Slider
-                            value={[tournamentConfig.matchDuration]}
-                            max={120}
-                            step={5}
-                            onValueChange={(newValue) => handleConfigChange("matchDuration", newValue[0])}
-                        />
-                    </div>
-                    <div>
-                        <Label className="text-lg font-medium text-gray-700 dark:text-gray-200 pb-4">Break Time</Label>
-                        <Slider
-                            value={[tournamentConfig.breakTime]}
-                            max={60}
-                            step={5}
-                            onValueChange={(newValue) => handleConfigChange("breakTime", newValue[0])}
-                        />
+                    {/* Options */}
+                    <div className="flex flex-col md:flex-row gap-6 items-center">
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                checked={tournamentConfig.useExistingPlayers}
+                                onChange={(e) => handleConfigChange("useExistingPlayers", e.target.checked)}
+                                className="dark:border-gray-600"
+                            />
+                            <Label className="text-lg text-gray-700 dark:text-gray-300">Use Existing Player List</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                checked={tournamentConfig.tiered}
+                                onChange={(e) => handleConfigChange("tiered", e.target.checked)}
+                                className="dark:border-gray-600"
+                            />
+                            <Label className="text-lg text-gray-700 dark:text-gray-300">Divide into Tiers</Label>
+                        </div>
                     </div>
 
-                    <div className="mt-auto flex justify-end">
+                    {/* Submit Button */}
+                    <div className="flex justify-end">
                         <Button
                             type="submit"
-                            className="w-fit bg-amber-300 hover:bg-amber-400 dark:bg-yellow-600 dark:hover:bg-yellow-700 text-white py-3 rounded-lg text-xl font-semibold transition"
+                            className="w-full md:w-auto bg-green-500 hover:bg-green-600 dark:bg-green-900 dark:hover:bg-green-700 text-white py-3 px-6 rounded-md text-xl transition"
                         >
                             Start Tournament
                         </Button>
