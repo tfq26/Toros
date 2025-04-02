@@ -12,8 +12,8 @@ import PlayerStats from "../Players/PlayerStats.jsx";
 import { PiArrowCircleLeftFill } from "react-icons/pi";
 import { convertLevel, calculateStats } from "../utils/playerUtils.js";
 import { toast } from "sonner";
-import "react-toastify/dist/ReactToastify.css";
 import { Label } from "@/components/ui/label.jsx";
+import { DatePicker } from "@/components/ui/date-picker.jsx";
 
 const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
@@ -27,7 +27,6 @@ const TournamentSetup = ({ onSetupComplete }) => {
         useExistingPlayers: false,
         tiered: false,
     });
-
     const [players, setPlayers] = useState([]);
     const [error, setError] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -78,7 +77,6 @@ const TournamentSetup = ({ onSetupComplete }) => {
             return;
         }
 
-        // Combine date and time to an ISO string for the backend
         const combinedStartTime =
             tournamentConfig.startDate && tournamentConfig.startTime
                 ? `${tournamentConfig.startDate}T${tournamentConfig.startTime}:00`
@@ -107,26 +105,27 @@ const TournamentSetup = ({ onSetupComplete }) => {
     }, []);
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6">
-            <div className="w-full max-w-4xl bg-white dark:bg-gray-900 p-10 rounded-xl shadow-2xl">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-gray-50 dark:bg-gray-800">
+            <div className="w-full max-w-4xl bg-white dark:bg-gray-900 p-6 sm:p-8 rounded-xl shadow-2xl">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="text-gray-700 dark:text-gray-100 hover:text-red-700 transition duration-200"
-                    >
-                        <PiArrowCircleLeftFill size={32} />
-                    </button>
-                    <div className="text-center flex-grow">
-                        <h2 className="text-4xl font-extrabold text-gray-800 dark:text-gray-100">Tournament Setup</h2>
-                        <p className="text-lg text-gray-500 dark:text-gray-400 mt-2">Configure your tournament details below</p>
+                <div className="flex items-center justify-between mb-6">
+                    <Button variant="ghost" onClick={() => navigate(-1)} className="text-gray-700 dark:text-gray-100">
+                        <PiArrowCircleLeftFill size={28} />
+                    </Button>
+                    <div className="flex-grow text-center">
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 dark:text-gray-100">
+                            Tournament Setup
+                        </h2>
+                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-1">
+                            Configure your tournament details below
+                        </p>
                     </div>
-                    <div className="w-10"></div>
+                    <div className="w-10" />
                 </div>
 
                 {error && <ErrorMessage message={error} />}
 
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Tournament Name */}
                     <div>
                         <Input
@@ -134,14 +133,14 @@ const TournamentSetup = ({ onSetupComplete }) => {
                             value={tournamentConfig.tournamentName}
                             onChange={(e) => handleConfigChange("tournamentName", e.target.value)}
                             placeholder="Enter Tournament Name"
-                            className="w-full text-2xl p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            className="w-full text-lg p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                     </div>
 
                     {/* Courts and Games */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <Label className="block text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <Label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Number of Courts
                             </Label>
                             <Input
@@ -153,7 +152,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                             />
                         </div>
                         <div>
-                            <Label className="block text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <Label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Games per Team
                             </Label>
                             <Input
@@ -167,39 +166,38 @@ const TournamentSetup = ({ onSetupComplete }) => {
                     </div>
 
                     {/* Start Date & Time */}
-                    <div className="flex flex-col md:flex-row items-center gap-6">
-                        <div className="flex flex-col md:flex-row items-center gap-4 mx-auto">
-                            <Label className="text-xl text-gray-700 dark:text-gray-300">Start Date</Label>
-                            <Input
-                                type="date"
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+                            <Label className="text-sm sm:text-base text-gray-700 dark:text-gray-300">Start Date</Label>
+                            <DatePicker
                                 value={tournamentConfig.startDate}
-                                onChange={(e) => handleConfigChange("startDate", e.target.value)}
-                                className="p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+                                onChange={(value) => handleConfigChange("startDate", value)}
+                                className="w-full"
                             />
                         </div>
-                        <div className="flex flex-col md:flex-row items-center gap-4 mx-auto">
-                            <Label className="text-xl text-gray-700 dark:text-gray-300">Start Time</Label>
+                        <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+                            <Label className="text-sm sm:text-base text-gray-700 dark:text-gray-300">Start Time</Label>
                             <Input
                                 type="time"
                                 value={tournamentConfig.startTime}
                                 onChange={(e) => handleConfigChange("startTime", e.target.value)}
-                                className="p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+                                className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                             />
                         </div>
                         <Button
                             type="button"
                             onClick={handleSetCurrentTime}
-                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
+                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-3 py-2 rounded-md transition"
                         >
-                            <FaClock />
+                            <FaClock size={16} />
                             Now
                         </Button>
                     </div>
 
                     {/* Match Duration & Break Time */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <Label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <Label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Match Duration (min)
                             </Label>
                             <Slider
@@ -208,10 +206,12 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                 step={5}
                                 onValueChange={(newValue) => handleConfigChange("matchDuration", newValue[0])}
                             />
-                            <p className="mt-2 text-gray-600 dark:text-gray-400">{tournamentConfig.matchDuration} minutes</p>
+                            <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                                {tournamentConfig.matchDuration} minutes
+                            </p>
                         </div>
                         <div>
-                            <Label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <Label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Break Time (min)
                             </Label>
                             <Slider
@@ -220,19 +220,23 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                 step={5}
                                 onValueChange={(newValue) => handleConfigChange("breakTime", newValue[0])}
                             />
-                            <p className="mt-2 text-gray-600 dark:text-gray-400">{tournamentConfig.breakTime} minutes</p>
+                            <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm">
+                                {tournamentConfig.breakTime} minutes
+                            </p>
                         </div>
                     </div>
 
                     {/* Options */}
-                    <div className="flex flex-col md:flex-row gap-6 items-center">
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
                         <div className="flex items-center gap-2">
                             <Checkbox
                                 checked={tournamentConfig.useExistingPlayers}
                                 onChange={(e) => handleConfigChange("useExistingPlayers", e.target.checked)}
                                 className="dark:border-gray-600"
                             />
-                            <Label className="text-lg text-gray-700 dark:text-gray-300">Use Existing Player List</Label>
+                            <Label className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
+                                Use Existing Player List
+                            </Label>
                         </div>
                         <div className="flex items-center gap-2">
                             <Checkbox
@@ -240,7 +244,9 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                 onChange={(e) => handleConfigChange("tiered", e.target.checked)}
                                 className="dark:border-gray-600"
                             />
-                            <Label className="text-lg text-gray-700 dark:text-gray-300">Divide into Tiers</Label>
+                            <Label className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
+                                Divide into Tiers
+                            </Label>
                         </div>
                     </div>
 
@@ -248,7 +254,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                     <div className="flex justify-end">
                         <Button
                             type="submit"
-                            className="w-full md:w-auto bg-green-500 hover:bg-green-600 dark:bg-green-900 dark:hover:bg-green-700 text-white py-3 px-6 rounded-md text-xl transition"
+                            className="w-full sm:w-auto bg-green-500 hover:bg-green-600 dark:bg-green-900 dark:hover:bg-green-700 text-white py-3 px-6 rounded-md text-lg transition"
                         >
                             Start Tournament
                         </Button>

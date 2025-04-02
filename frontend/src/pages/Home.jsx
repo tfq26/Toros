@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 function Home() {
     const [images, setImages] = useState([]);
@@ -11,74 +13,103 @@ function Home() {
                 "/img_1.jpg",
                 "/img_2.jpg",
                 "/img_3.jpg",
-                "/img_4", // Ensure file extensions are correct
+                "/img_1.jpg", // Ensure file extensions are correct
             ];
             setImages(importedImages);
         };
         importImages();
     }, []);
 
-    // Set the tab title to "Viewer" on mount.
+    // Set the tab title to "Toros" on mount.
     useEffect(() => {
         document.title = "Toros";
     }, []);
 
+    // Motion variants for the image grid container and items
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.2 },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, scale: 0.9 },
+        show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 200 } },
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen text-gray-800 px-6">
-            {/* Animated Title */}
-            <motion.h1
-                className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold text-center mb-6 text-amber-100 dark:text-amber-300 drop-shadow-lg"
-                initial={{ opacity: 0, y: -50 }}
+        <div className="min-h-screen  flex flex-col items-center justify-center text-gray-50 px-4 py-8">
+            {/* Hero Section */}
+            <motion.div
+                className="text-center mb-12"
+                initial={{ opacity: 0, y: -40 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, ease: "easeOut" }}
+                transition={{ duration: 1 }}
             >
-                Welcome to <span className="text-amber-300 dark:text-emerald-200">Toros</span>
-            </motion.h1>
+                <motion.h1
+                    className="text-5xl sm:text-6xl md:text-7xl font-extrabold drop-shadow-lg mb-4"
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                >
+                    Welcome to <span className="text-amber-300">Toros</span>
+                </motion.h1>
+                <motion.p
+                    className="text-lg sm:text-xl md:text-2xl font-medium"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                >
+                    The Ultimate Pickleball Tournament Experience
+                </motion.p>
+            </motion.div>
 
-            {/* Subtitle */}
-            <motion.p
-                className="text-xl sm:text-2xl md:text-3xl text-center text-white mb-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.2, delay: 0.5 }}
+            {/* Separator */}
+            <Separator className="w-full max-w-md mb-8" />
+
+            {/* Image Grid */}
+            <motion.div
+                className="w-full max-w-7xl px-4 mb-10"
+                variants={containerVariants}
+                initial="show"
+                animate="show"
             >
-                The Ultimate Pickleball Tournament Experience
-            </motion.p>
-
-            {/* Image Grid - Fixed Clipping Issue */}
-            <div className="w-full max-w-7xl px-4 mb-10">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {images.map((image, index) => (
                         <motion.div
                             key={index}
-                            className="relative overflow-hidden rounded-xl shadow-lg"
-                            whileHover={{ scale: 1.05 }}
-                            transition={{ type: "spring", stiffness: 300 }}
+                            className="relative overflow-hidden rounded-xl shadow-2xl"
+                            variants={itemVariants}
+                            whileHover={{ scale: 1.05, rotate: 1 }}
                         >
                             <img
                                 src={image}
                                 alt={`Pickleball ${index + 1}`}
-                                className="w-full h-60 object-cover rounded-xl"
+                                className="w-full h-60 object-cover"
                             />
+                            {/* Hover Overlay */}
+                            {/*<motion.div*/}
+                            {/*    className="absolute inset-0 bg-black bg-opacity-"*/}
+                            {/*    whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.25)" }}*/}
+                            {/*    transition={{ duration: 0.3 }}*/}
+                            {/*/>*/}
                         </motion.div>
                     ))}
                 </div>
-            </div>
+            </motion.div>
 
-            {/* Fun CTA Button */}
+            {/* CTA Section */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
+                initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 1 }}
+                transition={{ duration: 0.6, delay: 1 }}
             >
                 <Link to="/tournament/setup">
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="bg-amber-400 hover:bg-amber-500 text-white text-xl font-semibold py-3 px-8 rounded-full shadow-lg transition-all"
-                    >
+                    <Button className="bg-amber-400 hover:bg-amber-500 text-white text-lg font-semibold py-3 px-8 rounded-full shadow-lg transition-all">
                         Start Your Tournament 🏅
-                    </motion.button>
+                    </Button>
                 </Link>
             </motion.div>
         </div>

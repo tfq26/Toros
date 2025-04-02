@@ -143,7 +143,7 @@ function Sidebar({
       (<div
         data-slot="sidebar"
         className={cn(
-            "dark:bg-gray-900 text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
+            "dark:bg-gray-900 text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col gap-2",
           className
         )}
         {...props}>
@@ -212,7 +212,9 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="dark:bg-gray-950 group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm">
+          className="dark:bg-gray-950 group-data-[variant=floating]:border-sidebar-border
+           flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg
+           group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm">
           {children}
         </div>
       </div>

@@ -22,26 +22,26 @@ const SlidingWindow = ({ isOpen, onClose, sections }) => {
                     isOpen ? "translate-x-0" : "translate-x-full"
                 }`}
             >
-                <div className="h-full bg-orange-200 dark:bg-gray-700 shadow-lg w-96 p-4 rounded-l-lg relative">
-                    {/* Close Button - rendered only when open */}
-                    {isOpen && (
-                        <button
-                            onClick={onClose}
-                            className="absolute left-[-60px] top-1/2 transform -translate-y-1/2 bg-red-500 text-white px-4 py-2 rounded-l-md hover:bg-red-600 transition"
-                        >
-                            <PiArrowSquareRightBold className="text-3xl" />
-                        </button>
-                    )}
+                <div className="h-full bg-orange-200 dark:bg-gray-700 shadow-lg w-96 p-4 rounded-l-md relative">
+                    {/* Close Button repositioned inside the container */}
+                    {/*{isOpen && (*/}
+                    {/*    <button*/}
+                    {/*        onClick={onClose}*/}
+                    {/*        className="absolute top-4 right-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition z-10"*/}
+                    {/*    >*/}
+                    {/*        <PiArrowSquareRightBold className="text-3xl" />*/}
+                    {/*    </button>*/}
+                    {/*)}*/}
 
                     {/* Tab Buttons */}
-                    <div className="flex border-b dark:border-gray-500 ">
-                        {sections.map((section) => (
+                    <div className="flex space-x-4">
+                        {sections.map(section => (
                             <button
                                 key={section.id}
-                                className={`flex-1 p-2 text-center text-lg font-semibold ${
+                                className={`text-center text-lg font-semibold mb-5 w-fit p-4 ${
                                     activeSection === section.id
-                                        ? "bg-red-500 text-white rounded-l-sm rounded-r-sm"
-                                        : "bg-gray-100 dark:bg-gray-600 dark:text-gray-300  rounded-r-sm rounded-r-sm"
+                                        ? "bg-red-500 text-white rounded-md"
+                                        : "bg-gray-100 dark:bg-gray-600 dark:text-gray-300 rounded-md"
                                 }`}
                                 onClick={() => setActiveSection(section.id)}
                             >
