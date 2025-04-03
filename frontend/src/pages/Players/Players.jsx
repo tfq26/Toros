@@ -5,7 +5,7 @@ import PlayerStats from "./PlayerStats";
 import PlayerSettings from "./PlayerSettings";
 import PlayerSearch from "./PlayerSearch.jsx";
 import LoadingModal from "../Modals/LoadingModal.jsx";
-import SlidingWindow from "../SlidingWindow";
+import SlidingWindow from "../Navbar/SlidingWindow.jsx";
 import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/playerUtils.js";
 import { RxHamburgerMenu } from "react-icons/rx";
 

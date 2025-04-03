@@ -6,7 +6,7 @@ import { Checkbox } from "../../components/ui/checkbox.jsx";
 import { Slider } from "../../components/ui/slider.jsx";
 import { FaClock } from "react-icons/fa";
 import ErrorMessage from "../Error";
-import SlidingWindow from "../SlidingWindow";
+import SlidingWindow from "../Navbar/SlidingWindow.jsx";
 import axios from "axios";
 import PlayerStats from "../Players/PlayerStats.jsx";
 import { PiArrowCircleLeftFill } from "react-icons/pi";
