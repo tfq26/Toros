@@ -12,7 +12,7 @@ import LoginPage from "./Auth/beta_login.jsx";
 import SignupPage from "./Auth/Signup.jsx";
 import MatchTest from "./Tournament/MatchTest.jsx";
 import WindowView from "./Tournament/Viewer/WindowView.jsx";
-import { NavbarUpdated } from "@/pages/NavbarUpdated.jsx";
+import { NavbarUpdated } from "@/pages/Navbar/NavbarUpdated.jsx";
 import Page from "./Page.jsx";
 
 const AppRoutes = ({
