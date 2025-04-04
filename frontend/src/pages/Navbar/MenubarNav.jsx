@@ -6,15 +6,13 @@ import {
     MenubarMenu,
     MenubarTrigger,
     MenubarContent,
-    MenubarItem
+    MenubarItem,
 } from "@/components/ui/menubar";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import {LoginFooter, LoginMenuItem} from "@/pages/Auth/LoginFooter.jsx";
+import { LoginMenuItem } from "@/pages/Auth/LoginFooter.jsx";
 import useDevTools from "@/pages/DevTools/DevTools.jsx";
 
 // Navigation data
@@ -42,22 +40,41 @@ export function MenubarNav() {
     const { openDevTools } = useDevTools();
 
     return (
-        <Menubar>
+        <Menubar className="flex items-center w-full h-18 dark:bg-gray-900">
+            {/* Brand: Toros */}
+            <MenubarMenu>
+                <MenubarTrigger className="px-4 flex items-center hover:bg-none">
+                    <Link
+                        to="/"
+                        className="text-lg md:text-xl lg:text-2xl font-bold px-4"
+                    >
+                        Toros
+                    </Link>
+                </MenubarTrigger>
+            </MenubarMenu>
+
+            {/* Spacer between brand and nav items */}
+            <div className="flex-1" />
+
+            {/* Navigation Menus */}
             {data.navMain.map((group) => (
                 <MenubarMenu key={group.title}>
-                    <MenubarTrigger>{group.title}</MenubarTrigger>
+                    <MenubarTrigger className="px-4">{group.title}</MenubarTrigger>
                     <MenubarContent>
                         {group.items.map((item) => (
                             <MenubarItem key={item.title}>
-                                <Link to={item.url} className={'w-full'}>{item.title}</Link>
+                                <Link to={item.url} className="w-full">
+                                    {item.title}
+                                </Link>
                             </MenubarItem>
                         ))}
                     </MenubarContent>
                 </MenubarMenu>
             ))}
 
+            {/* Dev Tools Menu */}
             <MenubarMenu>
-                <MenubarTrigger>Dev Tools</MenubarTrigger>
+                <MenubarTrigger className="px-4">Dev Tools</MenubarTrigger>
                 <MenubarContent>
                     <MenubarItem
                         onClick={(e) => {
@@ -70,13 +87,13 @@ export function MenubarNav() {
                 </MenubarContent>
             </MenubarMenu>
 
+            {/* User Menu */}
             <MenubarMenu>
-                <MenubarTrigger>
+                <MenubarTrigger className="px-4 flex items-center">
                     <User2 className="mr-2" />
                     Username
                 </MenubarTrigger>
                 <MenubarContent>
-                    {/* Wrap the LoginFooter in a DropdownMenu so that its internal MenuItems have context */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <LoginMenuItem />
