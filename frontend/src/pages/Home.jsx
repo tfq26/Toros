@@ -13,7 +13,7 @@ function Home() {
                 "/img_1.jpg",
                 "/img_2.jpg",
                 "/img_3.jpg",
-                "/img_1.jpg", // Ensure file extensions are correct
+                "/img_4", // Ensure file extensions are correct
             ];
             setImages(importedImages);
         };
