@@ -132,7 +132,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => {
-                                if (selectedFile) processFile(selectedFile);
+                                if (selectedFile) processFile(selectedFile).catch((error => {(console.error("Error processing file:", error))}));
                                 setShowConfirm(false);
                             }}
                         >

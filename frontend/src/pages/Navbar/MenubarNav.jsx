@@ -1,5 +1,5 @@
 // src/components/MenubarNav.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { User2 } from "lucide-react";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/menubar";
 import { Button } from "@/components/ui/button";
 import { MenubarAuth } from "@/pages/Auth/MenubarAuth.jsx";
+import useDevTools from "@/pages/DevTools/DevTools.jsx"; // Adjust the path as needed
 
 const navData = {
     navMain: [
@@ -33,11 +34,12 @@ const navData = {
 };
 
 export function MenubarNav() {
-    const [isDarkMode, setIsDarkMode] = React.useState(
+    const [isDarkMode, setIsDarkMode] = useState(
         window.matchMedia("(prefers-color-scheme: dark)").matches
     );
+    const { openDevTools } = useDevTools();
 
-    React.useEffect(() => {
+    useEffect(() => {
         const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
         const handleChange = (event) => setIsDarkMode(event.matches);
         mediaQuery.addEventListener("change", handleChange);
@@ -45,7 +47,9 @@ export function MenubarNav() {
         return () => mediaQuery.removeEventListener("change", handleChange);
     }, []);
 
-    const imgSrc = isDarkMode ? "/bull-svgrepo-com.svg" : "/bull-svgrepo-com_black.svg";
+    const imgSrc = isDarkMode
+        ? "/bull-svgrepo-com.svg"
+        : "/bull-svgrepo-com_black.svg";
 
     return (
         <Menubar className="flex items-center w-full h-18 dark:bg-gray-900 mt-8 bg-gray-100 shadow-md rounded-lg">
@@ -81,7 +85,7 @@ export function MenubarNav() {
                 </MenubarMenu>
             ))}
 
-            {/* Auth Section in Menubar */}
+            {/* Auth Section */}
             <MenubarMenu>
                 <MenubarTrigger className="px-4 flex items-center">
                     <User2 className="mr-2" />
@@ -91,6 +95,16 @@ export function MenubarNav() {
                     <MenubarAuth />
                 </MenubarContent>
             </MenubarMenu>
+
+            {/* Dev Tools Menu: Only visible in development mode */}
+            {import.meta.env.DEV && (
+                <MenubarMenu>
+                    <MenubarTrigger className="px-4">Dev Tools</MenubarTrigger>
+                    <MenubarContent>
+                        <MenubarItem onClick={openDevTools}>Open DevTools</MenubarItem>
+                    </MenubarContent>
+                </MenubarMenu>
+            )}
         </Menubar>
     );
 }
