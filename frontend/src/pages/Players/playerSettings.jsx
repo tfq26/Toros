@@ -15,7 +15,7 @@ const PlayerSettings = ({
                             onAddPlayer // This can now be passed as onPlayerAdded to the AddPlayer component
                         }) => {
     return (
-        <aside className="w-full bg-red-600 dark:bg-gray-900 p-4 rounded shadow-md h-fit border-gray-300">
+        <aside className="w-full bg-emerald-600 dark:bg-gray-900 p-4 rounded shadow-md h-fit border-gray-300">
             <h3 className="text-xl text-orange-200 font-bold mb-4 text-center">
                 Player List Settings
             </h3>

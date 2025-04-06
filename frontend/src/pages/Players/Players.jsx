@@ -7,11 +7,8 @@ import PlayerSearch from "./PlayerSearch.jsx";
 import LoadingModal from "../Modals/LoadingModal.jsx";
 import SlidingWindow from "../Navbar/SlidingWindow.jsx";
 import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/playerUtils.js";
-import { RxHamburgerMenu } from "react-icons/rx";
-
+import { IoOptionsSharp } from "react-icons/io5";
 import PlayerModalUpdated from "@/pages/Modals/playerModalUpdated.jsx";
-import {Label} from "@/components/ui/label.jsx";
-import {Input} from "@/components/ui/input.jsx";
 
 const Players = () => {
     const [players, setPlayers] = useState([]);
@@ -99,7 +96,15 @@ const Players = () => {
                                 <LoadingModal message="Loading Player List" description="Please wait..."/>
                             </div>
                         )}
-                        <PlayerSearch onSearchChange={setSearchQuery}/>
+                        <div className="flex items-center w-full justify-between">
+                            <PlayerSearch onSearchChange={setSearchQuery} />
+                            {/*<button*/}
+                            {/*    onClick={() => setIsSlidingWindowOpen(true)}*/}
+                            {/*    className="ml-4 dark:hover:text-amber-200 dark:text-gray-100 hover:text-orange-700 text-gray-500 px-4 py-2 transition duration-200 ease-in-out z-50"*/}
+                            {/*>*/}
+                            {/*    <IoOptionsSharp className="text-3xl" />*/}
+                            {/*</button>*/}
+                        </div>
                         <div className="flex flex-col gap-6 mt-4">
                             {/* Table Section */}
                             <div>
@@ -119,14 +124,6 @@ const Players = () => {
             </div>
 
             {/* Floating Button for Sliding Window */}
-            <button
-                onClick={() => setIsSlidingWindowOpen(true)}
-                className="fixed right-2 top-8 transform -translate-y-1/2
-                 dark:hover:text-amber-200 dark:text-gray-100 hover:text-orange-700
-                  text-gray-500 px-4 py-2 transition duration-200 ease-in-out z-50"
-            >
-                <RxHamburgerMenu className="text-3xl"/>
-            </button>
 
             {/* Player Modal */}
             {isModalOpen && (

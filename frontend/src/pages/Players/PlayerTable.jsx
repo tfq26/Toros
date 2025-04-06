@@ -64,19 +64,19 @@ const PlayerTable = ({ players, error, onEdit }) => {
                 {/* Desktop Table View */}
                 <div className="hidden md:block">
                     <Table className="w-full">
-                        <TableHeader className="flex text-center font-medium bg-emerald-500/60 dark:bg-emerald-950/50">
-                            <TableRow className="flex py-5 ml-10 font-medium w-full bg-transparent hover:bg-muted/0">
-                                <TableHead className="flex-1 font-bold text-4xl bg-transparent text-gray-800 dark:text-gray-100">
+                        <TableHeader className="bg-amber-500 dark:bg-emerald-950/50">
+                            <TableRow className="py-5">
+                                <TableHead className="font-bold text-4xl text-gray-800 dark:text-gray-100">
                                     Name
                                 </TableHead>
                                 <TableHead
-                                    className="flex-1 font-bold text-4xl bg-transparent text-gray-800 dark:text-gray-100 cursor-pointer"
+                                    className="font-bold text-4xl text-gray-800 dark:text-gray-100 cursor-pointer"
                                     onClick={() => handleSort("placement")}
                                 >
                                     Placement{getSortIndicator("placement")}
                                 </TableHead>
                                 <TableHead
-                                    className="flex-1 font-bold text-4xl bg-transparent text-gray-800 dark:text-gray-100 cursor-pointer"
+                                    className="font-bold text-4xl text-gray-800 dark:text-gray-100 cursor-pointer"
                                     onClick={() => handleSort("clubName")}
                                 >
                                     ClubName{getSortIndicator("clubName")}
@@ -88,25 +88,25 @@ const PlayerTable = ({ players, error, onEdit }) => {
                                 sortedPlayers.map((player, index) => (
                                     <TableRow
                                         key={`player-${index}`}
-                                        className="flex w-full odd:bg-emerald-50 even:bg-emerald-100/20 hover:bg-emerald-200 transition dark:odd:bg-emerald-800/30 dark:even:bg-emerald-900/30 dark:hover:bg-emerald-600/50"
+                                        className=" even:bg-amber-100 odd:bg-amber-200 hover:bg-amber-200 transition dark:hover:bg-amber-600/50"
                                     >
                                         <TableCell
-                                            className="flex-1 ml-10 font-medium cursor-pointer hover:underline text-2xl text-gray-800 dark:text-gray-100"
+                                            className="px-6 py-4 font-medium cursor-pointer hover:underline text-2xl text-gray-800 dark:text-gray-100"
                                             onClick={() => onEdit(player)}
                                         >
                                             {player.name || "N/A"}
                                         </TableCell>
-                                        <TableCell className="flex-1 text-xl text-gray-800 dark:text-gray-100">
+                                        <TableCell className="px-6 py-4 text-xl text-gray-800 dark:text-gray-100">
                                             {convertLevel(player.skillLevel)}
                                         </TableCell>
-                                        <TableCell className="flex-1 text-xl text-gray-800 dark:text-gray-100">
+                                        <TableCell className="px-6 py-4 text-xl text-gray-800 dark:text-gray-100">
                                             {player.clubName || "N/A"}
                                         </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
-                                <TableRow className="flex w-full">
-                                    <TableCell colSpan={3} className="mx-auto py-6 text-gray-600 dark:text-gray-300 text-3xl">
+                                <TableRow>
+                                    <TableCell colSpan={3} className="text-center py-6 text-gray-600 dark:text-gray-300 text-3xl">
                                         No players found
                                     </TableCell>
                                 </TableRow>

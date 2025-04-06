@@ -10,7 +10,7 @@ const PlayerSearch = ({ onSearchChange }) => {
     };
 
     return (
-        <div className="mb-4">
+        <div className="mb-4 w-full">
             <input
                 type="text"
                 value={query}
