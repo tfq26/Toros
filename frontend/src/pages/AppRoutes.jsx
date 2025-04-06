@@ -1,32 +1,43 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar.jsx";
 import Home from "./Home.jsx";
 import Players from "./Players/Players.jsx";
 import TournamentList from "./Tournament/TournamentList.jsx";
 import TournamentSetup from "./Setup/TournamentSetup.jsx";
+import TournamentSetupSuccess from "./Setup/TournamentSetupSuccess.jsx";
 import TournamentBracket from "./Standings/TeamStandings.jsx";
 import LiveTournament from "./Tournament/LiveTournament.jsx";
 import ErrorPage from "./Error.jsx";
-import LoginPage from "./Auth/beta_login.jsx";
+import LoginPage from "./Auth/LoginUpdated.jsx";
 import SignupPage from "./Auth/Signup.jsx";
 import MatchTest from "./Tournament/MatchTest.jsx";
 import WindowView from "./Tournament/Viewer/WindowView.jsx";
 import { NavbarUpdated } from "@/pages/Navbar/NavbarUpdated.jsx";
 import Page from "./Page.jsx";
 
-const AppRoutes = ({
-                       setAuthToken,
-                       authToken,
-                       setTournamentSetupComplete,
-                       tournamentConfig,
-                       setTournamentConfig,
-                   }) => {
+function AppRoutes() {
+    const [tournamentSetupComplete, setTournamentSetupComplete] = useState(false);
+    const [tournamentConfig, setTournamentConfig] = useState(null);
+    const navigate = useNavigate();
+
+    // Optionally, if tournamentSetupComplete changes, you could automatically redirect:
+    useEffect(() => {
+        if (tournamentSetupComplete) {
+            // For example, wait 5 seconds then navigate to the tournament list:
+            const timer = setTimeout(() => {
+                navigate("/tournament/list");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [tournamentSetupComplete, navigate]);
+
     return (
         <SidebarProvider>
             <div className="flex h-screen w-screen">
-                {/* Persistent TournamentSidebar */}
+                {/* Persistent Navigation */}
                 <NavbarUpdated />
+
                 {/* Main Content Area for Routing */}
                 <main className="flex-1 overflow-y-auto">
                     <Routes>
@@ -51,9 +62,20 @@ const AppRoutes = ({
                             element={
                                 <Page title="Tournament Setup">
                                     <TournamentSetup
-                                        onSetupComplete={() => setTournamentSetupComplete(true)}
+                                        onSetupComplete={(config) => {
+                                            setTournamentSetupComplete(true);
+                                            setTournamentConfig(config);
+                                        }}
                                         setTournamentConfig={setTournamentConfig}
                                     />
+                                </Page>
+                            }
+                        />
+                        <Route
+                            path="/tournament/success"
+                            element={
+                                <Page title="Setup Success">
+                                    <TournamentSetupSuccess />
                                 </Page>
                             }
                         />
@@ -129,6 +151,6 @@ const AppRoutes = ({
             </div>
         </SidebarProvider>
     );
-};
+}
 
 export default AppRoutes;

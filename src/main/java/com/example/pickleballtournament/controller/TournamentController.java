@@ -16,21 +16,22 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("/api/tournament")
-@CrossOrigin(origins = "http://localhost:5173") // ✅ Allow frontend requests
+@CrossOrigin(origins = "http://localhost:5173")
 public class TournamentController {
 
     private final TournamentSetupService tournamentSetupService;
     private final LiveTournamentService liveTournamentService;
     private final MatchService matchService;
 
-
-    public TournamentController(TournamentSetupService tournamentSetupService, LiveTournamentService liveTournamentService, MatchService matchService) {
+    public TournamentController(TournamentSetupService tournamentSetupService,
+                                LiveTournamentService liveTournamentService,
+                                MatchService matchService) {
         this.tournamentSetupService = tournamentSetupService;
         this.liveTournamentService = liveTournamentService;
         this.matchService = matchService;
     }
 
-    /** 🎯 Setup Tournament */
+    /** 🎯 Setup Tournament with Extended Properties */
     @PostMapping("/setup")
     public ResponseEntity<?> setupTournament(@RequestBody TournamentSetupRequest request) {
         try {
@@ -43,13 +44,32 @@ public class TournamentController {
                     request.getStartTime(),
                     request.getMatchDuration(),
                     request.getBreakTime(),
-                    request.getConfirmDelete()
+                    request.getConfirmDelete(),
+                    request.getLocation(),
+                    request.getOrganizer(),
+                    request.getContactInfo(),
+                    request.getTournamentType(),
+                    request.getScoringSystem(),
+                    request.getRules(),
+                    request.getPrizeDistribution(),
+                    request.getFormat(),
+                    request.getAgeGroup(),
+                    request.getSkillLevel()
             );
+
+            // Check if the service returned null (e.g., duplicate found and not deleted)
+            if (tournament == null) {
+                log.warn("Tournament setup aborted due to duplicate tournament.");
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Tournament with the given name already exists and deletion was not confirmed.");
+            }
+
             log.info("✅ Tournament '{}' setup successfully!", tournament.getName());
             return ResponseEntity.ok(tournament);
         } catch (Exception e) {
             log.error("❌ Error setting up tournament: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to setup tournament.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to setup tournament.");
         }
     }
 
@@ -59,7 +79,6 @@ public class TournamentController {
         try {
             List<Tournament> activeTournaments = liveTournamentService.getTournaments(true);
             log.info("🎾 Active Tournaments retrieved: {}", activeTournaments.size());
-            // Always return 200 OK with an empty list if none are active
             return ResponseEntity.ok(activeTournaments);
         } catch (Exception e) {
             log.error("❌ Error fetching active tournaments: {}", e.getMessage(), e);
@@ -119,7 +138,7 @@ public class TournamentController {
             List<String> matchIds = matchService.getMatchesByTournamentId(tournamentId);
             if (matchIds.isEmpty()) {
                 log.warn("⚠️ No matches found for Tournament ID: {}", tournamentId);
-                return ResponseEntity.ok(List.of()); // return an empty list if no matches are found
+                return ResponseEntity.ok(List.of());
             }
             return ResponseEntity.ok(matchIds);
         } catch (Exception e) {

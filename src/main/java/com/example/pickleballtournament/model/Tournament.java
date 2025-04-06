@@ -25,6 +25,17 @@ public class Tournament {
     private Integer breakDuration; // In minutes
     private Integer matchDuration; // In minutes
     private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private String location; // Location of the tournament
+    private String organizer; // Name of the organizer
+    private String contactInfo; // Contact information for the organizer
+    private String tournamentType; // e.g., "Singles", "Doubles", "Mixed"
+    private String scoringSystem; // e.g., "Rally Scoring", "Traditional Scoring"
+    private String rules; // e.g., "USAPA Rules", "Custom Rules"
+    private String prizeDistribution; // e.g., "1st: $500, 2nd: $300, 3rd: $200"
+    private String format; // e.g., "Round Robin", "Single Elimination", "Double Elimination"
+    private String ageGroup; // e.g., "18+", "35+", "50+"
+    private String skillLevel; // e.g., "Beginner", "Intermediate", "Advanced"
 
     // Store setup properties as a List<String> or Map<String, Object>
     private List<String> setupProperties; // Example: ["Match Duration: 15min", "Double Elimination: true"]

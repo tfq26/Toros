@@ -40,7 +40,7 @@ function Home() {
     };
 
     return (
-        <div className="min-h-screen  flex flex-col items-center justify-center text-gray-50 px-4 py-8">
+        <div className="min-h-[70%] flex flex-col items-center justify-center text-gray-50 px-4 py-8">
             {/* Hero Section */}
             <motion.div
                 className="text-center mb-12"
@@ -49,15 +49,15 @@ function Home() {
                 transition={{ duration: 1 }}
             >
                 <motion.h1
-                    className="text-5xl sm:text-6xl md:text-7xl font-extrabold drop-shadow-lg mb-4"
+                    className="text-5xl sm:text-6xl md:text-7xl font-extrabold drop-shadow-lg mb-4 dark:text-gray-100 text-emerald-500"
                     initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 1, ease: "easeOut" }}
                 >
-                    Welcome to <span className="text-amber-300">Toros</span>
+                    Welcome to Toros
                 </motion.h1>
                 <motion.p
-                    className="text-lg sm:text-xl md:text-2xl font-medium"
+                    className="text-lg sm:text-xl md:text-2xl font-medium dark:text-gray-100 text-red-500"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 0.5 }}
@@ -67,7 +67,7 @@ function Home() {
             </motion.div>
 
             {/* Separator */}
-            <Separator className="w-full max-w-md mb-8" />
+            <Separator className="w-full max-w-md mb-8 bg-black dark:bg-gray-100" />
 
             {/* Image Grid */}
             <motion.div
@@ -89,12 +89,6 @@ function Home() {
                                 alt={`Pickleball ${index + 1}`}
                                 className="w-full h-60 object-cover"
                             />
-                            {/* Hover Overlay */}
-                            {/*<motion.div*/}
-                            {/*    className="absolute inset-0 bg-black bg-opacity-"*/}
-                            {/*    whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.25)" }}*/}
-                            {/*    transition={{ duration: 0.3 }}*/}
-                            {/*/>*/}
                         </motion.div>
                     ))}
                 </div>
@@ -106,12 +100,26 @@ function Home() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 1 }}
             >
-                <Link to="/tournament/setup">
-                    <Button className="bg-amber-400 hover:bg-amber-500 text-white text-lg font-semibold py-3 px-8 rounded-full shadow-lg transition-all">
-                        Start Your Tournament 🏅
-                    </Button>
-                </Link>
+                <Button className={"dark:bg-amber-700 bg-amber-300 hover:bg-opacity-50 w-fit p-4 mx-auto text-gray-100"}>
+                    <Link
+                        to="/tournament/setup"
+                        className="text-lg md:text-xl lg:text-2xl font-bold px-4"
+                    >
+                        Let&#39;s Play!
+                    </Link>
+                </Button>
             </motion.div>
+            <div>
+                <motion.div
+                    className="mt-4 text-gray-600 dark:text-gray-300 text-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 1.5 }}
+                >
+                    Toros is the all inclusive Pickleball experience. We provide everything you need to get started, from the latest
+                    in Pickleball news, Nearby Tournaments. Join us today and take your game to the next level!
+                </motion.div>
+            </div>
         </div>
     );
 }

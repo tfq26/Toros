@@ -12,19 +12,23 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Team {
 
     @Id
-    private String id;
-    private String name;
-    private Player player1;
-    private Player player2;
-    private int teamScore;
-    private int wins;
-    private int losses;
-    private int matchesPlayed;
+    private String id; // Unique identifier for the team
+    private String name; // Team name
+    private Player player1; // Player 1 is mandatory
+    private Player player2; // Player 2 can be null for singles
+    private int teamScore; // Score of the team in the tournament
+    private int wins; // Number of matches won
+    private int losses; // Number of matches lost
+    private int matchesPlayed; // Number of matches played
     // Remove Lombok-generated setter for skillLevel so we can provide a custom one.
     @Setter(AccessLevel.NONE)
-    private int skillLevel;
-    private Integer placement;
+    private int skillLevel; // Skill level as an integer (1-3)
+    private Integer placement; // Placement in the tournament
     private int totalPoints; // Tracks total points won by the team
+    private String tournamentId; // Reference to the tournament the team is registered in
+    private String status; // e.g., "Registered", "Checked In", "Withdrawn", "Player 1 Withdrawn", "Player 2 Withdrawn", "Player 1 Checked In", "Player 2 Checked In", "Player 1 Not Registered", "Player 2 Not Registered"
+    private String matchId; // Reference to the match the team is currently playing in
+    private String matchStatus; // e.g., "Scheduled", "In Progress", "Completed"
 
     // Default constructor
     public Team() {}

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Layout from "./pages/Layout.jsx";
 import AppRoutes from "./pages/AppRouting.jsx";
-import DevTools from "./pages/DevTools/DevTools.jsx";
 import "./index.css";
 import Background from "@/assets/Background.jsx";
 

@@ -64,7 +64,7 @@ const PlayerTable = ({ players, error, onEdit }) => {
                 {/* Desktop Table View */}
                 <div className="hidden md:block">
                     <Table className="w-full">
-                        <TableHeader className="flex text-center font-medium bg-white dark:bg-emerald-950/50">
+                        <TableHeader className="flex text-center font-medium bg-emerald-500/60 dark:bg-emerald-950/50">
                             <TableRow className="flex py-5 ml-10 font-medium w-full bg-transparent hover:bg-muted/0">
                                 <TableHead className="flex-1 font-bold text-4xl bg-transparent text-gray-800 dark:text-gray-100">
                                     Name

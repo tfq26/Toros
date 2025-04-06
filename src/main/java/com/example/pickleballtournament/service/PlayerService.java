@@ -122,8 +122,8 @@ public class PlayerService {
         return playerRepository.findByTeamNumber(teamNumber);
     }
 
-    public List<Player> getPlayerByRegistered(boolean registered) {
-        return playerRepository.findByRegistered(registered);
+    public List<Player> getPlayerByStatus(String status) {
+        return playerRepository.findByStatus(status);
     }
 
     public List<Integer> getAllTeamNumbers() {

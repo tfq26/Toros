@@ -1,5 +1,3 @@
-// setupUtils.js
-
 import axios from "axios";
 
 /**
@@ -24,7 +22,7 @@ export const fetchPlayersAndGenerateTeams = async (setTeams, setError) => {
                 (team) => team.length === 2
             );
             setTeams(validTeams);
-            setError(null); // Clear any existing error
+            setError(null);
         } else {
             console.error("Unexpected response format:", response.data);
             setTeams([]);
@@ -38,9 +36,8 @@ export const fetchPlayersAndGenerateTeams = async (setTeams, setError) => {
 /**
  * Send tournament setup data to the backend.
  * Calls onSuccess if the setup is successful, or onError with an error message otherwise.
- * Uses the provided navigate function to change pages.
  */
-export const handleTournamentSetup = async (formData, onError, onSuccess, navigate) => {
+export const handleTournamentSetup = async (formData, onError, onSuccess) => {
     try {
         console.log("Sending tournament setup request with data:", formData);
         const response = await fetch("http://localhost:8080/api/tournament/setup", {
@@ -50,7 +47,15 @@ export const handleTournamentSetup = async (formData, onError, onSuccess, naviga
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            // Check if the response is JSON; if not, read as text.
+            const contentType = response.headers.get("content-type");
+            let errorData;
+            if (contentType && contentType.includes("application/json")) {
+                errorData = await response.json();
+            } else {
+                const text = await response.text();
+                errorData = { message: text };
+            }
             console.error("Backend responded with error:", errorData);
             onError(errorData.message || "Tournament setup failed.");
             return;
@@ -58,7 +63,7 @@ export const handleTournamentSetup = async (formData, onError, onSuccess, naviga
 
         console.log("Tournament setup completed successfully.");
         onSuccess();
-        navigate("/tournament-success");
+        // Routing is handled elsewhere (in AppRoutes), so no navigate call here.
     } catch (error) {
         console.error("Error in handleTournamentSetup:", error);
         onError(error.message || "An unexpected error occurred.");
@@ -67,16 +72,14 @@ export const handleTournamentSetup = async (formData, onError, onSuccess, naviga
 
 /**
  * Handle form submission for tournament setup.
- * Validates the required fields and teams, then calls handleTournamentSetup.
- * Expects the navigate function to be passed in (do not call hooks inside utility functions).
+ * Validates required fields and teams, then calls handleTournamentSetup.
  */
 export const handleSubmit = (
     e,
     tournamentConfig,
     teams,
     setError,
-    onSetupComplete,
-    navigate
+    onSetupComplete
 ) => {
     e.preventDefault();
 
@@ -110,20 +113,11 @@ export const handleSubmit = (
             () => {
                 console.log("Tournament setup successful!");
                 onSetupComplete(formData);
-                navigate("/tournament-success");
-            },
-            navigate
+            }
         );
     } catch (err) {
         console.error("Error during tournament setup:", err);
         setError(err.message || "An unknown error occurred while setting up the tournament.");
-        navigate("/error", {
-            state: {
-                message: "Failed to setup tournament.",
-                detailedMessage: err.message || "An unknown error occurred while setting up the tournament.",
-                errorMessages: [err.message],
-            },
-        });
     }
 };
 

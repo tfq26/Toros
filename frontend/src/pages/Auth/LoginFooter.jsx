@@ -3,7 +3,8 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"; // adjust the import based on your project structure
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { MenubarItem } from "@/components/ui/menubar.jsx";
-import { Button } from "@/components/ui/button.jsx"; // adjust the import based on your project structure
+import { Button } from "@/components/ui/button.jsx";
+import {Link} from "react-router-dom"; // adjust the import based on your project structure
 
 export function LoginFooter() {
     const { isAuthenticated, isLoading, user, loginWithRedirect, logout } = useAuth0();
@@ -45,7 +46,7 @@ export function LoginFooter() {
         return (
             <DropdownMenuItem>
                 <SidebarMenuButton asChild className="text-center mx-auto">
-                    <a
+                    <Link
                         href="/auth/login"
                         onClick={(e) => {
                             e.preventDefault();
@@ -53,7 +54,7 @@ export function LoginFooter() {
                         }}
                     >
                         Login
-                    </a>
+                    </Link>
                 </SidebarMenuButton>
             </DropdownMenuItem>
         );
@@ -98,18 +99,18 @@ export function LoginMenuItem() {
         );
     } else {
         return (
-            <MenubarItem>
-                <Button asChild className="text-center mx-auto w-full">
-                    <a
-                        href="/auth/login"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            loginWithRedirect();
-                        }}
-                    >
-                        Login
-                    </a>
-                </Button>
+            <MenubarItem asChild className="text-center mx-auto w-full bg-gray-900 text-white hover:bg-gray-700">
+                <Link
+                    href="/auth/login"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        loginWithRedirect().then((r) => {
+                            console.log("Login with redirect", r);
+                        });
+                    }}
+                >
+                    Login
+                </Link>
             </MenubarItem>
         );
     }

@@ -12,7 +12,7 @@ function LayoutContent({ children }) {
                 </div>
             </header>
             {/* Main content container with top padding to account for header */}
-            <main className="flex-1 overflow-auto pt-16">{children}</main>
+            <main className="flex-1 overflow-auto pt-20 min-h-screen">{children}</main>
             <Toaster />
         </div>
     );

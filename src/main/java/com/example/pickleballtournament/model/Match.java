@@ -29,7 +29,12 @@ public class Match {
     private String loser;  // Loser of the match
     private int round; //Round Number
     private String nextMatchId; // Reference to the next match in the bracket
-    private String matchSkillLevel;
+    private String matchSkillLevel; // Skill level of the match (e.g., "Beginner", "Intermediate", "Advanced")
+    private String matchType; // Type of match (e.g., "Singles", "Doubles")
+    private String matchFormat; // Format of the match (e.g., "Best of 3", "Best of 5")
+    private String matchScoringSystem; // Scoring system used in the match (e.g., "Rally Scoring", "Traditional Scoring")
+    private String matchRules; // Rules applied in the match (e.g., "USAPA Rules", "Custom Rules")
+
 
     // Custom ID generator
     public void generateCustomId() {

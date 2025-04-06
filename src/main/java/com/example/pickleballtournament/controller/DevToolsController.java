@@ -1,58 +1,42 @@
 package com.example.pickleballtournament.controller;
 
-import com.example.pickleballtournament.repository.*;
-import org.springframework.http.ResponseEntity;
+import com.example.pickleballtournament.model.Player;
+import com.example.pickleballtournament.repository.PlayerRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.List;
 
+@Slf4j
 @RestController
-@RequestMapping("/api/dev")
-@CrossOrigin(origins = "http://localhost:5173") // ✅ Allow frontend requests
+@RequestMapping("/api/devtools")
+@CrossOrigin(origins = "http://localhost:5173")
 public class DevToolsController {
 
     private final PlayerRepository playerRepository;
-    private final MatchRepository matchRepository;
-    private final TeamRepository teamRepository;
-    private final TournamentRepository tournamentRepository;
 
-    public DevToolsController(PlayerRepository playerRepository, MatchRepository matchRepository,
-                              TeamRepository teamRepository, TournamentRepository tournamentRepository) {
+    public DevToolsController(PlayerRepository playerRepository) {
         this.playerRepository = playerRepository;
-        this.matchRepository = matchRepository;
-        this.teamRepository = teamRepository;
-        this.tournamentRepository = tournamentRepository;
     }
 
-    /** ✅ Delete All Data from a Specific Collection */
-    @DeleteMapping("/delete/{collection}")
-    public ResponseEntity<Map<String, String>> deleteCollection(@PathVariable String collection) {
-        switch (collection.toLowerCase()) {
-            case "players":
-                playerRepository.deleteAll();
-                break;
-            case "matches":
-                matchRepository.deleteAll();
-                break;
-            case "teams":
-                teamRepository.deleteAll();
-                break;
-            case "tournaments":
-                tournamentRepository.deleteAll();
-                break;
-            default:
-                return ResponseEntity.badRequest().body(Map.of("error", "Invalid collection name."));
-        }
-        return ResponseEntity.ok(Map.of("message", collection + " data deleted successfully."));
+    // Get all players
+    @GetMapping("/players")
+    public List<Player> getAllPlayers() {
+        log.info("Fetching all players");
+        return playerRepository.findAll();
     }
 
-    /** ✅ Delete All Data from All Collections */
-    @DeleteMapping("/deleteAll")
-    public ResponseEntity<Map<String, String>> deleteAllData() {
-        playerRepository.deleteAll();
-        matchRepository.deleteAll();
-        teamRepository.deleteAll();
-        tournamentRepository.deleteAll();
-        return ResponseEntity.ok(Map.of("message", "All data deleted successfully."));
+    // Get players by team number
+    @GetMapping("/players/team/{teamNumber}")
+    public List<Player> getPlayersByTeam(@PathVariable int teamNumber) {
+        log.info("Fetching players for team number {}", teamNumber);
+        return playerRepository.findByTeamNumber(teamNumber);
+    }
+
+    // Get players by status (for example, status "registered")
+    @GetMapping("/players/status/{status}")
+    public List<Player> getPlayersByStatus(@PathVariable String status) {
+        log.info("Fetching players with status {}", status);
+        return playerRepository.findByStatus(status);
     }
 }
