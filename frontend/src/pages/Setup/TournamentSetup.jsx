@@ -29,10 +29,10 @@ const TournamentSetup = ({ onSetupComplete }) => {
     const [tournamentConfig, setTournamentConfig] = useState({
         tournamentName: "",
         numCourts: 1,
-        gamesPerTeam: 3,
+        gamesPerTeam: 1,
         startDate: "",
         startTime: "",
-        matchDuration: 30,
+        matchDuration: 15,
         breakTime: 5,
         useExistingPlayers: false, // state remains, but not rendered
         tiered: false,             // state remains, but not rendered

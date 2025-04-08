@@ -89,13 +89,13 @@ public class TournamentSetupService {
         // Check for duplicate tournament by name.
         if (checkForDuplicateTournament(tournamentName)) {
             log.warn("Tournament with name '{}' already exists.", tournamentName);
-            if (confirmDelete != null && confirmDelete) {
+            if (Boolean.TRUE.equals(confirmDelete)) {
                 Tournament existingTournament = tournamentRepository.findByName(tournamentName).get();
                 deleteTournament(existingTournament.getId());
                 log.info("Existing tournament '{}' deleted as per user confirmation.", tournamentName);
             } else {
                 log.info("Duplicate tournament exists and deletion was not confirmed. Aborting setup.");
-                return null; // Let the frontend handle renaming or other user choices.
+                return null;
             }
         }
 

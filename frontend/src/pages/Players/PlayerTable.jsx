@@ -65,18 +65,18 @@ const PlayerTable = ({ players, error, onEdit }) => {
                 <div className="hidden md:block">
                     <Table className="w-full">
                         <TableHeader className="bg-amber-500 dark:bg-emerald-950/50">
-                            <TableRow className="py-5">
-                                <TableHead className="font-bold text-4xl text-gray-800 dark:text-gray-100">
+                            <TableRow>
+                                <TableHead className="font-bold text-4xl text-gray-800 dark:text-gray-100 px-6 py-4">
                                     Name
                                 </TableHead>
                                 <TableHead
-                                    className="font-bold text-4xl text-gray-800 dark:text-gray-100 cursor-pointer"
+                                    className="font-bold text-4xl text-gray-800 dark:text-gray-100 cursor-pointer px-6"
                                     onClick={() => handleSort("placement")}
                                 >
                                     Placement{getSortIndicator("placement")}
                                 </TableHead>
                                 <TableHead
-                                    className="font-bold text-4xl text-gray-800 dark:text-gray-100 cursor-pointer"
+                                    className="font-bold text-4xl text-gray-800 dark:text-gray-100 cursor-pointer px-6"
                                     onClick={() => handleSort("clubName")}
                                 >
                                     ClubName{getSortIndicator("clubName")}
@@ -88,7 +88,8 @@ const PlayerTable = ({ players, error, onEdit }) => {
                                 sortedPlayers.map((player, index) => (
                                     <TableRow
                                         key={`player-${index}`}
-                                        className=" even:bg-amber-100 odd:bg-amber-200 hover:bg-amber-200 transition dark:hover:bg-amber-600/50"
+                                        className=" even:bg-amber-100 odd:bg-amber-200 hover:bg-amber-200 transition dark:hover:bg-emerald-700/50
+                                         dark:even:bg-emerald-800 dark:odd:bg-emerald-900"
                                     >
                                         <TableCell
                                             className="px-6 py-4 font-medium cursor-pointer hover:underline text-2xl text-gray-800 dark:text-gray-100"

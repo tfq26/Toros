@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { FaClock } from "react-icons/fa";
 import { Label } from "@/components/ui/label.jsx";
-import { DatePicker } from "@/components/ui/date-picker.jsx";
+import { DateTimePopup } from "@/components/ui/date-picker/date-with-time.jsx";
 
 const DateTimeStep = ({ tournamentConfig, handleConfigChange, handleSetCurrentTime }) => {
     return (
@@ -14,7 +14,7 @@ const DateTimeStep = ({ tournamentConfig, handleConfigChange, handleSetCurrentTi
                     <Label className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
                         Start Date
                     </Label>
-                    <DatePicker
+                    <DateTimePopup
                         value={tournamentConfig.startDate}
                         onChange={(value) =>
                             handleConfigChange("startDate", value)

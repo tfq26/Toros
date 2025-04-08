@@ -4,7 +4,6 @@ import axios from "axios";
 import MatchTabs from "./MatchTabs";
 import TournamentSidebar from "../Navbar/TournamentSidebar.jsx";
 import SlidingWindow from "../Navbar/SlidingWindow.jsx";
-import { PiArrowSquareLeftBold } from "react-icons/pi";
 import { fetchAllMatches, fetchMatchesByTournament } from "../utils/dataUtils.js";
 import WindowView from "./Viewer/WindowView.jsx";
 import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx"; // Import the new modal
@@ -117,14 +116,14 @@ const LiveTournament = ({ setupProperties, tournamentId }) => {
                 )}
             </div>
 
-            <button
+            <Button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className={`fixed right-10 text-7xl top-11 transform -translate-y-1/2 hover:text-amber-200 h-auto transition duration-200 ease-in-out z-50 bg-transparent hover:bg-muted/0 ${
                     isSidebarOpen ? "text-3xl" : "text-white"
                 }`}
             >
                 {isSidebarOpen ? "" : <RxHamburgerMenu className={"text-3xl"} />}
-            </button>
+            </Button>
 
             <SlidingWindow
                 isOpen={isSidebarOpen}
