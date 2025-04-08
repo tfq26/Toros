@@ -10,11 +10,10 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import { toast } from "sonner";
-import {Input} from "@/components/ui/input.jsx";
+import { Input } from "@/components/ui/input.jsx";
 
 const DEFAULT_VALUES = {
     name: "Unknown Player",
@@ -26,16 +25,21 @@ const DEFAULT_VALUES = {
 const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
+    // importedPlayers will hold the processed player data after upload
+    const [importedPlayers, setImportedPlayers] = useState(null);
+    // showConfirm controls the AlertDialog visibility (shown after a successful upload)
     const [showConfirm, setShowConfirm] = useState(false);
     const fileInputRef = useRef(null);
 
+    // When a file is chosen, process it immediately
     const handleFileSelection = (event) => {
         const file = event.target.files[0];
         if (!file) return;
         setSelectedFile(file);
-        setShowConfirm(true);
+        processFile(file);
     };
 
+    // Process the file: read, parse, and call backend upload
     const processFile = async (file) => {
         setIsLoading(true);
         toast.info("Processing file...", { duration: 5000 });
@@ -54,6 +58,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                     return;
                 }
 
+                // Map and apply default values as needed
                 jsonData = jsonData.map((player) => ({
                     name: player.name || DEFAULT_VALUES.name,
                     teamNumber: player.teamNumber || DEFAULT_VALUES.teamNumber,
@@ -63,7 +68,8 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                 }));
 
                 console.log("🔍 Processed JSON Data:", jsonData);
-                await uploadPlayersToBackend(jsonData, file);
+                // Upload the file and player data to the backend
+                await uploadPlayersToBackend(file, jsonData);
             };
 
             reader.readAsArrayBuffer(file);
@@ -78,18 +84,29 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
         }
     };
 
-    const uploadPlayersToBackend = async (players, file) => {
+    // Upload the file using axios and, if successful, store the player data
+    // and show the confirmation popup
+    const uploadPlayersToBackend = async (file, playersData) => {
         const formData = new FormData();
         formData.append("file", file);
 
         try {
-            const response = await axios.post("http://localhost:8080/api/players/import", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            const response = await axios.post(
+                "http://localhost:8080/api/players/import",
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                }
+            );
 
             if (response.status === 200) {
-                toast.success(`✅ Players uploaded successfully! (${players.length} players added)`, { duration: 5000 });
-                onFileSelect(players);
+                toast.success(
+                    `✅ Players uploaded successfully! (${playersData.length} players added)`,
+                    { duration: 5000 }
+                );
+                // Instead of immediately applying the data, store it and show a confirmation dialog
+                setImportedPlayers(playersData);
+                setShowConfirm(true);
             } else {
                 toast.error("⚠️ Error uploading players. Please try again.", { duration: 5000 });
             }
@@ -99,50 +116,55 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
         }
     };
 
+    // When the user confirms in the dialog, call onFileSelect with the imported data
+    const handleConfirmProceed = () => {
+        if (importedPlayers) {
+            onFileSelect(importedPlayers);
+        }
+        setImportedPlayers(null);
+        setShowConfirm(false);
+    };
+
+    // If the user cancels, just dismiss the dialog (the backend update cannot be reverted)
+    const handleConfirmCancel = () => {
+        setImportedPlayers(null);
+        setShowConfirm(false);
+    };
+
     return (
         <div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="excelFile" className="mb-2 text-white">
+                    File
+                </Label>
+                <Input
+                    id="excelFile"
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx, .xls"
+                    onChange={handleFileSelection}
+                    className="dark:bg-emerald-900 bg-emerald-200 text-emerald-900 border-emerald-900"
+                />
+            </div>
+
+            {isLoading && <p className="text-blue-500 mt-2">Importing file, please wait...</p>}
+
+            {/* Confirmation dialog shown after a successful file import */}
             <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-                <AlertDialogTrigger asChild>
-                    {/*<Label htmlFor={"import"}*/}
-                    {/*       className="cursor-pointer bg-emerald-500 text-emerald-800 px-4 py-2 rounded hover:bg-emerald-600 hover:text-white transition duration-200 h-10 flex items-center">*/}
-                    {/*    Import Players*/}
-                    {/*    <Input*/}
-                    {/*        id="file"*/}
-                    {/*        ref={fileInputRef}*/}
-                    {/*        type="file"*/}
-                    {/*        accept=".xlsx, .xls"*/}
-                    {/*        onChange={handleFileSelection}*/}
-                    {/*        className="hidden"*/}
-                    {/*    />*/}
-                    {/*</Label>*/}
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label htmlFor="import" className={"mb-2 text-white"}>File</Label>
-                        <Input id="excelFile" className={"dark:bg-emerald-900 bg-emerald-200 text-emerald-900 border-emerald-900"} type="file"/>
-                    </div>
-                </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Import</AlertDialogTitle>
                         <AlertDialogDescription>
-                        Importing a new file will <strong>overwrite all existing player data</strong>.
+                            The file has been successfully imported. Importing a new file will <strong>overwrite all existing player data</strong>.
                             Do you want to proceed?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => {
-                                if (selectedFile) processFile(selectedFile).catch((error => {(console.error("Error processing file:", error))}));
-                                setShowConfirm(false);
-                            }}
-                        >
-                            Proceed
-                        </AlertDialogAction>
+                        <AlertDialogCancel onClick={handleConfirmCancel}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmProceed}>Proceed</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {isLoading && <p className="text-blue-500 mt-2">Importing file, please wait...</p>}
         </div>
     );
 };

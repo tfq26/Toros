@@ -9,8 +9,14 @@ import {
 } from "@/components/ui/dialog.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import { Input } from "@/components/ui/input.jsx";
-import { Checkbox } from "@/components/ui/checkbox.jsx";
 import { Button } from "@/components/ui/button.jsx";
+import {
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
+} from "@/components/ui/select.jsx";
 import { savePlayerData, convertLevel } from "../utils/playerUtils.js";
 
 const getSkillDescription = (skillLevel) => {
@@ -29,14 +35,16 @@ const getSkillDescription = (skillLevel) => {
 const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlayers, onSubmit }) => {
     const [playerName, setPlayerName] = useState("");
     const [playerSkill, setPlayerSkill] = useState(1);
-    const [registered, setRegistered] = useState(false);
+    // Use a string for the status instead of a boolean for registered
+    const [status, setStatus] = useState("Registered");
     const [error, setError] = useState(null);
 
     useEffect(() => {
         if (selectedPlayer) {
             setPlayerName(selectedPlayer.name || "");
             setPlayerSkill(selectedPlayer.skillLevel != null ? selectedPlayer.skillLevel : 1);
-            setRegistered(selectedPlayer.registered || false);
+            // Assume the selectedPlayer object now contains a "status" property.
+            setStatus(selectedPlayer.status || "Registered");
         }
     }, [selectedPlayer]);
 
@@ -50,7 +58,8 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
                 teamNumber: selectedPlayer.teamNumber,
                 clubName: selectedPlayer.clubName,
                 skillLevel: playerSkill,
-                registered: selectedPlayer.registered,
+                // Send the status in place of the registered boolean
+                status: status,
             };
             await savePlayerData({
                 formData,
@@ -75,11 +84,13 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
                 if (!open) onClose();
             }}
         >
-            <DialogContent>
+            <DialogContent className={"sm:max-w-[500px] w-full p-4 mx-auto rounded-lg top-1/3 transform -translate-x-1/2 -translate-y-1/2"}>
                 <DialogHeader>
                     <DialogTitle>Edit Player Information</DialogTitle>
                     <DialogDescription>
-                        Edit player details. Changes will be saved for this tournament only.
+                        <p className={"text-sm text-gray-500 dark:text-gray-400 italic"}>
+                            Changes will be saved for this tournament only.
+                        </p>
                     </DialogDescription>
                     <div className="grid flex-1 gap-4 w-full">
                         <div className="mx-auto flex items-center gap-2 my-3">
@@ -113,16 +124,21 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
                                 {getSkillDescription(playerSkill)} ({playerSkill})
                             </p>
                         </div>
-                        <div className="mx-auto flex items-center gap-2 my-3">
-                            <Checkbox
-                                id="registered"
-                                checked={registered}
-                                onCheckedChange={setRegistered}
-                                className="accent-emerald-400"
-                            />
-                            <Label htmlFor="registered" className="text-sm font-medium">
-                                Registered
+                        {/* Replace checkbox with select for status */}
+                        <div className="mx-auto flex flex-col items-center gap-2 my-3">
+                            <Label htmlFor="status" className="text-sm font-medium">
+                                Status
                             </Label>
+                            <Select value={status} onValueChange={setStatus}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Registered">Registered</SelectItem>
+                                    <SelectItem value="Checked In">Checked In</SelectItem>
+                                    <SelectItem value="Withdrawn">Withdrawn</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                     {/* Extra information for mobile view */}
@@ -154,7 +170,7 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
                             type="button"
                             onClick={handleSave}
                             variant="secondary"
-                            className="text-xl px-7 mx-auto hover:bg-emerald-300 bg-emerald-400 w-fit"
+                            className="text-xl px-7 mx-auto hover:bg-emerald-600 bg-emerald-400 dark:hover:bg-emerald-600 dark:bg-emerald-800 w-fit"
                         >
                             Save
                         </Button>

@@ -60,7 +60,7 @@ public class PlayerService {
                 player.setTeamNumber(teamNumber);
                 player.setClubName(clubName);
                 player.setSkillLevel(placement);
-
+                player.setStatus("Registered"); // Default status
                 players.add(player);
             }
         }
@@ -103,6 +103,7 @@ public class PlayerService {
         player.setTeamNumber(updatedPlayer.getTeamNumber());
         player.setClubName(updatedPlayer.getClubName());
         player.setSkillLevel(updatedPlayer.getSkillLevel());
+        player.setStatus(updatedPlayer.getStatus());
         return playerRepository.save(player);
     }
 
