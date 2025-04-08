@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import PlayerTable from "./PlayerTable"; // <-- Imported PlayerTable here
 import PlayerStats from "./PlayerStats";
-import PlayerSettings from "./PlayerSettings";
+import PlayerSettings from "./PlayerSettings.jsx";
 import PlayerSearch from "./PlayerSearch.jsx";
 import LoadingModal from "../Modals/LoadingModal.jsx";
 import SlidingWindow from "../Navbar/SlidingWindow.jsx";
 import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/playerUtils.js";
 import { IoOptionsSharp } from "react-icons/io5";
-import PlayerModalUpdated from "@/pages/Modals/playerModalUpdated.jsx";
+import PlayerModalUpdated from "@/pages/Modals/PlayerModalUpdated.jsx";
 
 const Players = () => {
     const [players, setPlayers] = useState([]);
@@ -105,7 +105,7 @@ const Players = () => {
                             {/*    <IoOptionsSharp className="text-3xl" />*/}
                             {/*</button>*/}
                         </div>
-                        <div className="flex flex-col gap-6 mt-4">
+                        <div className="flex flex-col gap-6">
                             {/* Table Section */}
                             <div>
                                 <PlayerTable

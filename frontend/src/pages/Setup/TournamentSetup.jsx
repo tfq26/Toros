@@ -15,7 +15,7 @@ import {
 
 // Import step components
 import BasicInfoStep from "./Pages/BasicInfo.jsx";
-import DateTimeStep from "./Pages/DateTime.jsx";
+import DateTimeStep from "./Pages/DateTimeStep.jsx";
 import ExtendedDetailsStep from "./Pages/ExtendedDetails";
 import OptionsReviewStep from "./Pages/OptionsReview.jsx";
 import WizardNavigation from "./components/WizardNavigation.jsx";
@@ -85,8 +85,8 @@ const TournamentSetup = ({ onSetupComplete }) => {
 
     // Ensure current step index is valid if extended details become incomplete.
     useEffect(() => {
-        if (!extendedComplete && step === 3) {
-            setStep(2);
+        if (!extendedComplete && step === 4) {
+            setStep(3);
         }
     }, [extendedComplete, step]);
 
