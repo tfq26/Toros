@@ -1,66 +1,61 @@
-'use client';
-import * as React from "react";
-import { addDays, format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+"use client"
 
-import { cn } from "@/lib/utils.js";
-import { Button } from "@/components/ui/button.jsx";
-import { Calendar } from "@/components/ui/calendar.jsx";
+import React, { useState } from "react"
+import { addDays, format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover.jsx";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select.jsx";
+} from "@/components/ui/popover"
 
-export function DatePicker() {
-    // Change state to hold an array of dates for multiple selection.
-    const [dates, setDates] = React.useState([]);
+export function DatePicker({ className }) {
+    const [date, setDate] = useState({
+        from: new Date(2022, 0, 20),
+        to: addDays(new Date(2022, 0, 20), 20),
+    })
 
     return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button
-                    variant={"outline"}
-                    className={cn(
-                        "w-[140px] justify-start text-left font-normal",
-                        dates.length === 0 && "text-muted-foreground"
-                    )}
-                >
-                    <CalendarIcon />
-                    {dates.length > 0
-                        ? dates.map((d) => format(d, "PPP")).join(", ")
-                        : <span>Pick a date</span>}
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="flex w-full flex-col space-y-2 p-2">
-                <Select
-                    onValueChange={(value) =>
-                        // For example, add a date relative to today when a selection is made.
-                        setDates((prev) => [...prev, addDays(new Date(), parseInt(value))])
-                    }
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                        <SelectItem value="0">Today</SelectItem>
-                        <SelectItem value="1">Tomorrow</SelectItem>
-                        <SelectItem value="3">In 3 days</SelectItem>
-                        <SelectItem value="7">In a week</SelectItem>
-                    </SelectContent>
-                </Select>
-                <div className="rounded-md border">
-                    {/* Switch mode to "multiple" for selecting multiple dates */}
-                    <Calendar mode="range" selected={dates} onSelect={setDates} />
-                </div>
-            </PopoverContent>
-        </Popover>
-    );
+        <div className={cn("grid gap-2", className)}>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button
+                        id="date"
+                        variant={"outline"}
+                        className={cn(
+                            "w-[300px] justify-start text-left font-normal",
+                            !date && "text-muted-foreground"
+                        )}
+                    >
+                        <CalendarIcon />
+                        {date?.from ? (
+                            date.to ? (
+                                <>
+                                    {format(date.from, "LLL dd, y")} -{" "}
+                                    {format(date.to, "LLL dd, y")}
+                                </>
+                            ) : (
+                                format(date.from, "LLL dd, y")
+                            )
+                        ) : (
+                            <span>Pick a date</span>
+                        )}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={date?.from}
+                        selected={date}
+                        onSelect={setDate}
+                        numberOfMonths={2}
+                    />
+                </PopoverContent>
+            </Popover>
+        </div>
+    )
 }

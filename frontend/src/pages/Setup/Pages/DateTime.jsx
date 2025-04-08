@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { FaClock } from "react-icons/fa";
 import { Label } from "@/components/ui/label.jsx";
 import { DateTimePopup } from "@/components/ui/date-picker/date-with-time.jsx";
+import {DatePicker} from "@/components/ui/date-picker/date-picker.jsx";
 
 const DateTimeStep = ({ tournamentConfig, handleConfigChange, handleSetCurrentTime }) => {
     return (
@@ -14,12 +15,11 @@ const DateTimeStep = ({ tournamentConfig, handleConfigChange, handleSetCurrentTi
                     <Label className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
                         Start Date
                     </Label>
-                    <DateTimePopup
+                    <DatePicker
                         value={tournamentConfig.startDate}
                         onChange={(value) =>
                             handleConfigChange("startDate", value)
                         }
-                        className="w-full"
                     />
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
