@@ -1,5 +1,5 @@
 import React from "react";
-import { getEmojiForRank } from "../utils/playerUtils.js";
+import { getEmojiForRank } from "@/utils/functions/playerUtils.js";
 
 const PlayerStats = ({ stats = {} }) => { // ✅ Default to empty object
     const {

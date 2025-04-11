@@ -1,190 +1,226 @@
-import React from "react";
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarRail,
-    useSidebar,
-} from "@/components/ui/sidebar.jsx";
-import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-} from "@/components/ui/dropdown-menu.jsx";
-import { ChevronRight, User2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Label } from "@/components/ui/label.jsx";
-import useDevTools from "@/pages/DevTools/DevTools.jsx";
+import { Menu, X, User2 } from "lucide-react";
 import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible.jsx";
-import { LoginFooter } from "@/pages/Auth/LoginFooter.jsx";
-import { motion } from "framer-motion";
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu.jsx";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+import useDevTools from "@/pages/DevTools/DevTools.jsx";
+import { AccountDropdown } from "../Auth/NavbarAuth.jsx"; // adjust the path as needed
 
-// Data for the navigation groups
-const data = {
-    versions: ["1.0.1", "1.1.0", "2.0.0"],
-    navMain: [
-        {
-            title: "General",
-            items: [
-                { title: "Players", url: "/players" },
-                { title: "Viewer", url: "/viewer" },
-            ],
-        },
-        {
-            title: "Tournament",
-            items: [
-                { title: "Setup", url: "/tournament/setup" },
-                { title: "My Tournaments", url: "/tournament/list" },
-                { title: "Bracket", url: "/bracket" },
-            ],
-        },
-    ],
-};
+// Default menu data
+const defaultMenu = [
+    {
+        title: "General",
+        items: [
+            { title: "Players", url: "/players" },
+            { title: "Viewer", url: "/viewer" },
+        ],
+    },
+    {
+        title: "Tournament",
+        items: [
+            { title: "Setup", url: "/tournament/setup" },
+            { title: "My Tournaments", url: "/tournament/list" },
+            { title: "Bracket", url: "/bracket" },
+        ],
+    },
+];
 
-// Variants for menu items
-const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 },
-};
-
-// New component for a collapsible group
-function CollapsibleGroup({ group }) {
-    // Local state for the collapsible open/closed state
-    const [isOpen, setIsOpen] = React.useState(true);
-
-    return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="group/collapsible">
-            <SidebarGroup>
-                <SidebarGroupLabel asChild className="group/label text-foreground-sidebar mt-1">
-                    <CollapsibleTrigger
-                        as={motion.button}
-                        className="flex items-center justify-between w-full p-4 text-base sm:text-lg md:text-xl lg:text-xl"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        {group.title}
-                        <motion.div
-                            className="ml-auto"
-                            animate={{ rotate: isOpen ? 90 : 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                        >
-                            <ChevronRight />
-                        </motion.div>
-                    </CollapsibleTrigger>
-                </SidebarGroupLabel>
-                <CollapsibleContent>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {group.items.map((item, index) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <motion.div
-                                        variants={itemVariants}
-                                        initial="hidden"
-                                        animate="visible"
-                                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    >
-                                        <SidebarMenuButton
-                                            asChild
-                                            className="m-1 w-auto h-auto px-2 py-2 hover:scale-105 transition duration-300 ease-in-out text-base hover:bg-emerald-200 dark:hover:bg-gray-700"
-                                        >
-                                            <Link to={item.url} className="whitespace-normal break-words">
-                                                {item.title}
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </motion.div>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </CollapsibleContent>
-            </SidebarGroup>
-        </Collapsible>
+const NavbarUpdated = ({
+                           logo = {
+                               url: "/",
+                               src: "/bull-svgrepo-com_black.svg",
+                               darkSrc: "/bull-svgrepo-com.svg", // Provide a dark mode logo; fallback to src if not provided
+                               alt: "Logo",
+                           },
+                           menu = defaultMenu,
+                       }) => {
+    const { openDevTools } = useDevTools();
+    const [isDarkMode, setIsDarkMode] = useState(
+        window.matchMedia("(prefers-color-scheme: dark)").matches
     );
-}
 
-export function NavbarUpdated(props) {
-    const { openDevTools } = useSidebar();
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        const handleChange = (e) => setIsDarkMode(e.matches);
+        mediaQuery.addEventListener("change", handleChange);
+        return () => mediaQuery.removeEventListener("change", handleChange);
+    }, []);
 
-    return (
-        <Sidebar {...props} className="flex flex-col h-full">
-            {/* Main content of the sidebar */}
-            <div className="flex-grow">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    <SidebarContent className="gap-5">
-                        {data.navMain.map((group) => (
-                            <CollapsibleGroup key={group.title} group={group} />
+    // Choose logo source based on dark mode status.
+    const logoSrc = isDarkMode && logo.darkSrc ? logo.darkSrc : logo.src;
+
+    // Desktop Navigation: Renders navigation items using a dropdown NavigationMenu.
+    const renderDesktopMenuItem = (item, index) => {
+        if (item.items) {
+            return (
+                <NavigationMenuItem key={`${item.title}-${index}`}>
+                    <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+                    <NavigationMenuContent className="bg-popover text-popover-foreground space-y-4 p-4">
+                        {item.items.map((subItem, subIndex) => (
+                            <NavigationMenuLink
+                                asChild
+                                key={`${subItem.title}-${subIndex}`}
+                                className="w-80"
+                            >
+                                <SubMenuLink item={subItem} />
+                            </NavigationMenuLink>
                         ))}
-                    </SidebarContent>
-                </motion.div>
+                    </NavigationMenuContent>
+                </NavigationMenuItem>
+            );
+        }
+        return (
+            <NavigationMenuItem key={`${item.title}-${index}`}>
+                <NavigationMenuLink
+                    href={item.url}
+                    className="group inline-flex h-10 items-center
+                    justify-center rounded-md bg-background px-4 py-2
+                    text-sm font-medium transition-colors hover:bg-muted
+                    hover:text-accent-foreground"
+                >
+                    {item.title}
+                </NavigationMenuLink>
+            </NavigationMenuItem>
+        );
+    };
+
+    // Mobile Navigation: Renders items using an Accordion.
+    const renderMobileMenuItem = (item, index) => {
+        if (item.items) {
+            return (
+                <AccordionItem key={`${item.title}-${index}`} value={item.title} className="border-b-0">
+                    <AccordionTrigger className="text-md py-0 font-semibold hover:no-underline">
+                        {item.title}
+                    </AccordionTrigger>
+                    <AccordionContent className="mt-2">
+                        {item.items.map((subItem, subIndex) => (
+                            <SubMenuLink key={`${subItem.title}-${subIndex}`} item={subItem} />
+                        ))}
+                    </AccordionContent>
+                </AccordionItem>
+            );
+        }
+        return (
+            <a key={`${item.title}-${index}`} href={item.url} className="text-md font-semibold">
+                {item.title}
+            </a>
+        );
+    };
+
+    // Common sub-menu link used in both desktop and mobile menus.
+    const SubMenuLink = React.forwardRef(({ item, ...props }, ref) => (
+        <a
+            ref={ref}
+            href={item.url}
+            className="flex flex-col gap-6 rounded-md w-fit
+             leading-normal no-underline transition-colors
+              outline-none select-none hover:bg-muted
+               hover:text-accent-foreground"
+            {...props}
+        >
+            {item.icon && <div className="text-foreground">{item.icon}</div>}
+            <div>
+                <div className="flex text-sm font-semibold p-2">{item.title}</div>
+                {item.description && (
+                    <p className="flex text-sm leading-normal text-muted-foreground">
+                        {item.description}
+                    </p>
+                )}
             </div>
-            {/* Footer always at the bottom */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-            >
-                <SidebarFooter className="w-full">
-                    <SidebarMenu className="space-y-4">
-                        <SidebarMenuItem>
-                            <motion.div
-                                variants={itemVariants}
-                                initial="hidden"
-                                animate="visible"
-                                transition={{ duration: 0.3 }}
-                            >
-                                <SidebarMenuButton
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        openDevTools();
-                                    }}
-                                    className="bg-red-600/50 w-[90%] hover:bg-red-700/50 hover:scale-105 transition duration-300 ease-in-out text-base"
-                                >
-                                    <span className="mx-auto">Dev Tools</span>
-                                </SidebarMenuButton>
-                            </motion.div>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <motion.div
-                                variants={itemVariants}
-                                initial="hidden"
-                                animate="visible"
-                                transition={{ duration: 0.3, delay: 0.1 }}
-                            >
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <SidebarMenuButton className="m-2 w-[90%] hover:scale-105 transition duration-300 ease-in-out text-base hover:bg-emerald-200 dark:hover:bg-gray-700 mx-auto">
-                                            <User2 className="mr-2" />
-                                            Username
-                                        </SidebarMenuButton>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                        side="right"
-                                        className="w-[--radix-popper-anchor-width]"
-                                    >
-                                        <LoginFooter />
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </motion.div>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarFooter>
-            </motion.div>
-            <SidebarRail />
-        </Sidebar>
+        </a>
+    ));
+    SubMenuLink.displayName = "SubMenuLink";
+
+    return (
+        <header className="w-full relative">
+            <nav className="flex items-center justify-between px-4 py-2">
+                {/* Logo with dark mode switching */}
+                <div className="flex items-center gap-2">
+                    <a href={logo.url} className="flex items-center gap-2">
+                        <img src={logoSrc} alt={logo.alt} className="h-8" />
+                        <span className="text-lg font-semibold tracking-tighter">
+              {logo.title}
+            </span>
+                    </a>
+                </div>
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center gap-6">
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            {menu.map((item, index) => renderDesktopMenuItem(item, index))}
+                        </NavigationMenuList>
+                    </NavigationMenu>
+                    <div className="flex items-center gap-2">
+                        {/* Replace login/signup buttons with the unified AccountDropdown */}
+                        <AccountDropdown />
+                        {import.meta.env.DEV && (
+                            <Button variant="outline" size="sm" onClick={openDevTools}>
+                                Dev Tools
+                            </Button>
+                        )}
+                    </div>
+                </div>
+                {/* Mobile Navigation using Sheet */}
+                <div className="md:hidden flex items-center">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="icon">
+                                <Menu size={24} />
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent className="overflow-y-auto">
+                            <SheetHeader>
+                                <SheetTitle>
+                                    <a href={logo.url} className="flex items-center gap-2">
+                                        <img src={logoSrc} alt={logo.alt} className="h-8" />
+                                        <span className="text-lg font-semibold tracking-tighter">
+                      {logo.title}
+                    </span>
+                                    </a>
+                                </SheetTitle>
+                            </SheetHeader>
+                            <div className="flex flex-col gap-6 p-4">
+                                <Accordion type="single" collapsible className="flex w-full flex-col gap-4">
+                                    {menu.map((item, index) => renderMobileMenuItem(item, index))}
+                                </Accordion>
+                                <div className="mt-6">
+                                    {/* In mobile, also show the unified AccountDropdown */}
+                                    <AccountDropdown />
+                                </div>
+                                {import.meta.env.DEV && (
+                                    <div className="mt-4">
+                                        <Button variant="outline" onClick={openDevTools}>
+                                            Dev Tools
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+            </nav>
+        </header>
     );
-}
+};
+
+export { NavbarUpdated };

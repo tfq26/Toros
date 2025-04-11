@@ -51,7 +51,7 @@ public class TournamentSetupService {
      * @return true if a duplicate exists, false otherwise.
      */
     public boolean checkForDuplicateTournament(String tournamentName) {
-        return tournamentRepository.findByName(tournamentName).isPresent();
+        return tournamentRepository.findByNameAndIsActiveTrue(tournamentName).isPresent();
     }
 
     /**
@@ -90,7 +90,10 @@ public class TournamentSetupService {
         if (checkForDuplicateTournament(tournamentName)) {
             log.warn("Tournament with name '{}' already exists.", tournamentName);
             if (Boolean.TRUE.equals(confirmDelete)) {
-                Tournament existingTournament = tournamentRepository.findByName(tournamentName).get();
+                Tournament existingTournament = tournamentRepository.findByNameAndIsActiveTrue(tournamentName).isPresent()
+                        ? tournamentRepository.findByNameAndIsActiveTrue(tournamentName).get()
+                        : null;
+                assert existingTournament != null;
                 deleteTournament(existingTournament.getId());
                 log.info("Existing tournament '{}' deleted as per user confirmation.", tournamentName);
             } else {
@@ -109,7 +112,6 @@ public class TournamentSetupService {
         Tournament tournament = new Tournament();
         tournament.setId(generateSecureId());
         tournament.setName(tournamentName);
-        tournament.setDateHeld(startTime.toLocalDate());
         tournament.setActive(true);
         tournament.setNumCourts(numCourts);
         tournament.setGamesPerTeam(gamesPerTeam);
@@ -274,6 +276,11 @@ public class TournamentSetupService {
                 match.setStartTime(matchStartTime);
                 match.setEndTime(matchEndTime);
                 match.generateCustomId();
+                match.setMatchSkillLevel(pair[0].getSkillLevel() > pair[1].getSkillLevel()
+                        ? pair[0].getSkillLevelString()
+                        : pair[1].getSkillLevelString());
+                match.setMatchFormat(tournament.getFormat());
+                match.setMatchType(tournament.getTournamentType());
 
                 // Determine match skill level based on the higher skill between the two teams.
                 if (pair[0].getSkillLevel() > pair[1].getSkillLevel()) {

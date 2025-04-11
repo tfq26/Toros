@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../utils/authUtils.js";
+import { login } from "@/utils/functions/authUtils.js";
 import {Button} from "../../components/ui/button.jsx"
 import {Input} from "../../components/ui/input.jsx"
 

@@ -6,7 +6,7 @@ import PlayerSettings from "./PlayerSettings.jsx";
 import PlayerSearch from "./PlayerSearch.jsx";
 import LoadingModal from "../Modals/LoadingModal.jsx";
 import SlidingWindow from "../Navbar/SlidingWindow.jsx";
-import { convertLevel, calculateStats, filterPlayersBySearch } from "../utils/playerUtils.js";
+import { convertLevel, calculateStats, filterPlayersBySearch } from "@/utils/functions/playerUtils.js";
 import { IoOptionsSharp } from "react-icons/io5";
 import PlayerModalUpdated from "@/pages/Modals/PlayerModalUpdated.jsx";
 

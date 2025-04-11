@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { loadMatchDetails, fetchAllMatches } from "../../utils/dataUtils.js";
+import { loadMatchDetails, fetchAllMatches } from "@/utils/functions/dataUtils.js";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Helper function to compute category based on team skill levels.

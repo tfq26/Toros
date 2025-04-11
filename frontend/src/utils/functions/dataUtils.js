@@ -1,4 +1,5 @@
 import axios from "axios";
+import {DateTime} from "luxon";
 
 // Load details for multiple matches given an array of match IDs
 export async function loadMatchDetails(matchIds) {
@@ -102,4 +103,23 @@ export async function updateMatch(matchId, updateData) {
         console.error(`Error updating match ${matchId}:`, error);
         throw error;
     }
+}
+
+export function convertDate(dateInput, locale = navigator.language) {
+    // Ensure the date string is treated as UTC by appending "Z" if it doesn't have one.
+    let isoString = dateInput;
+    if (typeof dateInput === "string" && !dateInput.endsWith("Z")) {
+        isoString += "Z";
+    }
+
+    // Parse the ISO string as UTC, then convert to the local time zone.
+    const dt = DateTime.fromISO(isoString, { zone: 'utc' }).setZone('local');
+
+    if (!dt.isValid) {
+        console.error("Invalid date input:", dateInput);
+        return "Invalid Date";
+    }
+
+    // Format the date using Luxon's DATETIME_MED format.
+    return dt.setLocale(locale).toLocaleString(DateTime.DATETIME_MED);
 }

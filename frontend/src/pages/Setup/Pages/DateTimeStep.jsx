@@ -30,6 +30,7 @@ const DateTimeStep = ({ tournamentConfig, handleConfigChange, handleSetCurrentTi
                         <Input
                             type="time"
                             value={tournamentConfig.startTime}
+                            required
                             onChange={(e) =>
                                 handleConfigChange("startTime", e.target.value)
                             }

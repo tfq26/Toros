@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { Auth0Provider } from "@auth0/auth0-react";
+import { NotificationProvider } from "./utils/NotificationProvider.jsx"; // Adjust the path if needed
 
 function Root() {
     useEffect(() => {
@@ -35,7 +36,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             audience: audience,
         }}
     >
-        <Root />
+        <NotificationProvider>
+            <Root />
+        </NotificationProvider>
     </Auth0Provider>
-
 );

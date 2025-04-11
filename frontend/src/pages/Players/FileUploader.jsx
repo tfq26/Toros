@@ -1,19 +1,10 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog.jsx";
 import { Label } from "@/components/ui/label.jsx";
-import { toast } from "sonner";
 import { Input } from "@/components/ui/input.jsx";
+import { toast } from "sonner"; // or remove if you later switch to a centralized notification provider
+import DialogProvider from "../../utils/DialogProvider.jsx"; // Adjust the path as needed
 
 const DEFAULT_VALUES = {
     name: "Unknown Player",
@@ -27,7 +18,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     // importedPlayers will hold the processed player data after upload
     const [importedPlayers, setImportedPlayers] = useState(null);
-    // showConfirm controls the AlertDialog visibility (shown after a successful upload)
+    // showConfirm controls the dialog visibility (shown after a successful upload)
     const [showConfirm, setShowConfirm] = useState(false);
     const fileInputRef = useRef(null);
 
@@ -85,7 +76,7 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
     };
 
     // Upload the file using axios and, if successful, store the player data
-    // and show the confirmation popup
+    // and show the confirmation dialog
     const uploadPlayersToBackend = async (file, playersData) => {
         const formData = new FormData();
         formData.append("file", file);
@@ -150,21 +141,16 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
             {isLoading && <p className="text-blue-500 mt-2">Importing file, please wait...</p>}
 
             {/* Confirmation dialog shown after a successful file import */}
-            <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Import</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            The file has been successfully imported. Importing a new file will <strong>overwrite all existing player data</strong>.
-                            Do you want to proceed?
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleConfirmCancel}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmProceed}>Proceed</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <DialogProvider
+                isOpen={showConfirm}
+                onOpenChange={setShowConfirm}
+                title="Confirm Import"
+                description="The file has been successfully imported. Importing a new file will overwrite all existing player data. Do you want to proceed?"
+                onConfirm={handleConfirmProceed}
+                onCancel={handleConfirmCancel}
+                confirmText="Proceed"
+                cancelText="Cancel"
+            />
         </div>
     );
 };

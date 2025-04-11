@@ -13,7 +13,7 @@ import {
     exportToPDF,
     fetchTeamMatches,
     //fetchBracket
-} from '../utils/standingsUtils.js';
+} from '@/utils/functions/standingsUtils.js';
 
 function TeamStandings() {
     const [teams, setTeams] = useState([]);

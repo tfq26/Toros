@@ -12,6 +12,7 @@ const BasicInfoStep = ({ tournamentConfig, handleConfigChange }) => {
                     onChange={(e) =>
                         handleConfigChange("tournamentName", e.target.value)
                     }
+                    required
                     placeholder="Enter Tournament Name"
                     className="w-full text-lg p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signup } from "../utils/authUtils.js";
+import { signup } from "@/utils/functions/authUtils.js";
 import {Checkbox} from "../../components/ui/checkbox.jsx";
 
 const Signup = () => {

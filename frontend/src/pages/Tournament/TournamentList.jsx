@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { fetchTournamentById } from "../utils/dataUtils.js"; // Import the helper
-import { Helmet } from "react-helmet";
+import { fetchTournamentById } from "@/utils/functions/dataUtils.js"; // Import the helper
+import { convertDate } from "@/utils/functions/dataUtils.js"; // Import the convertDate helper
 
 const TournamentList = () => {
     const [tournaments, setTournaments] = useState([]); // Always an array
@@ -51,7 +51,7 @@ const TournamentList = () => {
         navigate(`/tournament/live/${tournamentId}`);
     };
 
-    // Set the tab title to "Viewer" on mount.
+    // Set the tab title on mount.
     useEffect(() => {
         document.title = "Tournament List";
     }, []);
@@ -68,7 +68,6 @@ const TournamentList = () => {
                 ) : error ? (
                     <p className="text-center text-red-500">{error}</p>
                 ) : tournaments.length === 0 ? (
-                    // Change: Handle empty list by showing a friendly message instead of an error response.
                     <div className="text-center">
                         <p className="text-lg font-semibold text-gray-800 dark:text-white">
                             No active tournaments found.
@@ -92,14 +91,14 @@ const TournamentList = () => {
                     <ul className="mt-4 space-y-3">
                         {tournaments.map((tournament) => (
                             <li
-                                key={tournament.id} // Ensure unique key
+                                key={tournament.id}
                                 className="border p-4 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-800 dark:bg-emerald-900 transition duration-200"
                                 onClick={() => handleSelectTournament(tournament.id)}
                             >
-                                <p className="text-lg font-semibold">{(tournament.name)}</p>
+                                <p className="text-lg font-semibold">{tournament.name}</p>
                                 <p className="text-gray-600 dark:text-gray-300">ID: {tournament.id}</p>
                                 <p className="text-gray-600 dark:text-gray-300">
-                                    Started: {new Date(tournament.dateHeld).toLocaleString()}
+                                    Started: {convertDate(tournament.startTime, navigator.language)}
                                 </p>
                                 <p className="text-gray-600 dark:text-gray-300">Status: {tournament.status}</p>
                             </li>

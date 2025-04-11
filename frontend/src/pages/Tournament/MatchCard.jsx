@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { formatTo12HourTime, convertLevel, getEmojiForRank } from "../utils/playerUtils";
+import { formatTo12HourTime, convertLevel, getEmojiForRank } from "@/utils/functions/playerUtils.js";
 import ScoreModal from "../Modals/ScoreModal.jsx";
 
 const MatchCard = ({ match, updateMatch }) => {

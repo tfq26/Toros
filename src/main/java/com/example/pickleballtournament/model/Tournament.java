@@ -16,7 +16,6 @@ public class Tournament {
     @Id
     private String id;
     private String name;
-    private LocalDate dateHeld;
     private boolean isActive; // Indicates if the tournament is still ongoing
     private String status; // "LIVE", "COMPLETED", "UPCOMING"
     private int numCourts;

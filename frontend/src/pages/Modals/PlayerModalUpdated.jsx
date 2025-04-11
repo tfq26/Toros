@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import { Input } from "@/components/ui/input.jsx";
-import { Button } from "@/components/ui/button.jsx";
 import {
     Select,
     SelectTrigger,
@@ -17,8 +8,10 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select.jsx";
-import { savePlayerData, convertLevel } from "../utils/playerUtils.js";
+import { savePlayerData, convertLevel } from "@/utils/functions/playerUtils.js";
+import DialogProvider from "../../utils/DialogProvider.jsx"; // Adjust path if needed
 
+// Helper to return a description for a given skill level.
 const getSkillDescription = (skillLevel) => {
     switch (skillLevel) {
         case 1:
@@ -32,18 +25,16 @@ const getSkillDescription = (skillLevel) => {
     }
 };
 
-const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlayers, onSubmit }) => {
+const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlayers }) => {
     const [playerName, setPlayerName] = useState("");
     const [playerSkill, setPlayerSkill] = useState(1);
-    // Use a string for the status instead of a boolean for registered
     const [status, setStatus] = useState("Registered");
     const [error, setError] = useState(null);
 
     useEffect(() => {
         if (selectedPlayer) {
             setPlayerName(selectedPlayer.name || "");
-            setPlayerSkill(selectedPlayer.skillLevel != null ? selectedPlayer.skillLevel : 1);
-            // Assume the selectedPlayer object now contains a "status" property.
+            setPlayerSkill(selectedPlayer.skillLevel ?? 1);
             setStatus(selectedPlayer.status || "Registered");
         }
     }, [selectedPlayer]);
@@ -58,8 +49,7 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
                 teamNumber: selectedPlayer.teamNumber,
                 clubName: selectedPlayer.clubName,
                 skillLevel: playerSkill,
-                // Send the status in place of the registered boolean
-                status: status,
+                status,
             };
             await savePlayerData({
                 formData,
@@ -78,106 +68,92 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
     if (!isModalOpen || !selectedPlayer) return null;
 
     return (
-        <Dialog
-            open={isModalOpen}
+        <DialogProvider
+            isOpen={isModalOpen}
             onOpenChange={(open) => {
                 if (!open) onClose();
             }}
+            title="Edit Player Information"
+            description="Edit player details. Changes will be saved for this tournament only."
+            onConfirm={handleSave}
+            onCancel={onClose}
+            confirmText="Save"
         >
-            <DialogContent className={"sm:max-w-[500px] w-full p-4 mx-auto rounded-lg top-1/3 transform -translate-x-1/2 -translate-y-1/2"}>
-                <DialogHeader>
-                    <DialogTitle>Edit Player Information</DialogTitle>
-                    <DialogDescription>
-                        <p className={"text-sm text-gray-500 dark:text-gray-400 italic"}>
-                            Changes will be saved for this tournament only.
-                        </p>
-                    </DialogDescription>
-                    <div className="grid flex-1 gap-4 w-full">
-                        <div className="mx-auto flex items-center gap-2 my-3">
-                            <Label htmlFor="name" className="text-sm font-medium">
-                                Name
-                            </Label>
-                            <Input
-                                id="name"
-                                type="text"
-                                placeholder="Enter your name"
-                                value={playerName}
-                                onChange={(e) => setPlayerName(e.target.value)}
-                                className="w-full"
-                            />
-                        </div>
-                        <div className="mx-auto w-full flex flex-col items-center gap-2 my-3">
-                            <Label htmlFor="skillLevel" className="text-sm font-medium">
-                                Skill Level
-                            </Label>
-                            <Input
-                                type="range"
-                                min="1"
-                                max="3"
-                                step="1"
-                                value={playerSkill}
-                                onChange={(e) => setPlayerSkill(parseInt(e.target.value, 10))}
-                                list="steplist"
-                                className="px-0 w-full mx-auto"
-                            />
-                            <p className="text-center text-sm text-gray-600 dark:text-gray-300">
-                                {getSkillDescription(playerSkill)} ({playerSkill})
-                            </p>
-                        </div>
-                        {/* Replace checkbox with select for status */}
-                        <div className="mx-auto flex flex-col items-center gap-2 my-3">
-                            <Label htmlFor="status" className="text-sm font-medium">
-                                Status
-                            </Label>
-                            <Select value={status} onValueChange={setStatus}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Select Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Registered">Registered</SelectItem>
-                                    <SelectItem value="Checked In">Checked In</SelectItem>
-                                    <SelectItem value="Withdrawn">Withdrawn</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    {/* Extra information for mobile view */}
-                    <div className="block md:hidden mt-4">
-                        <div className="flex flex-col gap-5">
-                            <div className="w-full flex items-center gap-5 my-3">
-                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Club Name
-                                </Label>
-                                <p className="text-base text-gray-800 dark:text-gray-100">
-                                    {selectedPlayer.clubName || "N/A"}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-5">
-                            <div className="w-full flex items-center gap-15 my-3">
-                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Rank
-                                </Label>
-                                <p className="text-base text-gray-800 dark:text-gray-100">
-                                    {convertLevel(selectedPlayer.skillLevel)}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    {error && <p className="text-center text-red-500 text-sm">{error}</p>}
-                    <DialogClose asChild>
-                        <Button
-                            type="button"
-                            onClick={handleSave}
-                            variant="secondary"
-                            className="text-xl px-7 mx-auto hover:bg-emerald-600 bg-emerald-400 dark:hover:bg-emerald-600 dark:bg-emerald-800 w-fit"
-                        >
-                            Save
-                        </Button>
-                    </DialogClose>
-                </DialogHeader>
-            </DialogContent>
-        </Dialog>
+            <div className="grid gap-4">
+                {/* Name Field */}
+                <div className="flex items-center gap-2">
+                    <Label htmlFor="name" className="text-sm font-medium">
+                        Name
+                    </Label>
+                    <Input
+                        id="name"
+                        type="text"
+                        placeholder="Enter your name"
+                        value={playerName}
+                        onChange={(e) => setPlayerName(e.target.value)}
+                        className="w-full"
+                    />
+                </div>
+
+                {/* Skill Level Field */}
+                <div className="flex flex-col items-center gap-2">
+                    <Label htmlFor="skillLevel" className="text-sm font-medium">
+                        Skill Level
+                    </Label>
+                    <Input
+                        type="range"
+                        min="1"
+                        max="3"
+                        step="1"
+                        value={playerSkill}
+                        onChange={(e) => setPlayerSkill(Number(e.target.value))}
+                        className="w-full"
+                    />
+                    <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
+                        {getSkillDescription(playerSkill)} ({playerSkill})
+                    </p>
+                </div>
+
+                {/* Status Field */}
+                <div className="flex flex-col items-center gap-2">
+                    <Label htmlFor="status" className="text-sm font-medium">
+                        Status
+                    </Label>
+                    <Select value={status} onValueChange={setStatus}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Registered">Registered</SelectItem>
+                            <SelectItem value="Checked In">Checked In</SelectItem>
+                            <SelectItem value="Withdrawn">Withdrawn</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            {/* Mobile-only information */}
+            <div className="md:hidden mt-4 space-y-4">
+                <div className="flex items-center gap-3">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Club Name
+                    </Label>
+                    <p className="text-base text-gray-800 dark:text-gray-100">
+                        {selectedPlayer.clubName || "N/A"}
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Rank
+                    </Label>
+                    <p className="text-base text-gray-800 dark:text-gray-100">
+                        {convertLevel(selectedPlayer.skillLevel)}
+                    </p>
+                </div>
+            </div>
+
+            {error && <p className="text-sm text-red-500 text-center mt-2">{error}</p>}
+        </DialogProvider>
     );
 };
 

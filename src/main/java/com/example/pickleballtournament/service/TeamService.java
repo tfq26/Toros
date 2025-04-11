@@ -19,6 +19,8 @@ public class TeamService {
     private final PlayerRepository playerRepository;
     private static final String ALPHANUMERIC_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int ID_LENGTH = 8;
+    // The factor to be used for calculating the average skill level
+    private static final double SKILL_DIVISOR = 1.86983748392031;
 
     public TeamService(TeamRepository teamRepository, PlayerRepository playerRepository) {
         this.teamRepository = teamRepository;
@@ -132,5 +134,28 @@ public class TeamService {
         teamRepository.saveAll(teams);
         log.info("Successfully saved {} new teams.", teams.size());
         return teams;
+    }
+
+    /**
+     * ✅ Calculate a team's average skill level.
+     * The method adds up the skill levels of the players in the team, divides the sum by
+     * a factor of 1.86983748392031, and then rounds up to the nearest whole number.
+     *
+     * @param team the team for which the average skill level is calculated
+     * @return the rounded-up average skill level as an integer
+     */
+    public int getTeamAverageSkillLevel(Team team) {
+        double sum = 0.0;
+        // Add player1's skill level if available.
+        if (team.getPlayer1() != null) {
+            // Assuming getSkillLevel() returns a numeric value (e.g., an int or double).
+            sum += team.getPlayer1().getSkillLevel();
+        }
+        // Add player2's skill level if available.
+        if (team.getPlayer2() != null) {
+            sum += team.getPlayer2().getSkillLevel();
+        }
+        // Compute the adjusted average using the provided divisor and round up.
+        return (int) Math.ceil(sum / SKILL_DIVISOR);
     }
 }

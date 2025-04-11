@@ -4,7 +4,7 @@ import axios from "axios";
 import MatchTabs from "./MatchTabs";
 import TournamentSidebar from "../Navbar/TournamentSidebar.jsx";
 import SlidingWindow from "../Navbar/SlidingWindow.jsx";
-import { fetchAllMatches, fetchMatchesByTournament } from "../utils/dataUtils.js";
+import { fetchAllMatches, fetchMatchesByTournament } from "@/utils/functions/dataUtils.js";
 import WindowView from "./Viewer/WindowView.jsx";
 import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx"; // Import the new modal
 import { RxHamburgerMenu } from "react-icons/rx";
