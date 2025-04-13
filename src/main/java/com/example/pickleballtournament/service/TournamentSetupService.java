@@ -279,8 +279,8 @@ public class TournamentSetupService {
                 LocalDateTime matchEndTime = matchStartTime.plusMinutes(matchDuration);
 
                 Match match = new Match();
-                match.setId(tournament.getId());
-                match.setTournament(tournament);
+                match.setId(generateSecureId());
+                match.setTournamentId(tournament.getId());
                 match.setTeam1(pair[0]);
                 match.setTeam2(pair[1]);
                 match.setTeam1Score(0);

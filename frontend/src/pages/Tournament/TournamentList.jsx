@@ -123,7 +123,7 @@ const TournamentList = () => {
                             <ContextMenu key={tournament.id}>
                                 <ContextMenuTrigger asChild>
                                     <li
-                                        className="border p-4 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-800 dark:bg-emerald-900 transition duration-200"
+                                        className="border p-4 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900 dark:bg-emerald-950 transition duration-200"
                                         onClick={() => handleSelectTournament(tournament.id)}
                                     >
                                         <p className="text-lg font-semibold">
@@ -134,9 +134,6 @@ const TournamentList = () => {
                                         </p>
                                         <p className="text-gray-600 dark:text-gray-300">
                                             Started: {convertDate(tournament.startTime, navigator.language)}
-                                        </p>
-                                        <p className="text-gray-600 dark:text-gray-300">
-                                            Status: {tournament.status}
                                         </p>
                                     </li>
                                 </ContextMenuTrigger>

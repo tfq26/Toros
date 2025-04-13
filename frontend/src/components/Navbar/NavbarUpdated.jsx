@@ -24,7 +24,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet.jsx";
 import useDevTools from "@/pages/DevTools/DevTools.jsx";
-import { AccountDropdown } from "../../pages/Auth/NavbarAuth.jsx"; // adjust the path as needed
+import { NavbarAuth } from "../../pages/Auth/NavbarAuth.jsx"; // adjust the path as needed
 import { VscTools } from "react-icons/vsc";
 
 // Default menu data
@@ -47,14 +47,15 @@ const defaultMenu = [
 ];
 
 const NavbarUpdated = ({
-                           logo = {
-                               url: "/",
-                               src: "/bull-svgrepo-com_black.svg",
-                               darkSrc: "/bull-svgrepo-com.svg", // Provide a dark mode logo; fallback to src if not provided
-                               alt: "Logo",
-                           },
-                           menu = defaultMenu,
-                       }) => {
+           logo = {
+               url: "/",
+               src: "/bull-svgrepo-com_black.svg",
+               darkSrc: "/bull-svgrepo-com.svg", // Provide a dark mode logo; fallback to src if not provided
+               alt: "Logo",
+               title: "Toros",
+           },
+           menu = defaultMenu,
+       }) => {
     const { openDevTools } = useDevTools();
     const [isDarkMode, setIsDarkMode] = useState(
         window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -113,7 +114,7 @@ const NavbarUpdated = ({
                     <AccordionTrigger className="text-md py-0 font-semibold hover:no-underline">
                         {item.title}
                     </AccordionTrigger>
-                    <AccordionContent className="mt-2">
+                    <AccordionContent className="mt-4">
                         {item.items.map((subItem, subIndex) => (
                             <SubMenuLink key={`${subItem.title}-${subIndex}`} item={subItem} />
                         ))}
@@ -153,15 +154,12 @@ const NavbarUpdated = ({
     SubMenuLink.displayName = "SubMenuLink";
 
     return (
-        <header className="w-full relative">
+        <header className="w-full top-0 z-50">
             <nav className="flex items-center justify-between px-4 py-2">
                 {/* Logo with dark mode switching */}
                 <div className="flex items-center gap-2">
                     <a href={logo.url} className="flex items-center gap-2">
-                        <img src={logoSrc} alt={logo.alt} className="h-8" />
-                        <span className="text-lg font-semibold tracking-tighter">
-              {logo.title}
-            </span>
+                        <img src={logoSrc} alt={logo.alt} className="h-8"/>
                     </a>
                 </div>
                 {/* Desktop Navigation */}
@@ -172,8 +170,8 @@ const NavbarUpdated = ({
                         </NavigationMenuList>
                     </NavigationMenu>
                     <div className="flex items-center gap-2">
-                        {/* Replace login/signup buttons with the unified AccountDropdown */}
-                        <AccountDropdown />
+                        {/* Replace login/signup buttons with the unified NavbarAuth */}
+                        <NavbarAuth/>
                         {import.meta.env.DEV && (
                             <Button variant="outline" size="sm" onClick={openDevTools}>
                                 Dev Tools
@@ -186,35 +184,31 @@ const NavbarUpdated = ({
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="outline" size="icon">
-                                <Menu size={24} />
+                                <Menu size={24}/>
                             </Button>
                         </SheetTrigger>
                         <SheetContent className="overflow-y-auto">
                             <SheetHeader>
                                 <SheetTitle>
-                                    <a href={logo.url} className="flex items-center gap-2">
-                                        <img src={logoSrc} alt={logo.alt} className="h-8" />
-                                        <span className="text-lg font-semibold tracking-tighter">
-                      {logo.title}
-                    </span>
-                                    </a>
+                                    <div className="flex w-full items-center gap-5">
+                                        <a href={logo.url} className="flex items-center">
+                                          <span className="text-lg font-semibold tracking-tighter">
+                                            {logo.title}
+                                          </span>
+                                        </a>
+                                        <NavbarAuth/>
+                                        {import.meta.env.DEV && (
+                                            <Button variant="outline" onClick={openDevTools}>
+                                                <VscTools/>
+                                            </Button>
+                                        )}
+                                    </div>
                                 </SheetTitle>
                             </SheetHeader>
-                            <div className="flex flex-col gap-6 p-4">
-                                <Accordion type="single" collapsible className="flex w-full flex-col gap-4">
+                            <div className="flex flex-col gap-10 p-4">
+                                <Accordion type="single" collapsible className="flex w-auto my-8 flex-col gap-4">
                                     {menu.map((item, index) => renderMobileMenuItem(item, index))}
                                 </Accordion>
-                                <div className="mt-6">
-                                    {/* In mobile, also show the unified AccountDropdown */}
-                                    <AccountDropdown />
-                                </div>
-                                {import.meta.env.DEV && (
-                                    <div className="mt-4">
-                                        <Button variant="outline" onClick={openDevTools}>
-                                            <VscTools />
-                                        </Button>
-                                    </div>
-                                )}
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -224,4 +218,4 @@ const NavbarUpdated = ({
     );
 };
 
-export { NavbarUpdated };
+export {NavbarUpdated};

@@ -1,7 +1,7 @@
 // TournamentSetupSuccess.jsx
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 const TournamentSetupSuccess = ({ finalize }) => {
     const navigate = useNavigate();
@@ -14,8 +14,8 @@ const TournamentSetupSuccess = ({ finalize }) => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-green-100 dark:bg-green-900 p-4">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center">
+        <div className="flex rounded-lg items-center justify-center bg-green-100 dark:bg-green-900 p-4">
+            <div className="bg-white dark:bg-emerald-950 p-8 rounded-lg shadow-lg text-center">
                 <h1 className="text-4xl font-bold text-green-600 dark:text-green-300 mb-4">
                     Tournament Setup Complete!
                 </h1>
@@ -24,10 +24,10 @@ const TournamentSetupSuccess = ({ finalize }) => {
                 </p>
                 <Button
                     type="button" // Prevents default form submission behavior.
-                    onClick={handleClick}
+                    onClick={finalize}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md transition"
                 >
-                    Go to Tournament List
+                    <Link to={"/tournament/list"}>Go to Tournament List</Link>
                 </Button>
             </div>
         </div>

@@ -77,7 +77,7 @@ public class MatchService {
     public List<String> getMatchesByTournamentId(String tournamentId) {
         try {
             return matchRepository.findAll().stream()
-                    .filter(match -> match.getTournament() != null && tournamentId.equals(match.getTournament().getId()))
+                    .filter(match -> match.getTournamentId() != null && tournamentId.equals(match.getTournamentId()))
                     .map(Match::getId)
                     .collect(Collectors.toList());
         } catch (Exception e) {

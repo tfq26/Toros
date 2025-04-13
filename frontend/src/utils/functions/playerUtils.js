@@ -43,6 +43,8 @@ export const getEmojiForRank = (rank) => {
  */
 export const formatTo12HourTime = (time) => {
     if (!time) return "N/A";
+
+    // If time is already a Date, format it directly.
     if (time instanceof Date) {
         return time.toLocaleString("en-US", {
             hour: "numeric",
@@ -50,15 +52,38 @@ export const formatTo12HourTime = (time) => {
             hour12: true,
         });
     }
-    const [hours, minutes] = time.split(":").map(Number);
-    const date = new Date();
-    date.setHours(hours, minutes);
-    return date.toLocaleString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-    });
+
+    if (typeof time === "string") {
+        // If the string is in ISO format (contains a "T"),
+        // create a Date object.
+        if (time.includes("T")) {
+            const date = new Date(time);
+            if (!isNaN(date.getTime())) {
+                return date.toLocaleString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                });
+            }
+        }
+
+        // Fallback: if it's not in ISO format, try to split by colon.
+        const parts = time.split(":").map(Number);
+        if (parts.length >= 2) {
+            const [hours, minutes] = parts;
+            const date = new Date();
+            date.setHours(hours, minutes);
+            return date.toLocaleString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+            });
+        }
+    }
+
+    return "N/A";
 };
+
 
 /**
  * Validate and transform imported player data.

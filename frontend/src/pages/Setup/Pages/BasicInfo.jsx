@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label.jsx";
 
 const BasicInfoStep = ({ tournamentConfig, handleConfigChange }) => {
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-10">
             <div>
                 <Input
                     type="text"

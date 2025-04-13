@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button.jsx";
 import axios from "axios";
 import ExportMatches from "@/components/ExportMatches.jsx";
+import {FiArrowDown, FiArrowUp, FiExternalLink, FiRefreshCcw, FiXCircle} from "react-icons/fi";
 
 const TournamentSidebar = ({
                                tournamentID,
@@ -70,7 +71,8 @@ const TournamentSidebar = ({
     };
 
     return (
-        <div className="sticky top-4 border p-4 rounded shadow bg-orange-200 dark:bg-gray-800 flex flex-col items-center h-fit">
+        <div
+            className="sticky top-4 border p-2 rounded shadow bg-orange-200 dark:bg-gray-800 flex flex-col items-center h-fit m-4">
             <h2 className="text-xl font-bold mb-4 text-center">Tournament Overview</h2>
 
             {/* Display Tournament Setup Properties */}
@@ -100,45 +102,55 @@ const TournamentSidebar = ({
             </p>
 
             {/* Sorting Button */}
-            <Button
-                onClick={() =>
-                    setSortOrder(sortOrder === "desc" ? "asc" : "desc")
-                }
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition w-full mt-4 text-lg"
-            >
-                {sortOrder === "desc" ? "🔽 Sort Descending" : "🔼 Sort Ascending"}
-            </Button>
+            <div className="flex items-center gap-4 mt-4">
+                {/* Sort Button */}
+                <Button
+                    onClick={() =>
+                        setSortOrder(sortOrder === "desc" ? "asc" : "desc")
+                    }
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                    title="Sort Matches"
+                >
+                    {sortOrder === "desc" ? (
+                        <FiArrowDown size={20}/>
+                    ) : (
+                        <FiArrowUp size={20}/>
+                    )}
+                </Button>
 
-            <Button
-                onClick={() => window.open("/viewer", "_blank")}
-                className="bg-amber-400 hover:bg-amber-500 text-white px-3 py-2 rounded mt-4 w-full text-lg"
-            >
-                Open Viewer in New Tab
-            </Button>
+                {/* Open Viewer Button */}
+                <Button
+                    onClick={() => window.open("/viewer", "_blank")}
+                    className="bg-amber-400 hover:bg-amber-500 text-white px-3 py-2 rounded transition"
+                    title="Open Viewer in New Tab"
+                >
+                    <FiExternalLink size={20}/>
+                </Button>
 
-            {/* Refresh Matches */}
-            <Button
-                onClick={handleFetchMatches}
-                className={`bg-blue-500 text-white px-3 py-2 rounded mt-4 w-full ${
-                    isLoading
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-blue-600 transition text-lg"
-                }`}
-                disabled={isLoading}
-            >
-                {isLoading ? "Refreshing..." : "Refresh Matches"}
-            </Button>
+                {/* Refresh Matches Button */}
+                <Button
+                    onClick={handleFetchMatches}
+                    disabled={isLoading}
+                    className={`bg-blue-500 text-white px-3 py-2 rounded ${
+                        isLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600 transition"
+                    }`}
+                    title="Refresh Matches"
+                >
+                    <FiRefreshCcw size={20}/>
+                </Button>
 
-            {/* End Tournament Button */}
-            <Button
-                onClick={endTournament}
-                className="bg-red-500 text-white px-3 py-2 rounded mt-4 w-full hover:bg-red-600 transition text-lg"
-            >
-                End Tournament
-            </Button>
+                {/* End Tournament Button */}
+                <Button
+                    onClick={endTournament}
+                    className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
+                    title="End Tournament"
+                >
+                    <FiXCircle size={20}/>
+                </Button>
+            </div>
 
             {/* Export Matches Component */}
-            <ExportMatches />
+            <ExportMatches/>
         </div>
     );
 };

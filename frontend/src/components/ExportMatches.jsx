@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
+import {FaFileExcel, FaFilePdf} from "react-icons/fa6";
 
 const ExportMatches = () => {
     // Opens a backend endpoint that returns a PDF of matches.
@@ -16,12 +17,24 @@ const ExportMatches = () => {
 
     return (
         <div className="flex flex-col gap-2 mt-4">
-            <Button variant="outline" className="w-full" onClick={exportMatchesAsPDF}>
-                Export Matches as PDF
-            </Button>
-            <Button variant="outline" className="w-full" onClick={exportMatchesAsExcel}>
-                Export Matches as Excel
-            </Button>
+            <div className="flex gap-4 mt-4">
+                <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={exportMatchesAsPDF}
+                    title="Export Matches as PDF"
+                >
+                    <FaFilePdf size={20}/>
+                </Button>
+                <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={exportMatchesAsExcel}
+                    title="Export Matches as Excel"
+                >
+                    <FaFileExcel size={20}/>
+                </Button>
+            </div>
         </div>
     );
 };

@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { formatTo12HourTime, convertLevel, getEmojiForRank } from "@/utils/functions/playerUtils.js";
-import ScoreModal from "../Modals/ScoreModal.jsx";
+import ScoreModal from "../Older Components/ScoreModal.jsx";
 import {Button} from "@/components/ui/button.jsx";
+import PropTypes from "prop-types";
+import ScoreModalUpdated from "@/pages/Modals/scoreModalUpdated.jsx";
 
 const MatchCard = ({ match, updateMatch }) => {
     const [isModalOpen, setModalOpen] = useState(false);
@@ -65,7 +67,7 @@ const MatchCard = ({ match, updateMatch }) => {
             className={`p-3 rounded shadow dark:bg-emerald-900 bg-emerald-500 space-y-2 ${isInspected ? "ring-4 ring-blue-500" : ""}`}
         >
             <div className="flex justify-between items-center">
-                <p className="text-lg font-bold">Match {match.id || "N/A"}</p>
+                <p className="text-lg font-bold">{match.id || "N/A"}</p>
                 <select
                     value={match.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
@@ -76,6 +78,7 @@ const MatchCard = ({ match, updateMatch }) => {
                     <option value="Complete">Complete</option>
                 </select>
             </div>
+            <p className="text-md font-semibold">Court {match.courtNumber || "N/A"}</p>
 
             <div className="space-y-2">
                 <p className="font-bold">Team 1: {formatTeamPlayers(match.team1)}</p>
@@ -104,7 +107,7 @@ const MatchCard = ({ match, updateMatch }) => {
                 </Button>
             </div>
 
-            <ScoreModal
+            <ScoreModalUpdated
                 isOpen={isModalOpen}
                 match={match}
                 onClose={closeModal}
@@ -112,6 +115,29 @@ const MatchCard = ({ match, updateMatch }) => {
             />
         </div>
     );
+};
+
+MatchCard.propTypes = {
+    match: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        status: PropTypes.string,
+        courtNumber: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        team1: PropTypes.shape({
+            player1: PropTypes.shape({ name: PropTypes.string }),
+            player2: PropTypes.shape({ name: PropTypes.string }),
+            skillLevel: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        }),
+        team2: PropTypes.shape({
+            player1: PropTypes.shape({ name: PropTypes.string }),
+            player2: PropTypes.shape({ name: PropTypes.string }),
+            skillLevel: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        }),
+        team1Score: PropTypes.number,
+        team2Score: PropTypes.number,
+        startTime: PropTypes.string,
+        endTime: PropTypes.string,
+    }).isRequired,
+    updateMatch: PropTypes.func.isRequired,
 };
 
 export default MatchCard;

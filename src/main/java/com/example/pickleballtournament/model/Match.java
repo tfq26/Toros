@@ -16,7 +16,8 @@ public class Match {
     // Getters and Setters
     @Id
     private String id;
-    private Tournament tournament;
+    //private Tournament tournament;
+    private String tournamentId; // Reference to the tournament
     private int courtNumber;
     private Team team1;
     private Team team2;

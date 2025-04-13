@@ -2,55 +2,62 @@ import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+    Sheet,
+    SheetTrigger,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet";
 import { FaRegUserCircle } from "react-icons/fa";
 
-export function AccountDropdown() {
+export function NavbarAuth() {
     const { isAuthenticated, isLoading, user, loginWithRedirect, logout } = useAuth0();
 
     if (isLoading) return null;
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                    <FaRegUserCircle />
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="outline" size="lg">
+                    <FaRegUserCircle size={20} />
                 </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-                {isAuthenticated ? (
-                    <>
-                        <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => logout({ returnTo: window.location.origin })}
-                        >
-                            Logout
-                        </DropdownMenuItem>
-                    </>
-                ) : (
-                    <>
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => loginWithRedirect({ screen_hint: "login" })}
-                        >
-                            Login
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => loginWithRedirect({ screen_hint: "signup" })}
-                        >
-                            Sign Up
-                        </DropdownMenuItem>
-                    </>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
+            </SheetTrigger>
+            <SheetContent side="right" className="md:hidden">
+                <SheetHeader>
+                    <SheetTitle>My Account</SheetTitle>
+                </SheetHeader>
+                <div className="p-4 space-y-4">
+                    {isAuthenticated ? (
+                        <>
+                            <div className="text-lg font-medium">{user.name}</div>
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => logout({ returnTo: window.location.origin })}
+                            >
+                                Logout
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => loginWithRedirect({ screen_hint: "login" })}
+                            >
+                                Login
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => loginWithRedirect({ screen_hint: "signup" })}
+                            >
+                                Sign Up
+                            </Button>
+                        </>
+                    )}
+                </div>
+            </SheetContent>
+        </Sheet>
     );
 }

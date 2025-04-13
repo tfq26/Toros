@@ -52,7 +52,7 @@ const WizardNavigation = ({
             : steps[currentStep];
 
     return (
-        <form onSubmit={handleFormSubmit} className="space-y-6">
+        <form onSubmit={handleFormSubmit} className="space-y-6 p-5">
             {stepNames && stepNames[currentStep] && (
                 <h2 className="text-center text-2xl font-bold mb-4">
                     {stepNames[currentStep]}

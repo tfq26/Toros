@@ -35,7 +35,9 @@ public class Team {
     }
 
     // Parameterized constructor that uses the custom setters to ensure recalculation
-    public Team(String name, Player player1, Player player2) {
+    public Team(String name, Player player1, Player player2, String tournamentId, String status,
+                String matchId, String matchStatus, Integer placement, Integer skillLevel, int teamScore,
+                int totalPoints, int wins, int losses, int matchesPlayed) {
         this.name = name;
         this.teamScore = 0;
         this.wins = 0;
@@ -44,6 +46,33 @@ public class Team {
         this.totalPoints = 0;
         setPlayer1(player1);
         setPlayer2(player2);
+        this.tournamentId = tournamentId;
+        this.status = status;
+        this.matchId = matchId;
+        this.matchStatus = matchStatus;
+        this.placement = placement;
+        this.skillLevel = skillLevel;
+        this.teamScore = teamScore;
+        this.totalPoints = totalPoints;
+        this.wins = wins;
+        this.losses = losses;
+        this.matchesPlayed = matchesPlayed;
+    }
+
+    public Team(String name, Player player1, Player player2, String tournamentId) {
+        this.name = name;
+        this.teamScore = 0;
+        this.wins = 0;
+        this.losses = 0;
+        this.matchesPlayed = 0;
+        this.totalPoints = 0;
+        setPlayer1(player1);
+        setPlayer2(player2);
+        this.tournamentId = tournamentId;
+        this.skillLevel = calculateSkillLevel(
+                (player1 != null && player1.getSkillLevel() != null) ? player1.getSkillLevel() : 0,
+                (player2 != null && player2.getSkillLevel() != null) ? player2.getSkillLevel() : 0
+        );
     }
 
     /**

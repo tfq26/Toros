@@ -2,6 +2,7 @@ package com.example.pickleballtournament.controller;
 
 import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.request.TournamentSetupRequest;
+import com.example.pickleballtournament.request.UpdateMatchRequest;
 import com.example.pickleballtournament.service.MatchService;
 import com.example.pickleballtournament.service.TournamentSetupService;
 import com.example.pickleballtournament.service.LiveTournamentService;
@@ -57,7 +58,6 @@ public class TournamentController {
                     request.getSkillLevel()
             );
 
-            // Check if the service returned null (e.g., duplicate found and not deleted)
             if (tournament == null) {
                 log.warn("Tournament setup aborted due to duplicate tournament.");
                 return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -97,6 +97,26 @@ public class TournamentController {
         } else {
             log.warn("⚠️ Tournament not found for ID: {}", tournamentId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tournament not found.");
+        }
+    }
+
+    /** 🎯 Update Match using PATCH (explicit mapping) */
+    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    public ResponseEntity<?> updateMatch(@PathVariable String id, @RequestBody UpdateMatchRequest request) {
+        try {
+            log.info("📥 Received match update request: Match ID={}, Team1Score={}, Team2Score={}, Status={}",
+                    id, request.getTeam1Score(), request.getTeam2Score(), request.getStatus());
+            String updatedMatchId = matchService.updateMatch(id, request);
+            log.info("✅ Match {} updated successfully.", id);
+            return ResponseEntity.ok(updatedMatchId);
+        } catch (IllegalArgumentException e) {
+            log.warn("⚠️ Match update failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Error updating match {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to update match.");
         }
     }
 
