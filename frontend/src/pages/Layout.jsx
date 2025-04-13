@@ -1,7 +1,7 @@
 import React from "react";
 import { NotificationProvider } from "../utils/NotificationProvider.jsx"; // Adjust path as needed
-import { MenubarNav } from "@/pages/Navbar/MenubarNav.jsx";
-import {NavbarUpdated} from "@/pages/Navbar/NavbarUpdated.jsx"; // Adjust path as needed
+import { MenubarNav } from "@/components/Navbar/MenubarNav.jsx";
+import {NavbarUpdated} from "@/components/Navbar/NavbarUpdated.jsx"; // Adjust path as needed
 
 function LayoutContent({ children }) {
     return (

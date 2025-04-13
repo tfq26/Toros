@@ -6,13 +6,13 @@ import {
     SheetHeader,
     SheetTitle,
     SheetDescription,
-} from "@/components/ui/sheet"; // Adjust the import paths as needed
+} from "@/components/ui/sheet.jsx"; // Adjust the import paths as needed
 import {
     Tabs,
     TabsList,
     TabsTrigger,
     TabsContent,
-} from "@/components/ui/tabs";
+} from "@/components/ui/tabs.jsx";
 import {Button} from "@/components/ui/button.jsx"; // Adjust the import paths as needed
 
 const SlidingWindow = ({ sections }) => {

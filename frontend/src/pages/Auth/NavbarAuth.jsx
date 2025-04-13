@@ -9,6 +9,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { FaRegUserCircle } from "react-icons/fa";
 
 export function AccountDropdown() {
     const { isAuthenticated, isLoading, user, loginWithRedirect, logout } = useAuth0();
@@ -19,7 +20,7 @@ export function AccountDropdown() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                    Account
+                    <FaRegUserCircle />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">

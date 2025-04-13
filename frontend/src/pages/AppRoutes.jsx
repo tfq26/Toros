@@ -13,7 +13,7 @@ import LoginPage from "./Auth/LoginUpdated.jsx";
 import SignupPage from "./Auth/Signup.jsx";
 import MatchTest from "./Tournament/MatchTest.jsx";
 import WindowView from "./Tournament/Viewer/WindowView.jsx";
-import { NavbarUpdated } from "@/pages/Navbar/NavbarUpdated.jsx";
+import { NavbarUpdated } from "@/components/Navbar/NavbarUpdated.jsx";
 import Page from "./Page.jsx";
 
 function AppRoutes() {

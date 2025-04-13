@@ -220,7 +220,13 @@ public class TournamentSetupService {
             throw new IllegalStateException("Not enough teams to generate matches.");
         }
 
+        // Enforce unique pairing possibility.
+        if (gamesPerTeam > teams.size() - 1) {
+            throw new IllegalArgumentException("gamesPerTeam exceeds the maximum number of unique matches per team.");
+        }
+
         List<Match> matches = new ArrayList<>();
+
         // Group teams based on tier if required; otherwise, use a single group.
         Map<Integer, List<Team>> groupedTeams = tiered
                 ? teams.stream().collect(Collectors.groupingBy(team -> team.getPlacement() != null ? team.getPlacement() : 0))
@@ -232,8 +238,10 @@ public class TournamentSetupService {
             courtTimes.put(i, startTime);
         }
 
-        // Total matches required.
         int totalMatchesRequired = gamesPerTeam * teams.size() / 2;
+
+        // Use a set to track scheduled team pairings to avoid duplicates.
+        Set<String> scheduledPairs = new HashSet<>();
 
         // Process each group separately.
         for (List<Team> group : groupedTeams.values()) {
@@ -247,13 +255,19 @@ public class TournamentSetupService {
                 }
             }
 
-            // Shuffle the pairs to ensure randomness.
             Collections.shuffle(pairs);
 
             for (Team[] pair : pairs) {
                 if (matches.size() >= totalMatchesRequired) break;
 
-                // Randomly swap team order to balance team1 and team2 assignments.
+                // Generate a canonical key for the pair. Ensure order doesn't matter.
+                String pairKey = generatePairKey(pair[0], pair[1]);
+                if (scheduledPairs.contains(pairKey)) {
+                    continue; // Skip duplicate pairing.
+                }
+                scheduledPairs.add(pairKey);
+
+                // Randomly swap the team order.
                 if (Math.random() < 0.5) {
                     Team temp = pair[0];
                     pair[0] = pair[1];
@@ -276,29 +290,22 @@ public class TournamentSetupService {
                 match.setStartTime(matchStartTime);
                 match.setEndTime(matchEndTime);
                 match.generateCustomId();
-                match.setMatchSkillLevel(pair[0].getSkillLevel() > pair[1].getSkillLevel()
-                        ? pair[0].getSkillLevelString()
-                        : pair[1].getSkillLevelString());
-                match.setMatchFormat(tournament.getFormat());
-                match.setMatchType(tournament.getTournamentType());
-
                 // Determine match skill level based on the higher skill between the two teams.
                 if (pair[0].getSkillLevel() > pair[1].getSkillLevel()) {
                     match.setMatchSkillLevel(pair[0].getSkillLevelString());
                 } else {
                     match.setMatchSkillLevel(pair[1].getSkillLevelString());
                 }
+                match.setMatchFormat(tournament.getFormat());
+                match.setMatchType(tournament.getTournamentType());
 
                 log.info("Match Scheduled: {} vs {} on Court {} for Tournament '{}'",
                         pair[0].getName(), pair[1].getName(), assignedCourt, tournament.getName());
 
                 matches.add(match);
-                // Update the start time for the next match on the same court (match end time + break time).
                 courtTimes.put(assignedCourt, matchEndTime.plusMinutes(breakTime));
-                // Rotate court number for next match.
                 courtNumber.set((courtNumber.get() % numCourts) + 1);
             }
-            // Break early if we've scheduled enough matches.
             if (matches.size() >= totalMatchesRequired) break;
         }
 
@@ -316,6 +323,21 @@ public class TournamentSetupService {
         result.matchIds = matchIds;
         result.maxEndTime = maxEndTime;
         return result;
+    }
+
+    /**
+     * Generates a canonical key for a pair of teams so that (Team A, Team B)
+     * is treated the same as (Team B, Team A).
+     */
+    private String generatePairKey(Team team1, Team team2) {
+        // Assuming each team has a unique ID.
+        String id1 = team1.getId();
+        String id2 = team2.getId();
+        if (id1.compareTo(id2) < 0) {
+            return id1 + "_" + id2;
+        } else {
+            return id2 + "_" + id1;
+        }
     }
 
     /**

@@ -6,8 +6,8 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/accordion.jsx";
+import { Button } from "@/components/ui/button.jsx";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -22,9 +22,10 @@ import {
     SheetHeader,
     SheetTitle,
     SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@/components/ui/sheet.jsx";
 import useDevTools from "@/pages/DevTools/DevTools.jsx";
-import { AccountDropdown } from "../Auth/NavbarAuth.jsx"; // adjust the path as needed
+import { AccountDropdown } from "../../pages/Auth/NavbarAuth.jsx"; // adjust the path as needed
+import { VscTools } from "react-icons/vsc";
 
 // Default menu data
 const defaultMenu = [
@@ -210,7 +211,7 @@ const NavbarUpdated = ({
                                 {import.meta.env.DEV && (
                                     <div className="mt-4">
                                         <Button variant="outline" onClick={openDevTools}>
-                                            Dev Tools
+                                            <VscTools />
                                         </Button>
                                     </div>
                                 )}

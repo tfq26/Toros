@@ -4,6 +4,7 @@ const useDevTools = () => {
     const [windowRef, setWindowRef] = useState(null);
 
     const openDevTools = () => {
+        // If the dev tools window is already open and not closed, bring it to focus.
         if (windowRef && !windowRef.closed) {
             windowRef.focus();
             return;
@@ -14,6 +15,16 @@ const useDevTools = () => {
             "DevTools",
             "width=600,height=600,left=100,top=100"
         );
+
+        // This mapping correlates each collection with its respective endpoint.
+        // Adjust the URLs here if your backend port or paths differ.
+        const endpoints = {
+            players: "http://localhost:8080/api/devtools/players",
+            matches: "http://localhost:8080/api/devtools/matches",
+            teams: "http://localhost:8080/api/devtools/teams",
+            // For tournaments, we are using the endpoint that marks active tournaments as inactive.
+            tournaments: "http://localhost:8080/api/devtools/tournaments/active"
+        };
 
         if (newWindow) {
             newWindow.document.write(`
@@ -42,12 +53,15 @@ const useDevTools = () => {
               <option value="tournaments">Tournaments</option>
             </select>
             <button id="deleteButton" style="background: red; color: white;">Delete Selected</button>
-            <button id="deleteAllButton" style="background: darkred; color: white;">Delete All</button>
+            <button id="deleteAllButton" style="background: darkred; color: white;">Delete All (All Collections)</button>
             <button id="loadPlayersButton" style="background: blue; color: white;">Load All Players</button>
             <button id="endTournamentButton" style="background: orange; color: white;">End Tournament</button>
             <button id="refreshButton" style="background: green; color: white;">Refresh Main</button>
             <script>
-              // Delete Selected: calls DELETE on an assumed endpoint
+              // Inject the endpoints mapping into the inline script.
+              const endpoints = ${JSON.stringify(endpoints)};
+              
+              // Delete Selected: uses DELETE on the endpoint based on the selected collection.
               document.getElementById("deleteButton").addEventListener("click", async () => {
                 const selected = document.getElementById("collectionSelect").value;
                 if (!selected) {
@@ -56,39 +70,45 @@ const useDevTools = () => {
                 }
                 const confirmDelete = confirm("Delete all data from " + selected + "?");
                 if (!confirmDelete) return;
+                const endpoint = endpoints[selected];
                 try {
-                  const res = await fetch("http://localhost:8080/api/devtools/players/delete/" + selected, {
+                  const res = await fetch(endpoint, {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
                   });
+                  // Assuming the backend returns JSON with a message field.
                   const data = await res.json();
-                  alert(data.message || "Deleted.");
+                  alert(data.message || "Deleted " + selected + ".");
                 } catch (err) {
-                  console.error("Error deleting data:", err);
-                  alert("Error deleting data.");
-                }
-              });
-              
-              // Delete All: calls DELETE on an assumed endpoint
-              document.getElementById("deleteAllButton").addEventListener("click", async () => {
-                if (!confirm("Are you sure you want to delete ALL data?")) return;
-                try {
-                  const res = await fetch("http://localhost:8080/api/devtools/players/deleteAll", {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                  });
-                  const data = await res.json();
-                  alert(data.message || "All data deleted.");
-                } catch (err) {
-                  console.error("Error deleting all data:", err);
-                  alert("Error deleting all data.");
+                  console.error("Error deleting data from " + selected + ":", err);
+                  alert("Error deleting data from " + selected + ".");
                 }
               });
 
-              // Load All Players: calls GET from your controller
+              // Delete All: calls DELETE on each endpoint defined in our mapping sequentially.
+              document.getElementById("deleteAllButton").addEventListener("click", async () => {
+                if (!confirm("Are you sure you want to delete ALL data for all collections?")) return;
+                let results = [];
+                for (const key in endpoints) {
+                  try {
+                    const res = await fetch(endpoints[key], {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                    });
+                    const data = await res.json();
+                    results.push(key + ": " + (data.message || "Deleted."));
+                  } catch (err) {
+                    console.error("Error deleting " + key + ":", err);
+                    results.push(key + ": " + "Error.");
+                  }
+                }
+                alert(results.join("\\n"));
+              });
+
+              // Load All Players: issues a GET request to the players endpoint.
               document.getElementById("loadPlayersButton").addEventListener("click", async () => {
                 try {
-                  const res = await fetch("http://localhost:8080/api/devtools/players");
+                  const res = await fetch(endpoints["players"]);
                   const data = await res.json();
                   console.log("Players:", data);
                   alert("Players loaded. Check console for details.");
@@ -98,7 +118,8 @@ const useDevTools = () => {
                 }
               });
 
-              // End Tournament: calls POST on the tournament end endpoint
+              // End Tournament: calls a POST to the tournament end endpoint.
+              // Adjust the URL if needed based on your backend.
               document.getElementById("endTournamentButton").addEventListener("click", async () => {
                 try {
                   const res = await fetch("http://localhost:8080/api/tournament/end", {
@@ -117,7 +138,7 @@ const useDevTools = () => {
                 }
               });
 
-              // Refresh Main: sends a message to the opener window
+              // Refresh Main: sends a message to the opener (main) window.
               document.getElementById("refreshButton").addEventListener("click", () => {
                 window.opener?.postMessage({ type: "DEV_COMMAND", command: "REFRESH_MAIN" }, "*");
               });

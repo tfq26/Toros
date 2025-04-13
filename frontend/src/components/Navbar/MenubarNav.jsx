@@ -2,14 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { User2, Menu, X } from "lucide-react";
+import { FaRegUserCircle } from "react-icons/fa";
 import {
     Menubar,
     MenubarMenu,
     MenubarTrigger,
     MenubarContent,
     MenubarItem,
-} from "@/components/ui/menubar";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/menubar.jsx";
+import { Button } from "@/components/ui/button.jsx";
 import { MenubarAuth } from "@/pages/Auth/MenubarAuth.jsx";
 import useDevTools from "@/pages/DevTools/DevTools.jsx"; // Adjust the path as needed
 
@@ -60,7 +61,7 @@ export function MenubarNav() {
                 <div className="flex items-center">
                     <Button className="bg-transparent dark:bg-gray-900 hover:bg-transparent shadow-none w-fit p-0 ml-8">
                         <Link
-                            to="/"
+                            to="/frontend/public"
                             className="text-gray-950 text-lg md:text-xl lg:text-2xl font-bold px-4"
                         >
                             <img
@@ -93,7 +94,7 @@ export function MenubarNav() {
                     <MenubarMenu>
                         <MenubarTrigger className="px-4 flex items-center">
                             <User2 className="mr-2" />
-                            <span>Account</span>
+                            <span><FaRegUserCircle /></span>
                         </MenubarTrigger>
                         <MenubarContent>
                             <MenubarAuth />
