@@ -1,22 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button.jsx";
+import { Button } from "@/components/ui/button";
 import axios from "axios";
+import ExportMatches from "@/components/ExportMatches.jsx";
 
 const TournamentSidebar = ({
-                     tournamentID,
-                     matchStats,
-                     endTournament,
-                     fetchMatches,
-                     sortOrder, // ✅ Receive sorting order
-                     setSortOrder, // ✅ Function to update sorting order
-                 }) => {
+                               tournamentID,
+                               setupProperties: propSetupProperties, // Receive setupProperties as a prop (optional)
+                               matchStats,
+                               endTournament,
+                               fetchMatches,
+                               sortOrder,
+                               setSortOrder,
+                           }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [setupProperties, setSetupProperties] = useState([]);
+    // Initialize local state with the passed prop or empty array
+    const [setupProperties, setSetupProperties] = useState(
+        propSetupProperties || []
+    );
 
-    /** ✅ Fetch tournament setupProperties by tournamentID */
+    // Update local state when prop changes
     useEffect(() => {
-        if (!tournamentID) {
-            console.warn("⚠️ tournamentID is missing!");
+        setSetupProperties(propSetupProperties || []);
+    }, [propSetupProperties]);
+
+    // Fallback: if no setupProperties were provided, fetch from API using tournamentID
+    useEffect(() => {
+        if (!tournamentID || propSetupProperties) {
+            // Skip fetching if tournamentID is missing or if the prop was provided.
             return;
         }
         axios
@@ -25,17 +35,23 @@ const TournamentSidebar = ({
                 const tournament = response.data;
                 if (tournament && tournament.setupProperties) {
                     setSetupProperties(tournament.setupProperties);
-                    console.log("✅ Loaded setupProperties:", tournament.setupProperties);
+                    console.log(
+                        "✅ Loaded setupProperties from API:",
+                        tournament.setupProperties
+                    );
                 } else {
-                    console.warn("⚠️ No setupProperties found for tournament with ID:", tournamentID);
+                    console.warn(
+                        "⚠️ No setupProperties found for tournament with ID:",
+                        tournamentID
+                    );
                 }
             })
             .catch((err) => {
                 console.error("❌ Error fetching tournament data:", err);
             });
-    }, [tournamentID]);
+    }, [tournamentID, propSetupProperties]);
 
-    /** ✅ Refresh Matches */
+    /** Refresh Matches */
     const handleFetchMatches = async () => {
         if (!fetchMatches) {
             console.error("❌ fetchMatches function is missing!");
@@ -85,7 +101,9 @@ const TournamentSidebar = ({
 
             {/* Sorting Button */}
             <Button
-                onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+                onClick={() =>
+                    setSortOrder(sortOrder === "desc" ? "asc" : "desc")
+                }
                 className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition w-full mt-4 text-lg"
             >
                 {sortOrder === "desc" ? "🔽 Sort Descending" : "🔼 Sort Ascending"}
@@ -102,7 +120,9 @@ const TournamentSidebar = ({
             <Button
                 onClick={handleFetchMatches}
                 className={`bg-blue-500 text-white px-3 py-2 rounded mt-4 w-full ${
-                    isLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600 transition text-lg"
+                    isLoading
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-blue-600 transition text-lg"
                 }`}
                 disabled={isLoading}
             >
@@ -116,6 +136,9 @@ const TournamentSidebar = ({
             >
                 End Tournament
             </Button>
+
+            {/* Export Matches Component */}
+            <ExportMatches />
         </div>
     );
 };

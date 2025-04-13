@@ -6,11 +6,19 @@ import TournamentSidebar from "../Navbar/TournamentSidebar.jsx";
 import SlidingWindow from "../Navbar/SlidingWindow.jsx";
 import { fetchAllMatches, fetchMatchesByTournament } from "@/utils/functions/dataUtils.js";
 import WindowView from "./Viewer/WindowView.jsx";
-import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx"; // Import the new modal
+import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { Button } from "@/components/ui/button.jsx";
 
-const LiveTournament = ({ setupProperties, tournamentId }) => {
+const LiveTournament = ({ tournamentConfig, tournamentId }) => {
+    // Extract setupProperties from tournamentConfig if it exists, otherwise default to empty array.
+    const setupProperties = tournamentConfig?.setupProperties || [];
+
+    // Log setupProperties whenever they change.
+    useEffect(() => {
+        console.log("Setup Properties in LiveTournament:", setupProperties);
+    }, [setupProperties]);
+
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -22,6 +30,11 @@ const LiveTournament = ({ setupProperties, tournamentId }) => {
     useEffect(() => {
         fetchMatches();
     }, [tournamentId]);
+
+    // Set the tab title on mount.
+    useEffect(() => {
+        document.title = "Tournament Live";
+    }, []);
 
     const fetchMatches = async () => {
         setLoading(true);
@@ -40,11 +53,6 @@ const LiveTournament = ({ setupProperties, tournamentId }) => {
             setLoading(false);
         }
     };
-
-    // Set the tab title on mount.
-    useEffect(() => {
-        document.title = "Tournament Live";
-    }, []);
 
     const updateMatch = async (updatedMatch) => {
         if (!updatedMatch.id) {
@@ -86,10 +94,49 @@ const LiveTournament = ({ setupProperties, tournamentId }) => {
         }
     };
 
+    /**
+     * Compute a unique key based on the two teams playing.
+     */
+    const getMatchKey = (match) => {
+        if (!match.team1 || !match.team2) return null;
+        const team1Id = match.team1.id || match.team1.name;
+        const team2Id = match.team2.id || match.team2.name;
+        const sortedIds = [team1Id, team2Id].sort();
+        return sortedIds.join("-");
+    };
+
+    /**
+     * Check for duplicate matches by match-up.
+     */
+    const checkForDuplicateMatches = () => {
+        const matchupCount = {};
+        matches.forEach((match) => {
+            const key = getMatchKey(match);
+            if (key) {
+                matchupCount[key] = (matchupCount[key] || 0) + 1;
+            }
+        });
+
+        const duplicates = Object.keys(matchupCount).filter((key) => matchupCount[key] > 1);
+        if (duplicates.length > 0) {
+            const totalDuplicates = duplicates.reduce((acc, key) => acc + (matchupCount[key] - 1), 0);
+            console.log(`Found ${totalDuplicates} duplicate match-up(s):`, duplicates);
+        } else {
+            console.log("No duplicate match-ups found.");
+        }
+    };
+
     return (
         <div className="ml-14 w-auto h-screen flex flex-col md:flex-row relative">
             <div className="mb-18 flex-grow flex flex-col overflow-auto px-10 py-4 pr-20">
                 <h1 className="text-2xl font-bold dark:text-white text-center">Live Tournament Matches</h1>
+
+                {/* Button to check for duplicate match-ups */}
+                <div className="flex justify-center my-4">
+                    <Button onClick={checkForDuplicateMatches} variant="outline">
+                        Check Duplicate Match-ups
+                    </Button>
+                </div>
 
                 {/* Display Tournament Setup Properties */}
                 {setupProperties && setupProperties.length > 0 && (
@@ -122,7 +169,7 @@ const LiveTournament = ({ setupProperties, tournamentId }) => {
                     isSidebarOpen ? "text-3xl" : "text-white"
                 }`}
             >
-                {isSidebarOpen ? "" : <RxHamburgerMenu className={"text-3xl"} />}
+                {isSidebarOpen ? "" : <RxHamburgerMenu className="text-3xl" />}
             </Button>
 
             <SlidingWindow
@@ -135,6 +182,7 @@ const LiveTournament = ({ setupProperties, tournamentId }) => {
                         content: (
                             <TournamentSidebar
                                 sortOrder={sortOrder}
+                                setupProperties={setupProperties}
                                 setSortOrder={setSortOrder}
                                 fetchMatches={fetchMatches}
                                 tournamentId={tournamentId}

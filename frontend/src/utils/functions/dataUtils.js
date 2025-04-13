@@ -6,7 +6,7 @@ export async function loadMatchDetails(matchIds) {
     try {
         console.log("Loading match details for match IDs:", matchIds);
         const requests = matchIds.map((id) =>
-            axios.get(`http://localhost:8080/api/match/${id}`)
+            axios.get(`http://localhost:8080/api/matches/${id}`)
         );
         const responses = await Promise.all(requests);
         const matches = responses.map((res) => res.data);
@@ -24,7 +24,7 @@ export async function loadMatchDetails(matchIds) {
  */
 export async function fetchAllMatches() {
     try {
-        const response = await axios.get("http://localhost:8080/api/match");
+        const response = await axios.get("http://localhost:8080/api/matches");
         console.log("Raw match IDs from backend:", response.data);
         const matchIds = response.data; // expecting an array of match ID strings
         const fullMatches = await loadMatchDetails(matchIds);
@@ -96,7 +96,7 @@ export async function fetchTournamentById(tournamentId) {
 export async function updateMatch(matchId, updateData) {
     try {
         console.log(`Updating match with ID: ${matchId} with data:`, updateData);
-        const response = await axios.patch(`http://localhost:8080/api/match/${matchId}`, updateData);
+        const response = await axios.patch(`http://localhost:8080/api/matches/${matchId}`, updateData);
         console.log(`Updated match ${matchId}:`, response.data);
         return response.data;
     } catch (error) {

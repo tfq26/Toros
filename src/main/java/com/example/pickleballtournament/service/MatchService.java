@@ -190,4 +190,36 @@ public class MatchService {
             throw e;
         }
     }
+
+    /**
+     * Export matches as PDF.
+     * In a real implementation, generate the PDF using a library such as iText.
+     */
+    public byte[] exportMatchesPdf() {
+        try {
+            List<Match> matches = matchRepository.findAll();
+            // For demonstration, we generate a simple string with match count.
+            String pdfContent = "Exported PDF content for " + matches.size() + " match(es).";
+            return pdfContent.getBytes();
+        } catch (Exception e) {
+            log.error("Error exporting matches as PDF: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * Export matches as an Excel file.
+     * In a real implementation, generate the Excel file using a library such as Apache POI.
+     */
+    public byte[] exportMatchesExcel() {
+        try {
+            List<Match> matches = matchRepository.findAll();
+            // For demonstration, we generate a simple string with match count.
+            String excelContent = "Exported Excel content for " + matches.size() + " match(es).";
+            return excelContent.getBytes();
+        } catch (Exception e) {
+            log.error("Error exporting matches as Excel: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
 }

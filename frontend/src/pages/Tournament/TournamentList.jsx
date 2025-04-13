@@ -1,8 +1,15 @@
-import { useState, useEffect } from "react";
+// TournamentList.jsx
+import  { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { fetchTournamentById } from "@/utils/functions/dataUtils.js"; // Import the helper
-import { convertDate } from "@/utils/functions/dataUtils.js"; // Import the convertDate helper
+import { fetchTournamentById } from "@/utils/functions/dataUtils.js";
+import { convertDate } from "@/utils/functions/dataUtils.js";
+import {
+    ContextMenu,
+    ContextMenuTrigger,
+    ContextMenuContent,
+    ContextMenuItem,
+} from "@/components/ui/context-menu";
 
 const TournamentList = () => {
     const [tournaments, setTournaments] = useState([]); // Always an array
@@ -10,12 +17,14 @@ const TournamentList = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    /** ✅ Fetch Active Tournament(s) */
+    // Fetch Active Tournament(s)
     useEffect(() => {
         const fetchTournaments = async () => {
             setLoading(true);
             try {
-                const response = await axios.get("http://localhost:8080/api/tournament/activeTournament");
+                const response = await axios.get(
+                    "http://localhost:8080/api/tournament/activeTournament"
+                );
                 let data = response.data;
                 console.log("Raw active tournament response:", data);
 
@@ -46,9 +55,30 @@ const TournamentList = () => {
         fetchTournaments();
     }, []);
 
-    /** ✅ Navigate to Selected Tournament */
+    // Navigate to Selected Tournament
     const handleSelectTournament = (tournamentId) => {
         navigate(`/tournament/live/${tournamentId}`);
+    };
+
+    // Handler to end a tournament by right-click context menu
+    const handleEndTournament = async (tournamentId) => {
+        try {
+            // Send a request to end the tournament.
+            // Assumes API endpoint accepts a tournamentId in the request body.
+            const response = await axios.post(
+                "http://localhost:8080/api/tournament/end",
+                { tournamentId }
+            );
+            if (response.status === 200) {
+                console.log("Tournament ended successfully:", tournamentId);
+                // Refresh the tournament list (or update state accordingly)
+                window.location.reload();
+            } else {
+                console.error("Failed to end tournament");
+            }
+        } catch (error) {
+            console.error("Error ending tournament:", error);
+        }
     };
 
     // Set the tab title on mount.
@@ -90,18 +120,32 @@ const TournamentList = () => {
                 ) : (
                     <ul className="mt-4 space-y-3">
                         {tournaments.map((tournament) => (
-                            <li
-                                key={tournament.id}
-                                className="border p-4 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-800 dark:bg-emerald-900 transition duration-200"
-                                onClick={() => handleSelectTournament(tournament.id)}
-                            >
-                                <p className="text-lg font-semibold">{tournament.name}</p>
-                                <p className="text-gray-600 dark:text-gray-300">ID: {tournament.id}</p>
-                                <p className="text-gray-600 dark:text-gray-300">
-                                    Started: {convertDate(tournament.startTime, navigator.language)}
-                                </p>
-                                <p className="text-gray-600 dark:text-gray-300">Status: {tournament.status}</p>
-                            </li>
+                            <ContextMenu key={tournament.id}>
+                                <ContextMenuTrigger asChild>
+                                    <li
+                                        className="border p-4 rounded-lg cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-800 dark:bg-emerald-900 transition duration-200"
+                                        onClick={() => handleSelectTournament(tournament.id)}
+                                    >
+                                        <p className="text-lg font-semibold">
+                                            {tournament.name}
+                                        </p>
+                                        <p className="text-gray-600 dark:text-gray-300">
+                                            ID: {tournament.id}
+                                        </p>
+                                        <p className="text-gray-600 dark:text-gray-300">
+                                            Started: {convertDate(tournament.startTime, navigator.language)}
+                                        </p>
+                                        <p className="text-gray-600 dark:text-gray-300">
+                                            Status: {tournament.status}
+                                        </p>
+                                    </li>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent>
+                                    <ContextMenuItem onSelect={() => handleEndTournament(tournament.id)}>
+                                        End Tournament
+                                    </ContextMenuItem>
+                                </ContextMenuContent>
+                            </ContextMenu>
                         ))}
                     </ul>
                 )}

@@ -20,33 +20,30 @@ public class Team {
     private int wins; // Number of matches won
     private int losses; // Number of matches lost
     private int matchesPlayed; // Number of matches played
-    // Remove Lombok-generated setter for skillLevel so we can provide a custom one.
     @Setter(AccessLevel.NONE)
-    private int skillLevel; // Skill level as an integer (1-3)
+    private Integer skillLevel; // Skill level as an integer (1-3)
     private Integer placement; // Placement in the tournament
     private int totalPoints; // Tracks total points won by the team
     private String tournamentId; // Reference to the tournament the team is registered in
-    private String status; // e.g., "Registered", "Checked In", "Withdrawn", "Player 1 Withdrawn", "Player 2 Withdrawn", "Player 1 Checked In", "Player 2 Checked In", "Player 1 Not Registered", "Player 2 Not Registered"
+    private String status; // e.g., "Registered", "Checked In", etc.
     private String matchId; // Reference to the match the team is currently playing in
     private String matchStatus; // e.g., "Scheduled", "In Progress", "Completed"
 
     // Default constructor
-    public Team() {}
+    public Team() {
+        // Optionally initialize default values
+    }
 
-    // Constructor with parameters and null safety checks
+    // Parameterized constructor that uses the custom setters to ensure recalculation
     public Team(String name, Player player1, Player player2) {
         this.name = name;
-        this.player1 = player1;
-        this.player2 = player2;
         this.teamScore = 0;
         this.wins = 0;
         this.losses = 0;
         this.matchesPlayed = 0;
         this.totalPoints = 0;
-        // Use safe values for players' skill levels: default to 0 if null
-        int p1Skill = (player1 != null && player1.getSkillLevel() != null) ? player1.getSkillLevel() : 0;
-        int p2Skill = (player2 != null && player2.getSkillLevel() != null) ? player2.getSkillLevel() : 0;
-        this.skillLevel = calculateSkillLevel(p1Skill, p2Skill);
+        setPlayer1(player1);
+        setPlayer2(player2);
     }
 
     /**
@@ -55,9 +52,9 @@ public class Team {
      */
     private int calculateSkillLevel(int player1Skill, int player2Skill) {
         double averageSkill = (player1Skill + player2Skill) / 2.0;
-        if (averageSkill <= 1.5) {
+        if (averageSkill <= 1) {
             return 1; // Beginner
-        } else if (averageSkill <= 2.5) {
+        } else if (averageSkill <= 2) {
             return 2; // Intermediate
         } else {
             return 3; // Advanced
@@ -65,8 +62,32 @@ public class Team {
     }
 
     /**
-     * Custom setter for skillLevel that can accept either an Integer or a String.
-     * If a string is provided, it converts "Beginner" to 1, "Intermediate" to 2, and "Advanced" to 3.
+     * Override setter for player1. When setting a player, recalculate the team's skill level.
+     */
+    public void setPlayer1(Player player1) {
+        this.player1 = player1;
+        recalcSkillLevel();
+    }
+
+    /**
+     * Override setter for player2. When setting a player, recalculate the team's skill level.
+     */
+    public void setPlayer2(Player player2) {
+        this.player2 = player2;
+        recalcSkillLevel();
+    }
+
+    /**
+     * Recalculate the team's skill level based on player1 and player2's skill levels.
+     */
+    private void recalcSkillLevel() {
+        int p1Skill = (player1 != null && player1.getSkillLevel() != null) ? player1.getSkillLevel() : 0;
+        int p2Skill = (player2 != null && player2.getSkillLevel() != null) ? player2.getSkillLevel() : 0;
+        this.skillLevel = calculateSkillLevel(p1Skill, p2Skill);
+    }
+
+    /**
+     * Custom setter for skillLevel that accepts either an Integer or String.
      */
     public void setSkillLevel(Object value) {
         if (value instanceof String) {
@@ -110,7 +131,7 @@ public class Team {
     public void incrementWins() {
         this.wins++;
         this.matchesPlayed++;
-        updateSkillLevel();
+        recalcSkillLevel();
     }
 
     /**
@@ -122,28 +143,11 @@ public class Team {
     }
 
     /**
-     * Update the team's skill level dynamically based on performance.
-     * For example, if wins >= 8, set to Advanced (3); if wins >= 4, set to Intermediate (2); otherwise, Beginner (1).
-     */
-    private void updateSkillLevel() {
-        if (wins >= 8) {
-            this.skillLevel = 3; // Advanced
-        } else if (wins >= 4) {
-            this.skillLevel = 2; // Intermediate
-        } else {
-            this.skillLevel = 1; // Beginner
-        }
-    }
-
-    /**
      * Safely set players and update the skill level.
      */
     public void setPlayers(Player player1, Player player2) {
-        this.player1 = player1;
-        this.player2 = player2;
-        int p1Skill = (player1 != null && player1.getSkillLevel() != null) ? player1.getSkillLevel() : 0;
-        int p2Skill = (player2 != null && player2.getSkillLevel() != null) ? player2.getSkillLevel() : 0;
-        this.skillLevel = calculateSkillLevel(p1Skill, p2Skill);
+        setPlayer1(player1);
+        setPlayer2(player2);
     }
 
     /**

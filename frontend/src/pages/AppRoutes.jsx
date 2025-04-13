@@ -21,10 +21,9 @@ function AppRoutes() {
     const [tournamentConfig, setTournamentConfig] = useState(null);
     const navigate = useNavigate();
 
-    // Optionally, if tournamentSetupComplete changes, you could automatically redirect:
+    // Optionally, if tournamentSetupComplete changes, automatically redirect after a delay.
     useEffect(() => {
         if (tournamentSetupComplete) {
-            // For example, wait 5 seconds then navigate to the tournament list:
             const timer = setTimeout(() => {
                 navigate("/tournament/list");
             }, 5000);
@@ -61,6 +60,7 @@ function AppRoutes() {
                             path="/tournament/setup"
                             element={
                                 <Page title="Tournament Setup">
+                                    {/* When setup is complete, onSetupComplete is called with the config */}
                                     <TournamentSetup
                                         onSetupComplete={(config) => {
                                             setTournamentSetupComplete(true);
@@ -107,6 +107,7 @@ function AppRoutes() {
                             path="/tournament/live/:tournamentId"
                             element={
                                 <Page title="Live Tournament">
+                                    {/* Pass the tournamentConfig (which includes setupProperties) down */}
                                     <LiveTournament
                                         setTournamentSetupComplete={setTournamentSetupComplete}
                                         tournamentConfig={tournamentConfig}

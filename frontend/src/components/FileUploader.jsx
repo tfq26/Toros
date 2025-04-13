@@ -4,7 +4,7 @@ import * as XLSX from "xlsx";
 import { Label } from "@/components/ui/label.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { toast } from "sonner"; // or remove if you later switch to a centralized notification provider
-import DialogProvider from "../../utils/DialogProvider.jsx"; // Adjust the path as needed
+import DialogProvider from "../utils/DialogProvider.jsx"; // Adjust the path as needed
 
 const DEFAULT_VALUES = {
     name: "Unknown Player",

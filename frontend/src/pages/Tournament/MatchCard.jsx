@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { formatTo12HourTime, convertLevel, getEmojiForRank } from "@/utils/functions/playerUtils.js";
 import ScoreModal from "../Modals/ScoreModal.jsx";
+import {Button} from "@/components/ui/button.jsx";
 
 const MatchCard = ({ match, updateMatch }) => {
     const [isModalOpen, setModalOpen] = useState(false);
+    const [isInspected, setIsInspected] = useState(false);
 
     const openModal = () => {
         setModalOpen(true);
@@ -22,7 +24,7 @@ const MatchCard = ({ match, updateMatch }) => {
                 ...match,
                 status: newStatus,
             };
-            updateMatch(updatedMatch); // ✅ Call updateMatch with updated match object
+            updateMatch(updatedMatch);
         }
     };
 
@@ -32,14 +34,42 @@ const MatchCard = ({ match, updateMatch }) => {
         closeModal();
     };
 
+    /**
+     * Combine player names for display.
+     * If only player1 exists, return player1 name; if both exist, join with " & ".
+     */
+    const formatTeamPlayers = (team) => {
+        if (!team) return "N/A";
+        const player1Name = team.player1?.name || "N/A";
+        const player2Name = team.player2?.name;
+        return player2Name ? `${player1Name} & ${player2Name}` : player1Name;
+    };
+
+    /**
+     * Get a display string for the team's rank.
+     */
+    const formatTeamRank = (team) => {
+        if (!team) return "N/A";
+        const level = convertLevel(team.skillLevel ?? "N/A");
+        const emoji = getEmojiForRank(level);
+        return `${level} ${emoji}`;
+    };
+
+    const handleInspect = () => {
+        console.log("Inspecting match card:", match);
+        setIsInspected((prev) => !prev);
+    };
+
     return (
-        <div className="p-3 rounded shadow dark:bg-emerald-800 bg-emerald-400 space-y-2">
+        <div
+            className={`p-3 rounded shadow dark:bg-emerald-900 bg-emerald-500 space-y-2 ${isInspected ? "ring-4 ring-blue-500" : ""}`}
+        >
             <div className="flex justify-between items-center">
                 <p className="text-lg font-bold">Match {match.id || "N/A"}</p>
                 <select
                     value={match.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    className="rounded px-2 py-1 bg-white dark:bg-green-900 dark:text-white text-black"
+                    className="rounded px-2 py-1 bg-white dark:bg-emerald-950 dark:text-white text-black"
                 >
                     <option value="Scheduled">Scheduled</option>
                     <option value="In Progress">In Progress</option>
@@ -48,22 +78,30 @@ const MatchCard = ({ match, updateMatch }) => {
             </div>
 
             <div className="space-y-2">
-                <p className="font-bold">Team 1: {match.team1.player1?.name} & {match.team1.player2?.name}</p>
+                <p className="font-bold">Team 1: {formatTeamPlayers(match.team1)}</p>
+                <p>Rank: {formatTeamRank(match.team1)}</p>
+                <p className="font-bold">Team 2: {formatTeamPlayers(match.team2)}</p>
+                <p>Rank: {formatTeamRank(match.team2)}</p>
                 <p>
-                    Rank: {convertLevel(match.team1.player1?.placement ?? "N/A")}{" "}
-                    {getEmojiForRank(convertLevel(match.team1.player1?.placement ?? "N/A"))}
+                    <strong>Score:</strong> {match.team1Score ?? "N/A"} - {match.team2Score ?? "N/A"}
                 </p>
-                <p className="font-bold">Team 2: {match.team2.player1?.name} & {match.team2.player2?.name}</p>
-                <p>
-                    Rank: {convertLevel(match.team2.player1?.placement ?? "N/A")}{" "}
-                    {getEmojiForRank(convertLevel(match.team2.player1?.placement ?? "N/A"))}
-                </p>
-                <p><strong>Score:</strong> {match.team1Score ?? "N/A"} - {match.team2Score ?? "N/A"}</p>
             </div>
 
             <div className="text-sm">
-                <p><strong>Start Time:</strong> {formatTo12HourTime(match.startTime ?? "N/A")}</p>
-                <p><strong>End Time:</strong> {formatTo12HourTime(match.endTime ?? "N/A")}</p>
+                <p>
+                    <strong>Start Time:</strong>{" "}
+                    {formatTo12HourTime(match.startTime ?? "N/A")}
+                </p>
+                <p>
+                    <strong>End Time:</strong>{" "}
+                    {formatTo12HourTime(match.endTime ?? "N/A")}
+                </p>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={handleInspect}>
+                    {isInspected ? "Stop Inspecting" : "Inspect"}
+                </Button>
             </div>
 
             <ScoreModal

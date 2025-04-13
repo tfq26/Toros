@@ -2,20 +2,22 @@ package com.example.pickleballtournament.controller;
 
 import com.example.pickleballtournament.model.Match;
 import com.example.pickleballtournament.request.UpdateMatchRequest;
-import com.example.pickleballtournament.service.LiveTournamentService;
 import com.example.pickleballtournament.service.MatchService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/match")
+@RequestMapping("/api/matches")
 @CrossOrigin(origins = "http://localhost:5173")
 public class MatchController {
 
@@ -80,10 +82,6 @@ public class MatchController {
         try {
             log.info("📥 Received match update request: Match ID={}, Team1Score={}, Team2Score={}, Status={}",
                     id, request.getTeam1Score(), request.getTeam2Score(), request.getStatus());
-            if (request == null) {
-                log.error("❌ Received null request body!");
-                return ResponseEntity.badRequest().body("Invalid JSON request.");
-            }
             String updatedMatchId = matchService.updateMatch(id, request);
             log.info("✅ Match {} updated successfully.", id);
             return ResponseEntity.ok(updatedMatchId);
@@ -98,4 +96,43 @@ public class MatchController {
         }
     }
 
+    /**
+     * Export matches as a PDF file.
+     */
+    @GetMapping("/export/pdf")
+    public ResponseEntity<Resource> exportMatchesPdf() {
+        try {
+            byte[] pdfBytes = matchService.exportMatchesPdf();
+            ByteArrayResource resource = new ByteArrayResource(pdfBytes);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=matches.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(pdfBytes.length)
+                    .body(resource);
+        } catch (Exception e) {
+            log.error("❌ Error exporting matches as PDF: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Export matches as an Excel file.
+     */
+    @GetMapping("/export/excel")
+    public ResponseEntity<Resource> exportMatchesExcel() {
+        try {
+            byte[] excelBytes = matchService.exportMatchesExcel();
+            ByteArrayResource resource = new ByteArrayResource(excelBytes);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=matches.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .contentLength(excelBytes.length)
+                    .body(resource);
+        } catch (Exception e) {
+            log.error("❌ Error exporting matches as Excel: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

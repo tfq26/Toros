@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class PickleballTournamentApplication {
+public class Toros {
 
     public static void main(String[] args) {
-        SpringApplication.run(PickleballTournamentApplication.class, args);
+        SpringApplication.run(Toros.class, args);
     }
 
     @Bean
