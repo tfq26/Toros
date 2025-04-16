@@ -27,25 +27,21 @@ export async function fetchAllMatches() {
         const response = await axios.get("http://localhost:8080/api/matches");
         console.log("Raw match IDs from backend:", response.data);
         const matchIds = response.data; // expecting an array of match ID strings
-        const fullMatches = await loadMatchDetails(matchIds);
-        return fullMatches;
+        return await loadMatchDetails(matchIds);
     } catch (error) {
         console.error("Error fetching all matches:", error);
         return [];
     }
 }
 
-// Fetch matches for a tournament by tournament ID
 export async function fetchMatchesByTournament(tournamentId) {
     try {
-        console.log(`Fetching matches for tournament with ID: ${tournamentId}`);
-        // Call the TournamentController endpoint that returns match IDs for the tournament.
-        // Note: The URL here uses "/tournament/tournament/{tournamentId}" as defined in your controller.
-        const response = await axios.get(`http://localhost:8080/api/tournament/tournament/${tournamentId}`);
-        console.log(`Fetched match IDs for tournament ${tournamentId}:`, response.data);
-        const matchIds = response.data; // expecting an array of match IDs
+        console.log(`Fetching match IDs for tournament with ID: ${tournamentId}`);
+        const matchesResponse = await axios.get(`http://localhost:8080/api/matches/tournament/${tournamentId}`);
+        console.log(`Fetched match IDs for tournament ${tournamentId}:`, matchesResponse.data);
+        const matchIds = matchesResponse.data;
 
-        // Use the existing loadMatchDetails function to get the full match objects.
+        // Use the existing loadMatchDetails function to retrieve full match objects.
         const matches = await loadMatchDetails(matchIds);
         console.log("Fetched full match details:", matches);
         return matches;

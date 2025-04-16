@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import {
@@ -9,7 +9,8 @@ import {
     SelectItem,
 } from "@/components/ui/select.jsx";
 import { savePlayerData, convertLevel } from "@/utils/functions/playerUtils.js";
-import DialogProvider from "../../utils/DialogProvider.jsx"; // Adjust path if needed
+import DialogProvider from "../../utils/DialogProvider.jsx";
+import PropTypes from "prop-types"; // Adjust path if needed
 
 // Helper to return a description for a given skill level.
 const getSkillDescription = (skillLevel) => {
@@ -39,6 +40,7 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
         }
     }, [selectedPlayer]);
 
+    // This function is called when the form is submitted, e.g., by pressing Enter.
     const handleSave = async () => {
         try {
             const formData = {
@@ -65,6 +67,7 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
         }
     };
 
+    // If modal is not open or there is no selected player, render nothing.
     if (!isModalOpen || !selectedPlayer) return null;
 
     return (
@@ -79,7 +82,14 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
             onCancel={onClose}
             confirmText="Save"
         >
-            <div className="grid gap-4">
+            {/* Wrap everything in a form to allow Enter to submit */}
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSave();
+                }}
+                className="grid gap-4"
+            >
                 {/* Name Field */}
                 <div className="flex items-center gap-2">
                     <Label htmlFor="name" className="text-sm font-medium">
@@ -101,6 +111,7 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
                         Skill Level
                     </Label>
                     <Input
+                        id="skillLevel"
                         type="range"
                         min="1"
                         max="3"
@@ -108,6 +119,7 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
                         value={playerSkill}
                         onChange={(e) => setPlayerSkill(Number(e.target.value))}
                         className="w-full"
+                        // The arrow keys should natively adjust the range slider.
                     />
                     <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
                         {getSkillDescription(playerSkill)} ({playerSkill})
@@ -130,31 +142,47 @@ const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlaye
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
 
-            {/* Mobile-only information */}
-            <div className="md:hidden mt-4 space-y-4">
-                <div className="flex items-center gap-3">
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Club Name
-                    </Label>
-                    <p className="text-base text-gray-800 dark:text-gray-100">
-                        {selectedPlayer.clubName || "N/A"}
-                    </p>
+                {/* Mobile-only information */}
+                <div className="md:hidden mt-4 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Club Name
+                        </Label>
+                        <p className="text-base text-gray-800 dark:text-gray-100">
+                            {selectedPlayer.clubName || "N/A"}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Rank
+                        </Label>
+                        <p className="text-base text-gray-800 dark:text-gray-100">
+                            {convertLevel(selectedPlayer.skillLevel)}
+                        </p>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Rank
-                    </Label>
-                    <p className="text-base text-gray-800 dark:text-gray-100">
-                        {convertLevel(selectedPlayer.skillLevel)}
-                    </p>
-                </div>
-            </div>
 
-            {error && <p className="text-sm text-red-500 text-center mt-2">{error}</p>}
+                {error && <p className="text-sm text-red-500 text-center mt-2">{error}</p>}
+            </form>
         </DialogProvider>
     );
+};
+
+PlayerModalUpdated.propTypes = {
+    isModalOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    selectedPlayer: PropTypes.shape({
+        name: PropTypes.string,
+        age: PropTypes.number,
+        email: PropTypes.string,
+        phone: PropTypes.string,
+        teamNumber: PropTypes.number,
+        clubName: PropTypes.string,
+        skillLevel: PropTypes.number,
+        status: PropTypes.string,
+    }),
+    refreshPlayers: PropTypes.func.isRequired,
 };
 
 export default PlayerModalUpdated;

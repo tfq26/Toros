@@ -1,4 +1,4 @@
-import  { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import MatchTableUpdated from "@/pages/Tournament/MatchTableUpdated.jsx";
 import MatchCard from "./MatchCard";
 import {
@@ -8,10 +8,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select.jsx";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button.jsx";
+import {Switch} from "@/components/ui/switch";
+import {Button} from "@/components/ui/button.jsx";
 
-const MatchTabs = ({ matches, sortOrder, refreshMatches, updateMatch }) => {
+const MatchTabs = ({matches, sortOrder, refreshMatches, updateMatch}) => {
     const [selectedTab, setSelectedTab] = useState("all"); // Tracks active tab
     // Toggle view: false = table view, true = card view.
     const [isCardView, setIsCardView] = useState(false);
@@ -48,7 +48,7 @@ const MatchTabs = ({ matches, sortOrder, refreshMatches, updateMatch }) => {
                 <div className="mb-4">
                     <Select value={selectedTab} onValueChange={setSelectedTab}>
                         <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Matches" />
+                            <SelectValue placeholder="Select Matches"/>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Matches</SelectItem>
@@ -89,7 +89,7 @@ const MatchTabs = ({ matches, sortOrder, refreshMatches, updateMatch }) => {
             {isCardView ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {sortedMatches.map((match) => (
-                        <MatchCard key={match.id} match={match} updateMatch={updateMatch} />
+                        <MatchCard key={match.id} match={match} updateMatch={updateMatch}/>
                     ))}
                 </div>
             ) : (

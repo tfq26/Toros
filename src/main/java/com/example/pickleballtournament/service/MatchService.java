@@ -2,17 +2,14 @@ package com.example.pickleballtournament.service;
 
 import com.example.pickleballtournament.model.Match;
 import com.example.pickleballtournament.model.Team;
-import com.example.pickleballtournament.model.Tournament;
+import com.example.pickleballtournament.request.UpdateMatchRequest;
 import com.example.pickleballtournament.repository.MatchRepository;
 import com.example.pickleballtournament.repository.TeamRepository;
-import com.example.pickleballtournament.request.UpdateMatchRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,6 +49,7 @@ public class MatchService {
                 log.error("❌ Team not found with ID: {}", teamId);
                 throw new IllegalArgumentException("Team not found with ID: " + teamId);
             }
+            // Using the Spring Data naming convention to find matches for a team.
             List<Match> matches = matchRepository.findByTeam1_IdOrTeam2_Id(teamId, teamId);
             log.info("✅ Found {} matches for Team ID: {}", matches.size(), teamId);
             return matches.stream()
@@ -76,8 +74,10 @@ public class MatchService {
     /** ✅ Fetch Matches by Tournament ID as a List of Match IDs */
     public List<String> getMatchesByTournamentId(String tournamentId) {
         try {
-            return matchRepository.findAll().stream()
-                    .filter(match -> match.getTournamentId() != null && tournamentId.equals(match.getTournamentId()))
+            // Use the repository query to fetch only the matches that belong to the given tournament.
+            List<Match> matches = matchRepository.findByTournamentId(tournamentId);
+            log.info("✅ Found {} matches for Tournament ID: {}", matches.size(), tournamentId);
+            return matches.stream()
                     .map(Match::getId)
                     .collect(Collectors.toList());
         } catch (Exception e) {
@@ -147,9 +147,6 @@ public class MatchService {
 
             log.info("✅ Match {} updated successfully.", match.getId());
             return match.getId();
-        } catch (IllegalArgumentException e) {
-            log.error("Function updateMatch is throwing an error: {}", e.getMessage(), e);
-            throw e;
         } catch (Exception e) {
             log.error("Function updateMatch is throwing an error: {}", e.getMessage(), e);
             throw e;

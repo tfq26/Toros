@@ -289,7 +289,7 @@ public class TournamentSetupService {
                 match.setCourtNumber(assignedCourt);
                 match.setStartTime(matchStartTime);
                 match.setEndTime(matchEndTime);
-                match.generateCustomId();
+                match.setId(generateSecureId());
                 // Determine match skill level based on the higher skill between the two teams.
                 if (pair[0].getSkillLevel() > pair[1].getSkillLevel()) {
                     match.setMatchSkillLevel(pair[0].getSkillLevelString());

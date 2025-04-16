@@ -77,6 +77,23 @@ public class MatchController {
         }
     }
 
+    /** 🎯 Get Matches by Tournament ID */
+    @GetMapping("/tournament/{tournamentId}")
+    public ResponseEntity<?> getMatchesByTournament(@PathVariable String tournamentId) {
+        try {
+            List<String> matchIds = matchService.getMatchesByTournamentId(tournamentId);
+            if (matchIds.isEmpty()) {
+                log.warn("⚠️ No matches found for Tournament ID: {}", tournamentId);
+                return ResponseEntity.ok(List.of());
+            }
+            return ResponseEntity.ok(matchIds);
+        } catch (Exception e) {
+            log.error("❌ Error fetching matches for Tournament ID {}: {}", tournamentId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to fetch matches for tournament.");
+        }
+    }
+
     /** 🎯 Update Match */
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     public ResponseEntity<?> updateMatch(@PathVariable String id, @RequestBody UpdateMatchRequest request) {
