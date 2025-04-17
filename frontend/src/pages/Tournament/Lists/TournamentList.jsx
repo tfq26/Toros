@@ -1,30 +1,23 @@
-// TournamentList.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth0 } from "@auth0/auth0-react";
 import { convertDate } from "@/utils/functions/dataUtils.js";
-import {
-    ContextMenu,
-    ContextMenuTrigger,
-    ContextMenuContent,
-    ContextMenuItem,
-} from "@/components/ui/context-menu.jsx";
-import RegisterModal from "../../Modals/registerModal.jsx"; // ← placeholder you'll build
+import RegisterModal from "../../Modals/registerModal.jsx";
+import { Button } from "@/components/ui/button.jsx";
 
 const TournamentList = () => {
     const [tournaments, setTournaments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [registeredIds, setRegisteredIds] = useState([]);
 
-    const { isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
+    const { isAuthenticated, loginWithRedirect, getAccessTokenSilently, user } = useAuth0();
     const navigate = useNavigate();
 
-    // Register‐modal state
     const [isRegisterOpen, setIsRegisterOpen] = useState(false);
     const [selectedTournament, setSelectedTournament] = useState(null);
 
-    // Fetch active tournaments
     useEffect(() => {
         const fetchTournaments = async () => {
             setLoading(true);
@@ -39,25 +32,29 @@ const TournamentList = () => {
                 setLoading(false);
             }
         };
+
+        const fetchRegistrations = async () => {
+            if (isAuthenticated && user?.sub) {
+                try {
+                    const token = await getAccessTokenSilently();
+                    const res = await axios.get(`http://localhost:8080/api/registration/user/${user.sub}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    setRegisteredIds(res.data.map((reg) => reg.tournamentId));
+                } catch (err) {
+                    console.error("Error fetching registration info:", err);
+                }
+            }
+        };
+
         fetchTournaments();
-    }, []);
+        fetchRegistrations();
+    }, [isAuthenticated]);
 
     const handleSelect = (id) => navigate(`/tournament/live/${id}`);
 
-    const handleEnd = async (id) => {
-        try {
-            await axios.post("http://localhost:8080/api/tournament/end", { tournamentId: id });
-            window.location.reload();
-        } catch (err) {
-            console.error("Error ending tournament:", err);
-        }
-    };
-
     const openRegister = (tourney) => {
-        if (!isAuthenticated) {
-            // prompt login
-            return loginWithRedirect();
-        }
+        if (!isAuthenticated) return loginWithRedirect();
         setSelectedTournament(tourney);
         setIsRegisterOpen(true);
     };
@@ -67,10 +64,8 @@ const TournamentList = () => {
         setSelectedTournament(null);
     };
 
-    // (After you implement the modal you can call a callback to refresh)
     const onRegistered = () => {
         closeRegister();
-        // Optionally refetch your tournaments or change state
     };
 
     useEffect(() => {
@@ -110,47 +105,43 @@ const TournamentList = () => {
                     </div>
                 ) : (
                     <ul className="mt-4 space-y-3">
-                        {tournaments.map((t) => (
-                            <ContextMenu key={t.id}>
-                                <ContextMenuTrigger asChild>
-                                    <li className="border p-4 rounded-lg transition dark:bg-emerald-950 hover:bg-emerald-100 dark:hover:bg-emerald-900">
-                                        <div onClick={() => handleSelect(t.id)}>
-                                            <p className="text-lg font-semibold">{t.name}</p>
-                                            <p className="text-gray-600 dark:text-gray-300">
-                                                ID: {t.id}
-                                            </p>
-                                            <p className="text-gray-600 dark:text-gray-300">
-                                                Started: {convertDate(t.startTime, navigator.language)}
-                                            </p>
-                                        </div>
-                                        <div className="mt-3 flex gap-2">
-                                            <button
-                                                onClick={() => openRegister(t)}
-                                                className="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded"
-                                            >
-                                                Register
-                                            </button>
-                                            <button
-                                                onClick={() => handleSelect(t.id)}
-                                                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                                            >
-                                                View
-                                            </button>
-                                        </div>
-                                    </li>
-                                </ContextMenuTrigger>
-                                <ContextMenuContent>
-                                    <ContextMenuItem onSelect={() => handleEnd(t.id)}>
-                                        End Tournament
-                                    </ContextMenuItem>
-                                </ContextMenuContent>
-                            </ContextMenu>
-                        ))}
+                        {tournaments.map((t) => {
+                            const isRegistered = registeredIds.includes(t.id);
+                            return (
+                                <li
+                                    key={t.id}
+                                    className="border p-4 rounded-lg transition dark:bg-emerald-950 hover:bg-emerald-100 dark:hover:bg-emerald-900"
+                                >
+                                    <div onClick={() => handleSelect(t.id)} className="cursor-pointer">
+                                        <p className="text-lg font-semibold">{t.name}</p>
+                                        <p className="text-gray-600 dark:text-gray-300">ID: {t.id}</p>
+                                        <p className="text-gray-600 dark:text-gray-300">
+                                            Started: {convertDate(t.startTime, navigator.language)}
+                                        </p>
+                                    </div>
+                                    <div className="mt-3 flex gap-2">
+                                        <Button
+                                            onClick={() => openRegister(t)}
+                                            className="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded disabled:bg-gray-400"
+                                            disabled={isRegistered}
+                                            title={isRegistered ? "Already registered" : "Click to register"}
+                                        >
+                                            {isRegistered ? "Registered" : "Register"}
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleSelect(t.id)}
+                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                                        >
+                                            View
+                                        </Button>
+                                    </div>
+                                </li>
+                            );
+                        })}
                     </ul>
                 )}
             </div>
 
-            {/* Register Modal (you’ll implement it next) */}
             {isRegisterOpen && selectedTournament && (
                 <RegisterModal
                     isOpen={isRegisterOpen}

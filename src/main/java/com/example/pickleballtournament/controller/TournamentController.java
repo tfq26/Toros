@@ -151,4 +151,28 @@ public class TournamentController {
         }
         return ResponseEntity.ok(tournaments);
     }
+
+    /** 🎯 Get Registered and Unregistered Tournaments for a User */
+    @GetMapping("/status/{userId}")
+    public ResponseEntity<Map<String, List<Tournament>>> getUserTournamentStatus(@PathVariable String userId) {
+        try {
+            List<Tournament> allTournaments = tournamentService.getTournaments(true);
+            List<Tournament> registered = tournamentService.getTournamentsForUser(userId);
+
+            // Filter out registered ones to get unregistered
+            List<Tournament> unregistered = allTournaments.stream()
+                    .filter(t -> registered.stream().noneMatch(r -> r.getId().equals(t.getId())))
+                    .toList();
+
+            Map<String, List<Tournament>> response = Map.of(
+                    "registered", registered,
+                    "unregistered", unregistered
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("❌ Failed to get tournament status for user {}: {}", userId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of());
+        }
+    }
 }

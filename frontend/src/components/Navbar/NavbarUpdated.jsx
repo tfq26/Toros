@@ -24,7 +24,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet.jsx";
 import useDevTools from "@/pages/DevTools/DevTools.jsx";
-import { NavbarAuth } from "../../pages/Auth/NavbarAuth.jsx"; // adjust path as needed
+import { NavbarAuth } from "../../pages/Auth/NavbarAuth.jsx";
 import { VscTools } from "react-icons/vsc";
 
 // Default menu data
@@ -78,18 +78,13 @@ export function NavbarUpdated({
         <a
             ref={ref}
             href={item.url}
-            className="flex flex-col gap-6 rounded-md w-fit leading-normal no-underline transition-colors outline-none select-none hover:bg-muted hover:text-accent-foreground"
+            className="flex flex-col gap-1 rounded-md w-full leading-normal no-underline transition-colors outline-none select-none hover:bg-muted hover:text-accent-foreground"
             {...props}
         >
-            {item.icon && <div className="text-foreground">{item.icon}</div>}
-            <div>
-                <div className="flex text-sm font-semibold p-2">{item.title}</div>
-                {item.description && (
-                    <p className="flex text-sm leading-normal text-muted-foreground">
-                        {item.description}
-                    </p>
-                )}
-            </div>
+            <div className="px-2 py-1 text-sm font-semibold">{item.title}</div>
+            {item.description && (
+                <p className="px-2 pb-2 text-xs text-muted-foreground">{item.description}</p>
+            )}
         </a>
     ));
     SubMenuLink.displayName = "SubMenuLink";
@@ -104,21 +99,23 @@ export function NavbarUpdated({
 
     const renderDesktopMenuItem = (item, index) =>
         item.items ? (
-            <NavigationMenuItem key={`${item.title}-${index}`}>
+            <NavigationMenuItem key={`${item.title}-${index}`} className={'relative'}>
                 <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-popover text-popover-foreground space-y-4 p-4">
-                    {item.items.map((sub, i) => (
-                        <NavigationMenuLink asChild key={i} className="w-80">
-                            <SubMenuLink item={sub} />
-                        </NavigationMenuLink>
-                    ))}
+                <NavigationMenuContent className="absolute top-full left-0 bg-popover text-popover-foreground mt-2 p-2 rounded-md shadow-lg z-50">
+                    <div className="grid gap-2 w-fit">
+                        {item.items.map((sub, i) => (
+                            <NavigationMenuLink asChild key={i}>
+                                <SubMenuLink item={sub} />
+                            </NavigationMenuLink>
+                        ))}
+                    </div>
                 </NavigationMenuContent>
             </NavigationMenuItem>
         ) : (
             <NavigationMenuItem key={`${item.title}-${index}`}>
                 <NavigationMenuLink
                     href={item.url}
-                    className="group inline-flex h-10 items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground"
+                    className="inline-flex h-10 items-center justify-center rounded-md px-2 py-2 text-sm font-medium hover:bg-muted hover:text-accent-foreground"
                 >
                     {item.title}
                 </NavigationMenuLink>
@@ -146,11 +143,14 @@ export function NavbarUpdated({
     return (
         <header className="w-full top-0 z-50">
             <nav className="flex items-center justify-between px-4 py-2">
+                {/* Logo */}
                 <div className="flex items-center gap-2">
                     <a href={logo.url} className="flex items-center gap-2">
                         <img src={logoSrc} alt={logo.alt} className="h-8" />
                     </a>
                 </div>
+
+                {/* Desktop Menu */}
                 <div className="hidden md:flex items-center gap-6">
                     <NavigationMenu>
                         <NavigationMenuList>
@@ -166,6 +166,8 @@ export function NavbarUpdated({
                         )}
                     </div>
                 </div>
+
+                {/* Mobile Menu */}
                 <div className="md:hidden flex items-center">
                     <Sheet>
                         <SheetTrigger asChild>
@@ -222,7 +224,7 @@ NavbarUpdated.propTypes = {
                     icon: PropTypes.node,
                     description: PropTypes.string,
                 })
-            ).isRequired,
+            ),
         })
     ),
 };
