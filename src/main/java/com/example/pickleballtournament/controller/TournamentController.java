@@ -3,13 +3,16 @@ package com.example.pickleballtournament.controller;
 import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.request.TournamentSetupRequest;
 import com.example.pickleballtournament.service.TournamentSetupService;
-import com.example.pickleballtournament.service.LiveTournamentService;
+import com.example.pickleballtournament.service.TournamentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -19,12 +22,12 @@ import java.util.Optional;
 public class TournamentController {
 
     private final TournamentSetupService tournamentSetupService;
-    private final LiveTournamentService liveTournamentService;
+    private final TournamentService tournamentService;
 
     public TournamentController(TournamentSetupService tournamentSetupService,
-                                LiveTournamentService liveTournamentService){
+                                TournamentService tournamentService){
         this.tournamentSetupService = tournamentSetupService;
-        this.liveTournamentService = liveTournamentService;
+        this.tournamentService = tournamentService;
     }
 
     /** 🎯 Setup Tournament with Extended Properties */
@@ -71,7 +74,7 @@ public class TournamentController {
     /** 🎯 Get Tournament by ID */
     @GetMapping("/{tournamentId}")
     public ResponseEntity<?> getTournamentById(@PathVariable String tournamentId) {
-        Optional<Tournament> tournamentOpt = liveTournamentService.getTournamentById(tournamentId);
+        Optional<Tournament> tournamentOpt = tournamentService.getTournamentById(tournamentId);
         if (tournamentOpt.isPresent()) {
             log.info("✅ Found tournament: {}", tournamentOpt.get().getName());
             return ResponseEntity.ok(tournamentOpt.get());
@@ -85,7 +88,7 @@ public class TournamentController {
     @PostMapping("/end")
     public ResponseEntity<String> endTournament() {
         try {
-            liveTournamentService.endTournament();
+            tournamentService.endTournament();
             log.info("🏁 Live tournament has been ended.");
             return ResponseEntity.ok("Tournament ended successfully.");
         } catch (Exception e) {
@@ -94,11 +97,55 @@ public class TournamentController {
         }
     }
 
+    /** 🎯 Get only the tournaments the current user is registered in */
+    @GetMapping("/registered")
+    public ResponseEntity<List<Tournament>> getRegisteredTournaments(
+            @AuthenticationPrincipal JwtAuthenticationToken authToken) {
+        String userId = authToken.getName();  // the Auth0 user ID (sub)
+        List<Tournament> list = tournamentService.getTournamentsForUser(userId);
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Map<String, String> payload) {
+        try {
+            String tournamentId = payload.get("tournamentId");
+            String userId = payload.get("userId");
+
+            if (tournamentId == null || userId == null) {
+                throw new IllegalArgumentException("Missing tournamentId or userId");
+            }
+
+            Tournament updated = tournamentService.register(tournamentId, userId);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalStateException e) {
+            log.warn("⚠️ Registration failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<Tournament>> getActiveTournaments() {
+        List<Tournament> list = tournamentService.getTournaments(true);
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(list);
+    }
+
     /** 🎯 Get All Tournaments */
     @GetMapping("/all")
     public ResponseEntity<List<Tournament>> getAllTournaments() {
-        List<Tournament> tournaments = liveTournamentService.getTournaments(true);
-        tournaments.addAll(liveTournamentService.getTournaments(false));
+        List<Tournament> tournaments = tournamentService.getTournaments(true);
+        tournaments.addAll(tournamentService.getTournaments(false));
         if (tournaments.isEmpty()) {
             log.info("📂 No tournaments found.");
         }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Layout from "./pages/Layout.jsx";
-import AppRoutes from "./pages/AppRouting.jsx";
+import AppRoutes from "./pages/AppRoutes.jsx";
 import "./index.css";
 import Background from "@/assets/Background.jsx";
 

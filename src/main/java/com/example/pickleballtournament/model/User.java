@@ -37,4 +37,5 @@ public class User {
 
     private String role = "USER"; // Default role
     private boolean enabled = true; // Account enabled by default
+    private Player playerProfile; // Optional player profile
 }

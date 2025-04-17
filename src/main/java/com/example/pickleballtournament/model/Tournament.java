@@ -44,5 +44,5 @@ public class Tournament {
     private List<String> teams; // Stores team IDs
     private List<String> matches; // Stores match IDs
     private List<String> finalPlacements; // Final ranking after tournament completion
-
+    private List<String> players;
 }
