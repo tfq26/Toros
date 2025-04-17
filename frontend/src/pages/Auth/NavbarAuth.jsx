@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
     Sheet,
@@ -7,11 +8,20 @@ import {
     SheetContent,
     SheetHeader,
     SheetTitle,
+    SheetDescription,
 } from "@/components/ui/sheet";
 import { FaRegUserCircle } from "react-icons/fa";
 
 export function NavbarAuth() {
-    const { isAuthenticated, isLoading, user, loginWithRedirect, logout } = useAuth0();
+    const {
+        isAuthenticated,
+        isLoading,
+        user,
+        loginWithRedirect,
+        logout,
+    } = useAuth0();
+
+    const navigate = useNavigate();
 
     if (isLoading) return null;
 
@@ -22,18 +32,38 @@ export function NavbarAuth() {
                     <FaRegUserCircle size={20} />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="md:hidden">
+
+            <SheetContent side="right" aria-describedby="navbar-auth-sheet-desc">
                 <SheetHeader>
                     <SheetTitle>My Account</SheetTitle>
+                    <SheetDescription id="navbar-auth-sheet-desc">
+                        {isAuthenticated
+                            ? `Signed in as ${user.name}`
+                            : "Sign in or sign up to access your account"}
+                    </SheetDescription>
                 </SheetHeader>
+
                 <div className="p-4 space-y-4">
                     {isAuthenticated ? (
                         <>
                             <div className="text-lg font-medium">{user.name}</div>
+
+                            {/* Profile button */}
                             <Button
                                 variant="outline"
                                 className="w-full"
-                                onClick={() => logout({ returnTo: window.location.origin })}
+                                onClick={() => navigate("/profile")}
+                            >
+                                View Profile
+                            </Button>
+
+                            {/* Logout button */}
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() =>
+                                    logout({ returnTo: window.location.origin })
+                                }
                             >
                                 Logout
                             </Button>

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar.jsx";
 import Home from "./Home.jsx";
 import Players from "./Players/Players.jsx";
-import TournamentList from "./Tournament/TournamentList.jsx";
+import ProfilePage from "./Profile/ProfilePage.jsx";              // ← import the profile page
 import TournamentSetup from "./Setup/TournamentSetup.jsx";
-import TournamentSetupSuccess from "./Setup/TournamentSetupSuccess.jsx";
-import TournamentBracket from "./Standings/TeamStandings.jsx";
+import TournamentSetupSuccess from "./Setup/Pages/SuccessPage.jsx";
+import TournamentList from "./Tournament/Lists/TournamentList.jsx"; // Used for "My Tournaments"
 import LiveTournament from "./Tournament/LiveTournament.jsx";
 import ErrorPage from "./Error.jsx";
 import LoginPage from "./Auth/LoginUpdated.jsx";
@@ -16,16 +16,21 @@ import WindowView from "./Tournament/Viewer/WindowView.jsx";
 import { NavbarUpdated } from "@/components/Navbar/NavbarUpdated.jsx";
 import Page from "./Page.jsx";
 
+// Placeholder components for pages you will build later
+const News = () => <div className="p-6 text-2xl">News Placeholder</div>;
+const Explore = () => <div className="p-6 text-2xl">Explore Placeholder</div>;
+const FindTournaments = () => <div className="p-6 text-2xl">Find Tournaments Placeholder</div>;
+
 function AppRoutes() {
     const [tournamentSetupComplete, setTournamentSetupComplete] = useState(false);
     const [tournamentConfig, setTournamentConfig] = useState(null);
     const navigate = useNavigate();
 
-    // Optionally, if tournamentSetupComplete changes, automatically redirect after a delay.
+    // Redirect after tournament setup is complete.
     useEffect(() => {
         if (tournamentSetupComplete) {
             const timer = setTimeout(() => {
-                navigate("/tournament/list");
+                navigate("/tournament/my");
             }, 5000);
             return () => clearTimeout(timer);
         }
@@ -34,9 +39,6 @@ function AppRoutes() {
     return (
         <SidebarProvider>
             <div className="flex h-screen w-screen">
-                {/* Persistent Navigation */}
-                <NavbarUpdated />
-
                 {/* Main Content Area for Routing */}
                 <main className="flex-1 overflow-y-auto">
                     <Routes>
@@ -48,6 +50,16 @@ function AppRoutes() {
                                 </Page>
                             }
                         />
+
+                        <Route
+                            path="/news"
+                            element={
+                                <Page title="News">
+                                    <News />
+                                </Page>
+                            }
+                        />
+
                         <Route
                             path="/players"
                             element={
@@ -56,11 +68,30 @@ function AppRoutes() {
                                 </Page>
                             }
                         />
+
+                        <Route
+                            path="/profile"
+                            element={
+                                <Page title="My Profile">
+                                    <ProfilePage />
+                                </Page>
+                            }
+                        />
+
+                        <Route
+                            path="/explore/*"
+                            element={
+                                <Page title="Explore">
+                                    <Explore />
+                                </Page>
+                            }
+                        />
+
+                        {/* Tournament Section */}
                         <Route
                             path="/tournament/setup"
                             element={
                                 <Page title="Tournament Setup">
-                                    {/* When setup is complete, onSetupComplete is called with the config */}
                                     <TournamentSetup
                                         onSetupComplete={(config) => {
                                             setTournamentSetupComplete(true);
@@ -71,6 +102,7 @@ function AppRoutes() {
                                 </Page>
                             }
                         />
+
                         <Route
                             path="/tournament/success"
                             element={
@@ -79,14 +111,47 @@ function AppRoutes() {
                                 </Page>
                             }
                         />
+
+                        <Route
+                            path="/tournament/my"
+                            element={
+                                <Page title="My Tournaments">
+                                    <TournamentList />
+                                </Page>
+                            }
+                        />
+
+                        <Route
+                            path="/tournament/find"
+                            element={
+                                <Page title="Find Tournaments">
+                                    <FindTournaments />
+                                </Page>
+                            }
+                        />
+
                         <Route
                             path="/bracket"
                             element={
                                 <Page title="Bracket">
-                                    <TournamentBracket />
+                                    {/* You can repurpose TournamentBracket if needed */}
+                                    <TournamentList />
                                 </Page>
                             }
                         />
+
+                        <Route
+                            path="/tournament/live/:tournamentId"
+                            element={
+                                <Page title="Live Tournament">
+                                    <LiveTournament
+                                        setTournamentSetupComplete={setTournamentSetupComplete}
+                                        tournamentConfig={tournamentConfig}
+                                    />
+                                </Page>
+                            }
+                        />
+
                         <Route
                             path="/test-matches"
                             element={
@@ -95,26 +160,7 @@ function AppRoutes() {
                                 </Page>
                             }
                         />
-                        <Route
-                            path="/tournament/list"
-                            element={
-                                <Page title="Tournament List">
-                                    <TournamentList />
-                                </Page>
-                            }
-                        />
-                        <Route
-                            path="/tournament/live/:tournamentId"
-                            element={
-                                <Page title="Live Tournament">
-                                    {/* Pass the tournamentConfig (which includes setupProperties) down */}
-                                    <LiveTournament
-                                        setTournamentSetupComplete={setTournamentSetupComplete}
-                                        tournamentConfig={tournamentConfig}
-                                    />
-                                </Page>
-                            }
-                        />
+
                         <Route
                             path="/viewer"
                             element={
@@ -123,6 +169,7 @@ function AppRoutes() {
                                 </Page>
                             }
                         />
+
                         <Route
                             path="/auth/login"
                             element={
@@ -131,6 +178,7 @@ function AppRoutes() {
                                 </Page>
                             }
                         />
+
                         <Route
                             path="/auth/signup"
                             element={
@@ -139,6 +187,7 @@ function AppRoutes() {
                                 </Page>
                             }
                         />
+
                         <Route
                             path="*"
                             element={

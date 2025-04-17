@@ -1,7 +1,7 @@
 package com.example.pickleballtournament.controller;
 
 import com.example.pickleballtournament.model.Team;
-import com.example.pickleballtournament.service.LiveTournamentService;
+import com.example.pickleballtournament.service.TournamentService;
 import com.example.pickleballtournament.service.TeamService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +15,9 @@ import java.util.List;
 public class TeamController {
 
     private final TeamService teamService;
-    private final LiveTournamentService tournamentService;
+    private final TournamentService tournamentService;
 
-    public TeamController(TeamService teamService, LiveTournamentService tournamentService) {
+    public TeamController(TeamService teamService, TournamentService tournamentService) {
         this.teamService = teamService;
         this.tournamentService = tournamentService;
     }

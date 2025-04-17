@@ -22,6 +22,10 @@ public class User {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
+    private String picture; // Optional profile picture URL
+
+    private String auth0Id;
+
     @NotBlank(message = "First name is required")
     private String firstName;
 
@@ -37,4 +41,5 @@ public class User {
 
     private String role = "USER"; // Default role
     private boolean enabled = true; // Account enabled by default
+    private Player playerProfile; // Optional player profile
 }

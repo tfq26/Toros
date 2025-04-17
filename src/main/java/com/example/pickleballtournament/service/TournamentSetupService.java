@@ -4,6 +4,8 @@ import com.example.pickleballtournament.model.Match;
 import com.example.pickleballtournament.model.Team;
 import com.example.pickleballtournament.model.Tournament;
 import com.example.pickleballtournament.repository.MatchRepository;
+import com.example.pickleballtournament.repository.PlayerRepository;
+import com.example.pickleballtournament.repository.TeamRepository;
 import com.example.pickleballtournament.repository.TournamentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,11 +23,18 @@ public class TournamentSetupService {
     private final MatchRepository matchRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamService teamService;
+    private final TeamRepository teamRepository;
+    private final PlayerRepository playerRepository;
 
     public TournamentSetupService(MatchRepository matchRepository,
-                                  TournamentRepository tournamentRepository, TeamService teamService) {
+                                  TournamentRepository tournamentRepository,
+                                  TeamRepository teamRepository,
+                                  PlayerRepository playerRepository,
+                                  TeamService teamService) {
         this.matchRepository = matchRepository;
         this.tournamentRepository = tournamentRepository;
+        this.teamRepository = teamRepository;
+        this.playerRepository = playerRepository;
         this.teamService = teamService;
     }
 
@@ -79,40 +88,53 @@ public class TournamentSetupService {
      * @return the newly created Tournament, or null if a duplicate exists and deletion was not confirmed.
      */
     @Transactional
-    public Tournament setupTournament(String tournamentName, int numCourts, int gamesPerTeam, boolean skillBased,
-                                      LocalDateTime startTime, int matchDuration, int breakTime, Boolean confirmDelete,
-                                      String location, String organizer, String contactInfo,
-                                      String tournamentType, String scoringSystem, String rules,
-                                      String prizeDistribution, String format, String ageGroup, String skillLevel) {
+    public Tournament setupTournament(String tournamentName,
+                                      int numCourts,
+                                      int gamesPerTeam,
+                                      boolean skillBased,
+                                      LocalDateTime startTime,
+                                      int matchDuration,
+                                      int breakTime,
+                                      Boolean confirmDelete,
+                                      String location,
+                                      String organizer,
+                                      String contactInfo,
+                                      String tournamentType,
+                                      String scoringSystem,
+                                      String rules,
+                                      String prizeDistribution,
+                                      String format,
+                                      String ageGroup,
+                                      String skillLevel) {
         log.info("Setting up new tournament: {}", tournamentName);
 
-        // Check for duplicate tournament by name.
-        if (checkForDuplicateTournament(tournamentName)) {
-            log.warn("Tournament with name '{}' already exists.", tournamentName);
+        // 1) Duplicate check & optional delete
+        if (tournamentRepository.findByNameAndIsActiveTrue(tournamentName).isPresent()) {
+            log.warn("Tournament '{}' exists already.", tournamentName);
             if (Boolean.TRUE.equals(confirmDelete)) {
-                Tournament existingTournament = tournamentRepository.findByNameAndIsActiveTrue(tournamentName).isPresent()
-                        ? tournamentRepository.findByNameAndIsActiveTrue(tournamentName).get()
-                        : null;
-                assert existingTournament != null;
-                deleteTournament(existingTournament.getId());
-                log.info("Existing tournament '{}' deleted as per user confirmation.", tournamentName);
+                tournamentRepository.findByNameAndIsActiveTrue(tournamentName)
+                        .ifPresent(t -> {
+                            tournamentRepository.deleteById(t.getId());
+                            log.info("Deleted existing tournament '{}'", tournamentName);
+                        });
             } else {
-                log.info("Duplicate tournament exists and deletion was not confirmed. Aborting setup.");
+                log.info("Aborting: duplicate found & not confirmed for delete.");
                 return null;
             }
         }
 
-        // Generate teams without deleting previous ones.
+        // 2) Generate teams
         List<Team> teams = teamService.generateTeams();
         if (teams.isEmpty()) {
             throw new IllegalStateException("No teams available for the tournament.");
         }
 
-        // Create and initialize a new Tournament.
+        // 3) Build tournament
         Tournament tournament = new Tournament();
         tournament.setId(generateSecureId());
         tournament.setName(tournamentName);
         tournament.setActive(true);
+        tournament.setStatus("LIVE");
         tournament.setNumCourts(numCourts);
         tournament.setGamesPerTeam(gamesPerTeam);
         tournament.setTiered(skillBased);
@@ -129,70 +151,77 @@ public class TournamentSetupService {
         tournament.setFormat(format);
         tournament.setAgeGroup(ageGroup);
         tournament.setSkillLevel(skillLevel);
-        tournament.setStatus("LIVE");
-        tournament.setFinalPlacements(new ArrayList<>()); // Initialize as empty list.
+        tournament.setFinalPlacements(new ArrayList<>());
 
-        // Build setupProperties list based on user parameters.
-        List<String> setupProperties = new ArrayList<>();
-        setupProperties.add("Tournament Name: " + tournamentName);
-        setupProperties.add("Number of Courts: " + numCourts);
-        setupProperties.add("Games Per Team: " + gamesPerTeam);
-        setupProperties.add("Tiered: " + skillBased);
-        setupProperties.add("Start Time: " + startTime);
-        setupProperties.add("Match Duration: " + matchDuration);
-        setupProperties.add("Break Duration: " + breakTime);
-        setupProperties.add("Location: " + location);
-        setupProperties.add("Organizer: " + organizer);
-        setupProperties.add("Contact Info: " + contactInfo);
-        setupProperties.add("Tournament Type: " + tournamentType);
-        setupProperties.add("Scoring System: " + scoringSystem);
-        setupProperties.add("Rules: " + rules);
-        setupProperties.add("Prize Distribution: " + prizeDistribution);
-        setupProperties.add("Format: " + format);
-        setupProperties.add("Age Group: " + ageGroup);
-        setupProperties.add("Skill Level: " + skillLevel);
-        tournament.setSetupProperties(setupProperties);
+        // 4) Setup properties map & list
+        Map<String,Object> propsMap = new LinkedHashMap<>();
+        propsMap.put("Tournament Name",    tournamentName);
+        propsMap.put("Number of Courts",   numCourts);
+        propsMap.put("Games Per Team",     gamesPerTeam);
+        propsMap.put("Tiered",             skillBased);
+        propsMap.put("Start Time",         startTime);
+        propsMap.put("Match Duration",     matchDuration);
+        propsMap.put("Break Duration",     breakTime);
+        propsMap.put("Location",           location);
+        propsMap.put("Organizer",          organizer);
+        propsMap.put("Contact Info",       contactInfo);
+        propsMap.put("Tournament Type",    tournamentType);
+        propsMap.put("Scoring System",     scoringSystem);
+        propsMap.put("Rules",              rules);
+        propsMap.put("Prize Distribution", prizeDistribution);
+        propsMap.put("Format",             format);
+        propsMap.put("Age Group",          ageGroup);
+        propsMap.put("Skill Level",        skillLevel);
 
-        // Build setupPropertiesMap with key-value pairs.
-        Map<String, Object> setupPropertiesMap = new HashMap<>();
-        setupPropertiesMap.put("Tournament Name", tournamentName);
-        setupPropertiesMap.put("Number of Courts", numCourts);
-        setupPropertiesMap.put("Games Per Team", gamesPerTeam);
-        setupPropertiesMap.put("Tiered", skillBased);
-        setupPropertiesMap.put("Start Time", startTime);
-        setupPropertiesMap.put("Match Duration", matchDuration);
-        setupPropertiesMap.put("Break Duration", breakTime);
-        setupPropertiesMap.put("Location", location);
-        setupPropertiesMap.put("Organizer", organizer);
-        setupPropertiesMap.put("Contact Info", contactInfo);
-        setupPropertiesMap.put("Tournament Type", tournamentType);
-        setupPropertiesMap.put("Scoring System", scoringSystem);
-        setupPropertiesMap.put("Rules", rules);
-        setupPropertiesMap.put("Prize Distribution", prizeDistribution);
-        setupPropertiesMap.put("Format", format);
-        setupPropertiesMap.put("Age Group", ageGroup);
-        setupPropertiesMap.put("Skill Level", skillLevel);
-        tournament.setSetupPropertiesMap(setupPropertiesMap);
+        tournament.setSetupProperties(
+                propsMap.entrySet()
+                        .stream()
+                        .map(e -> e.getKey() + ": " + e.getValue())
+                        .collect(Collectors.toList())
+        );
+        tournament.setSetupPropertiesMap(propsMap);
 
-        // Convert team objects to team IDs.
+        // 5) Persist teams & collect their IDs
+        //    (assumes teamService.generateTeams() also persists each team)
         List<String> teamIds = teams.stream()
                 .map(Team::getId)
                 .collect(Collectors.toList());
         tournament.setTeams(teamIds);
 
-        // Save the tournament before generating matches.
+        // 6) First save (to obtain tournament ID)
         tournament = tournamentRepository.save(tournament);
-        log.info("Tournament '{}' saved successfully with ID: {}", tournament.getName(), tournament.getId());
+        log.info("Tournament '{}' saved [ID={}]", tournamentName, tournament.getId());
 
-        // Generate matches (passing the breakTime parameter) and update the tournament.
-        MatchGenerationResult result = generateMatches(tournament, teams, numCourts, gamesPerTeam, skillBased,
-                startTime, matchDuration, breakTime);
+        // 7) Load each Team from DB to gather its player IDs
+        List<Team> persistedTeams = teamRepository.findAllById(teamIds);
+        Set<String> playerIds = new HashSet<>();
+        for (Team t : persistedTeams) {
+            if (t.getPlayers() != null) {
+                playerIds.addAll(t.getPlayers());
+            }
+        }
+
+        // 8) Validate that each player actually exists
+        List<String> validPlayerIds = playerIds.stream()
+                .filter(playerRepository::existsById)
+                .collect(Collectors.toList());
+        tournament.setPlayers(validPlayerIds);
+
+        // 9) Generate matches and assign
+        MatchGenerationResult result = generateMatches(
+                tournament, teams, numCourts, gamesPerTeam, skillBased,
+                startTime, matchDuration, breakTime
+        );
         tournament.setMatches(result.matchIds);
         tournament.setEndTime(result.maxEndTime);
 
-        // Save the tournament with updated matches and endTime.
+        // 10) Final save (persists players, matches, endTime)
         tournament = tournamentRepository.save(tournament);
-        log.info("Tournament '{}' updated with matches and end time.", tournament.getName());
+        log.info("Tournament '{}' now has {} teams, {} players, {} matches",
+                tournament.getName(),
+                teamIds.size(),
+                validPlayerIds.size(),
+                result.matchIds.size());
 
         return tournament;
     }

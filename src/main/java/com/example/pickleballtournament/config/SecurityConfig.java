@@ -4,102 +4,118 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.jwt.*;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.authentication.*;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.web.cors.*;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    @Value("${spring.profiles.active:prod}") // Defaults to "prod" if not set
+    @Value("${spring.profiles.active:prod}")
     private String activeProfile;
-
-    @Value("${spring.security.oauth2.resourceserver.jwt.audience}")
-    private String audience;
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuerUri;
 
+    @Value("${spring.security.oauth2.resourceserver.jwt.audience}")
+    private String audience;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter())));
+
         if ("dev".equals(activeProfile)) {
-            http.csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            http.authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/users/me").authenticated()
+                    .anyRequest().permitAll()
+            );
         } else {
-            http.csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth
-                            // Allow PATCH requests on /api/tournament/** so that update endpoints can be reached.
-                            .requestMatchers(HttpMethod.PATCH, "/api/tournament/**").authenticated()
-                            .requestMatchers("/auth/**").permitAll()
-                            .requestMatchers("/api/tournament/**").authenticated()
-                            .requestMatchers("/api/bracket/**").authenticated()
-                            .requestMatchers("/api/players/**").authenticated()
-                            .anyRequest().authenticated())
-                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .oauth2ResourceServer(oauth2 -> oauth2
-                            .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+            http.authorizeHttpRequests(auth -> auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers(HttpMethod.PATCH, "/api/tournament/**").authenticated()
+                    .requestMatchers(
+                            "/api/tournament/**",
+                            "/api/bracket/**",
+                            "/api/players/**",
+                            "/api/users/**"
+                    ).authenticated()
+                    .anyRequest().authenticated()
+            );
         }
 
         return http.build();
     }
 
-    /**
-     * Configures the JwtDecoder to use the issuer-uri provided by Auth0 and
-     * validates that the JWT's audience contains the expected value.
-     */
     @Bean
     public JwtDecoder jwtDecoder() {
-        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromOidcIssuerLocation(issuerUri);
+        NimbusJwtDecoder decoder = (NimbusJwtDecoder) JwtDecoders.fromOidcIssuerLocation(issuerUri);
 
-        OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
+        OAuth2TokenValidator<Jwt> audienceVal = new AudienceValidator(audience);
 
-        jwtDecoder.setJwtValidator(validator);
-        return jwtDecoder;
+        // 🧪 Custom validator that logs the raw token payload for debugging
+        OAuth2TokenValidator<Jwt> loggingValidator = jwt -> {
+            System.out.println("🔐 JWT received:");
+            System.out.println("  Subject (sub): " + jwt.getSubject());
+            System.out.println("  Issuer (iss): " + jwt.getIssuer());
+            System.out.println("  Audience (aud): " + jwt.getAudience());
+            System.out.println("  Claims: " + jwt.getClaims());
+            return OAuth2TokenValidatorResult.success();
+        };
+
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(withIssuer, audienceVal, loggingValidator));
+
+        return decoder;
     }
 
-    /**
-     * Optionally customize how granted authorities are extracted from the JWT.
-     */
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        // Optionally, adjust the claim name and authority prefix if needed:
-        // grantedAuthoritiesConverter.setAuthoritiesClaimName("permissions");
-        // grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
-
-        JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
-        authenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
-        return authenticationConverter;
+    private JwtAuthenticationConverter jwtAuthConverter() {
+        JwtGrantedAuthoritiesConverter grants = new JwtGrantedAuthoritiesConverter();
+        JwtAuthenticationConverter conv = new JwtAuthenticationConverter();
+        conv.setJwtGrantedAuthoritiesConverter(grants);
+        return conv;
     }
 
-    /**
-     * Custom validator to ensure the JWT contains the expected audience.
-     */
-    static class AudienceValidator implements OAuth2TokenValidator<Jwt> {
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cors = new CorsConfiguration();
+        cors.addAllowedOrigin("http://localhost:5173");
+        cors.addAllowedMethod(CorsConfiguration.ALL);
+        cors.addAllowedHeader(CorsConfiguration.ALL);
+        cors.addExposedHeader("Authorization");
+        cors.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cors);
+        return source;
+    }
+
+    private static class AudienceValidator implements OAuth2TokenValidator<Jwt> {
         private final String audience;
-
         AudienceValidator(String audience) {
             this.audience = audience;
         }
 
         @Override
         public OAuth2TokenValidatorResult validate(Jwt jwt) {
-            if (jwt.getAudience().contains(audience)) {
-                return OAuth2TokenValidatorResult.success();
-            }
-            OAuth2Error error = new OAuth2Error("invalid_token", "The required audience is missing", null);
-            return OAuth2TokenValidatorResult.failure(error);
+            return jwt.getAudience().contains(audience)
+                    ? OAuth2TokenValidatorResult.success()
+                    : OAuth2TokenValidatorResult.failure(
+                    new OAuth2Error("invalid_token", "Missing required audience: " + audience, null)
+            );
         }
     }
 }

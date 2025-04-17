@@ -6,9 +6,10 @@ import java.util.List;
 
 public interface TeamRepository extends MongoRepository<Team, String> {
 
-    // ✅ Correct field name
-    List<Team> findAllByName(String name);
+    /** All teams in a given tournament */
+    List<Team> findByTournamentId(String tournamentId);
 
-    // ✅ Optional: Find teams using player names
-    List<Team> findByPlayer1_NameOrPlayer2_Name(String player1Name, String player2Name);
+    /** All teams that include this player ID in their `players` list */
+    List<Team> findByPlayersContaining(String playerId);
+
 }
