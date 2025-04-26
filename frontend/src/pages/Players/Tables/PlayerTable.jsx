@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import PropTypes from "prop-types";
-import { convertLevel } from "@/utils/functions/playerUtils.js";
+import { convertLevel } from "@/utils/functions/HelperFunctions.js";
 import {
     Table,
     TableBody,

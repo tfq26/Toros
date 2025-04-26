@@ -51,19 +51,16 @@ export async function fetchMatchesByTournament(tournamentId) {
     }
 }
 
-// Load details for multiple teams given an array of team IDs
-export async function loadTeamDetails(teamIds) {
+// Load all teams for a given tournament ID
+export async function loadTeamDetails(tournamentId) {
     try {
-        console.log("Loading team details for team IDs:", teamIds);
-        const requests = teamIds.map((id) =>
-            axios.get(`http://localhost:8080/api/team/${id}`)
-        );
-        const responses = await Promise.all(requests);
-        const teams = responses.map((res) => res.data);
+        console.log("Loading teams for tournament ID:", tournamentId);
+        const response = await axios.get(`http://localhost:8080/api/team/tournament/${tournamentId}`);
+        const teams = response.data;
         console.log("Loaded teams:", teams);
         return teams;
     } catch (error) {
-        console.error("Error loading team details:", error);
+        console.error("Error loading teams by tournament ID:", error);
         return [];
     }
 }

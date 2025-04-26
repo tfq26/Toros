@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { savePlayerData, deletePlayerData } from "@/utils/functions/playerUtils.js";
+import { savePlayerData, deletePlayerData } from "@/utils/functions/HelperFunctions.js";
 
 const PlayerModal = ({ player, onClose, refreshPlayers }) => {
     const [formData, setFormData] = useState({

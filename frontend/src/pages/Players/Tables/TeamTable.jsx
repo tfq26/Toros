@@ -1,4 +1,4 @@
-import  { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import { loadTeamDetails } from "@/utils/functions/dataUtils.js";
 import {
@@ -10,11 +10,8 @@ import {
     TableRow,
 } from "@/components/ui/table.jsx";
 
-const TeamTable = ({ teams, error, onEdit }) => {
-    // State to hold the loaded detailed team objects.
+const TeamTable = ({ tournamentId, error, onEdit }) => {
     const [teamDetails, setTeamDetails] = useState([]);
-
-    // Sorting state and handler
     const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
 
     const handleSort = (key) => {
@@ -25,22 +22,21 @@ const TeamTable = ({ teams, error, onEdit }) => {
         setSortConfig({ key, direction });
     };
 
-    // Fetch team details whenever the teams prop changes.
     useEffect(() => {
         async function fetchDetails() {
             try {
-                const details = await loadTeamDetails(teams);
+                const details = await loadTeamDetails(tournamentId);
                 setTeamDetails(details);
             } catch (err) {
                 console.error("Error loading team details:", err);
             }
         }
-        if (teams && teams.length > 0) {
+
+        if (tournamentId) {
             fetchDetails();
         }
-    }, [teams]);
+    }, [tournamentId]);
 
-    // Memoize and sort the teams based on sortConfig.
     const sortedTeams = useMemo(() => {
         let sortableTeams = [...teamDetails];
         if (sortConfig.key !== null) {
@@ -157,7 +153,7 @@ const TeamTable = ({ teams, error, onEdit }) => {
 };
 
 TeamTable.propTypes = {
-    teams: PropTypes.array.isRequired,
+    tournamentId: PropTypes.string.isRequired,
     error: PropTypes.any,
     onEdit: PropTypes.func.isRequired,
 };

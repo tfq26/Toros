@@ -8,7 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table.jsx";
-import LoadingModal from "../Modals/LoadingModal.jsx";
+import LoadingModal from "@/pages/Modals/LoadingModal.jsx";
 
 const MatchTableUpdated = ({ matches, refreshMatches, updateMatch, isMobile = false }) => {
     const [selectedMatch, setSelectedMatch] = useState(null);

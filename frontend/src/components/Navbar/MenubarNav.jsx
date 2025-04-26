@@ -11,7 +11,7 @@ import {
     MenubarItem,
 } from "@/components/ui/menubar.jsx";
 import { Button } from "@/components/ui/button.jsx";
-import { MenubarAuth } from "@/pages/Auth/MenubarAuth.jsx";
+import { MenubarAuth } from "@/pages/Older Components/MenubarAuth.jsx";
 import useDevTools from "@/pages/DevTools/DevTools.jsx"; // Adjust the path as needed
 
 const navData = {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ScoreModalUpdated from "@/pages/Modals/scoreModalUpdated.jsx";
-import LoadingModal from "../Modals/LoadingModal.jsx"; // Import the new LoadingModal
+import LoadingModal from "@/pages/Modals/LoadingModal.jsx"; // Import the new LoadingModal
 
 const MatchTable = ({ matches, refreshMatches, updateMatch }) => {
     const [selectedMatch, setSelectedMatch] = useState(null);

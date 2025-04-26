@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { formatTo12HourTime, convertLevel, getEmojiForRank } from "@/utils/functions/playerUtils.js";
+import { formatTo12HourTime, convertLevel, getEmojiForRank } from "@/utils/functions/HelperFunctions.js";
 import ScoreModal from "../Older Components/ScoreModal.jsx";
 import {Button} from "@/components/ui/button.jsx";
 import PropTypes from "prop-types";

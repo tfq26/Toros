@@ -47,7 +47,7 @@ export function LoginFooter() {
             <DropdownMenuItem>
                 <SidebarMenuButton asChild className="text-center mx-auto">
                     <Link
-                        href="/auth/login"
+                        href="/Older Components/Login"
                         onClick={(e) => {
                             e.preventDefault();
                             loginWithRedirect();
@@ -101,7 +101,7 @@ export function LoginMenuItem() {
         return (
             <MenubarItem asChild className="text-center mx-auto w-full bg-gray-900 text-white hover:bg-gray-700">
                 <Link
-                    href="/auth/login"
+                    href="/Older Components/Login"
                     onClick={(e) => {
                         e.preventDefault();
                         loginWithRedirect().then((r) => {

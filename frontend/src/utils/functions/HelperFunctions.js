@@ -37,6 +37,44 @@ export const getEmojiForRank = (rank) => {
 };
 
 /**
+ * Fetch players data from the API.
+ * @returns {Promise<Array>} The players data.
+ */
+export const fetchPlayersData = async () => {
+    // eslint-disable-next-line no-useless-catch
+    try {
+        const response = await axios.get("http://localhost:8080/api/players/all", {
+            headers: { "Content-Type": "application/json" },
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Filters the players list based on the selected club, level and search query.
+ * @param {Array} players - The list of players.
+ * @param {string} selectedClub - The selected club filter.
+ * @param {string} selectedLevel - The selected level filter.
+ * @param {string} searchQuery - The search query.
+ * @returns {Array} The filtered list of players.
+ */
+export const filterPlayersData = (players, selectedClub, selectedLevel, searchQuery) => {
+    let filtered = [...players];
+    if (selectedClub) {
+        filtered = filtered.filter((player) => player.clubName === selectedClub);
+    }
+    if (selectedLevel) {
+        filtered = filtered.filter((player) => convertLevel(player.skillLevel) === selectedLevel);
+    }
+    if (searchQuery) {
+        filtered = filterPlayersBySearch(filtered, searchQuery);
+    }
+    return filtered;
+};
+
+/**
  * Converts a time string or Date object to 12-hour time format.
  * @param {string|Date} time - The time to format.
  * @returns {string} The formatted time in 12-hour format.

@@ -148,22 +148,3 @@ export const handleConfigChange = (setTournamentConfig, field, value) => {
         return updatedConfig;
     });
 };
-
-/**
- * Calculate a match schedule based on the start time, match duration, break time, and number of games per team.
- */
-export const calculateMatchSchedule = (startTime, matchDuration, breakTime, gamesPerTeam) => {
-    const matches = [];
-    const start = new Date(`1970-01-01T${startTime}:00`);
-    const totalDuration = matchDuration + breakTime;
-    for (let i = 0; i < gamesPerTeam; i++) {
-        const matchStart = new Date(start.getTime() + i * totalDuration * 60000);
-        const matchEnd = new Date(matchStart.getTime() + matchDuration * 60000);
-        matches.push({
-            matchNumber: i + 1,
-            start: matchStart.toTimeString().slice(0, 5),
-            end: matchEnd.toTimeString().slice(0, 5),
-        });
-    }
-    return matches;
-};

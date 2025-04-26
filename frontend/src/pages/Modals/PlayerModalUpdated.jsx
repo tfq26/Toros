@@ -8,7 +8,7 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select.jsx";
-import { savePlayerData, convertLevel } from "@/utils/functions/playerUtils.js";
+import { savePlayerData, convertLevel } from "@/utils/functions/HelperFunctions.js";
 import DialogProvider from "../../utils/DialogProvider.jsx";
 import PropTypes from "prop-types"; // Adjust path if needed
 

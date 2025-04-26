@@ -3,7 +3,7 @@ import TeamList from './TeamList';
 import MatchList from './MatchList';
 import ExportButtons from './ExportButtons';
 import ErrorAlert from '../Error';
-import LoadingModal from '../Modals/LoadingModal.jsx';
+import LoadingModal from '@/pages/Modals/LoadingModal.jsx';
 import { useNavigate } from 'react-router-dom';
 import {
     fetchStandings,

@@ -1,116 +1,156 @@
 // src/pages/Profile/ProfilePage.jsx
-import { useState, useEffect } from "react";
-import { useAuth0 }             from "@auth0/auth0-react";
-import axios                    from "axios";              // ← DEBUG‑ONLY
-import LoadingModal             from "../Modals/LoadingModal.jsx";
+import  { useState, useEffect } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+import axios from "axios";              // ← DEBUG‑ONLY
+import LoadingModal from "@/pages/Modals/LoadingModal.jsx";
+import { useNotification } from "@/utils/NotificationProvider.jsx";
 
 import {
-    Avatar, AvatarFallback, AvatarImage,
-}                               from "@/components/ui/avatar.jsx";
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+} from "@/components/ui/avatar.jsx";
 import {
-    Form, FormField, FormItem, FormLabel,
-    FormControl, FormDescription, FormMessage,
-}                               from "@/components/ui/form.jsx";
-import { Input }                from "@/components/ui/input.jsx";
-import { Textarea }             from "@/components/ui/textarea.jsx";
-import { Button }               from "@/components/ui/button.jsx";
-import { Switch }               from "@/components/ui/switch";
-import { Copy }                 from "lucide-react";
-import { useForm }              from "react-hook-form";
+    Form,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormControl,
+    FormDescription,
+    FormMessage,
+} from "@/components/ui/form.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { Textarea } from "@/components/ui/textarea.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import { Switch } from "@/components/ui/switch";
+import { Copy } from "lucide-react";
+import { useForm } from "react-hook-form";
 
 import {
     getCurrentUserWithToken,
-}                               from "@/utils/functions/authUtils.js";
-
-/* ─── DEBUG‑ONLY • log every request that targets our Spring API ───────── */
-if (import.meta.env.DEV) {
-    axios.interceptors.request.use((cfg) => {
-        if (cfg.url?.startsWith("http://localhost:8080/api")) {
-            console.info(
-                `%c➡ ${cfg.method?.toUpperCase()} ${cfg.url}`,
-                "color:#03A9F4;font-weight:bold"
-            );
-            console.table(cfg.headers);
-        }
-        return cfg;
-    });
-}
-/* ───────────────────────────────────────────────────────────────────────── */
+    updateCurrentUser,
+} from "@/utils/functions/authUtils.js";
 
 const getSkillDescription = (lvl) =>
-    ({ Beginner: "Beginner", Intermediate: "Intermediate", Advanced: "Advanced" }[lvl] ??
-        "Unknown");
+    ({
+        Beginner: "Beginner",
+        Intermediate: "Intermediate",
+        Advanced: "Advanced",
+    }[lvl] ?? "Unknown");
 
-function ProfilePage() {
+export default function ProfilePage() {
     const { isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
-    const [userData, setUserData]  = useState(null);
+    const { addNotification } = useNotification();
+
+    const [userData, setUserData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
 
     const form = useForm({
         defaultValues: {
-            username  : "",
-            firstName : "",
-            lastName  : "",
-            email     : "",
-            phone     : "",
+            firstName: "",
+            lastName: "",
+            email: "",
+            phone: "",
             skillLevel: "Beginner",
-            bio       : "",
+            bio: "",
         },
     });
+    const { isDirty } = form.formState;
 
-    /* ── fetch profile once we’re logged‑in ─────────────────────────────── */
+    // Load profile and reset form
+    const loadProfile = async () => {
+        try {
+            const token = await getAccessTokenSilently({ audience: "https://Toros/api" });
+            const data = await getCurrentUserWithToken(token);
+            setUserData(data);
+            form.reset({
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                phone: data.phone,
+                skillLevel: data.playerProfile?.skillLevel ?? "Beginner",
+                bio: data.bio ?? "",
+            });
+        } catch (err) {
+            console.error("❌ Failed to load user info:", err);
+            addNotification({ message: "Failed to load profile.", type: "error" });
+        }
+    };
+
     useEffect(() => {
-        const loadProfile = async () => {
-            try {
-                /* 1️⃣ Ask Auth0 for a JWT (prints in console) */
-                const token = await getAccessTokenSilently({ audience: "https://Toros/api" });
-                console.debug("🔑 Auth0 token preview:", token.slice(0, 40) + "...");   // DEBUG
-
-                /* 2️⃣ Call our Spring endpoint with that token */
-                const data = await getCurrentUserWithToken(token);
-                console.debug("✅ /me response:", data);                                // DEBUG
-
-                setUserData(data);
-                form.reset({
-                    username   : data.username,
-                    firstName  : data.firstName,
-                    lastName   : data.lastName,
-                    email      : data.email,
-                    phone      : data.phone,
-                    skillLevel : data.playerProfile?.skillLevel ?? "Beginner",
-                    bio        : data.bio ?? "",
-                });
-            } catch (err) {
-                console.error("❌ Failed to load user info:", err);
-            }
-        };
-
-        if (isAuthenticated) loadProfile();
+        if (isAuthenticated) {
+            loadProfile();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
 
-    /* ── guards ─────────────────────────────────────────────────────────── */
-    if (isLoading || (isAuthenticated && !userData))
-        return <LoadingModal message="Loading profile…" />;
-    if (!isAuthenticated)
-        return <div className="p-6">You must be logged in to see your profile.</div>;
+    // Warn on page unload if form is dirty
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = "";
+                addNotification({
+                    message: "You have unsaved changes!",
+                    type: "warning",
+                });
+            }
+        };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, [isDirty, addNotification]);
 
-    /* ── handlers ───────────────────────────────────────────────────────── */
-    const onSubmit = (data) => {
-        console.table(data);          // DEBUG
-        // TODO: send PATCH to backend, then refetch
-        setIsEditing(false);
+    if (isLoading || (isAuthenticated && !userData)) {
+        return <LoadingModal message="Loading profile…" />;
+    }
+    if (!isAuthenticated) {
+        return <div className="p-6">You must be logged in to see your profile.</div>;
+    }
+
+    const onSubmit = async (data) => {
+        try {
+            await updateCurrentUser(getAccessTokenSilently, {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                phone: data.phone,
+                bio: data.bio,
+                skillLevel: data.skillLevel,
+            });
+            await loadProfile();
+            setIsEditing(false);
+            addNotification({ message: "Profile saved!", type: "success" });
+        } catch (err) {
+            console.error("❌ Failed to save profile:", err);
+            addNotification({ message: "Failed to save profile.", type: "error" });
+        }
     };
 
     const copy = (txt) =>
-        navigator.clipboard.writeText(txt).catch((e) => console.error("Copy failed:", e));
+        navigator.clipboard
+            .writeText(txt)
+            .then(() =>
+                addNotification({ message: "Copied to clipboard!", type: "success" })
+            )
+            .catch(() =>
+                addNotification({ message: "Copy failed.", type: "error" })
+            );
 
-    /* ── UI ─────────────────────────────────────────────────────────────── */
+    const toggleEdit = (next) => {
+        if (!next && isDirty) {
+            addNotification({
+                message: "You have unsaved changes!",
+                type: "warning",
+            });
+        }
+        setIsEditing(next);
+    };
+
     return (
         <div className="max-w-lg mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
             {/* Avatar */}
             {userData.picture ? (
-                <Avatar className="mx-auto mb-4">
+                <Avatar className="mb-4 size-30">
                     <AvatarImage src={userData.picture} alt={userData.username} />
                     <AvatarFallback>{userData.username?.[0]}</AvatarFallback>
                 </Avatar>
@@ -120,37 +160,37 @@ function ProfilePage() {
                 </div>
             )}
 
-            {/* edit toggle */}
+            {/* Edit toggle */}
             <div className="flex items-center gap-2 mb-6">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Edit Profile</span>
-                <Switch checked={isEditing} onCheckedChange={setIsEditing} />
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Edit Profile
+        </span>
+                <Switch checked={isEditing} onCheckedChange={toggleEdit} />
             </div>
 
             {/* Form */}
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-
-                    {[
-                        { name: "firstName", label: "First Name" },
-                        { name: "lastName",  label: "Last Name"  },
-                        { name: "email",     label: "Email"      },
-                        { name: "phone",     label: "Phone"      },
-                    ].map(({ name, label }) => (
+                    {["firstName", "lastName", "email", "phone"].map((name) => (
                         <FormField
                             key={name}
                             control={form.control}
                             name={name}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{label}</FormLabel>
+                                    <FormLabel>
+                                        {name.replace(/([A-Z])/g, " $1").replace(/^./, (s) =>
+                                            s.toUpperCase()
+                                        )}
+                                    </FormLabel>
                                     <FormControl>
                                         <div className="relative">
                                             <Input {...field} disabled={!isEditing} />
                                             <Button
                                                 type="button"
-                                                variant="ghost"
+                                                variant="secondary"
                                                 size="icon"
-                                                className="absolute right-2 top-1/2 -translate-y-1/2"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent hover:bg-transparent hover:dark:bg-transparent"
                                                 onClick={() => copy(field.value)}
                                                 aria-label="Copy"
                                             >
@@ -158,7 +198,7 @@ function ProfilePage() {
                                             </Button>
                                         </div>
                                     </FormControl>
-                                    <FormDescription>Your {label.toLowerCase()}.</FormDescription>
+                                    <FormDescription>Your {name.toLowerCase()}.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -188,15 +228,18 @@ function ProfilePage() {
                             <FormItem>
                                 <FormLabel>Skill Level</FormLabel>
                                 <FormControl>
-                                    <select {...field} disabled={!isEditing} className="w-full border rounded-md p-2">
-                                        {["Beginner","Intermediate","Advanced"].map((v)=>(
-                                            <option key={v} value={v}>{v}</option>
+                                    <select
+                                        {...field}
+                                        disabled={!isEditing}
+                                        className="w-full border rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                                    >
+                                        {["Beginner", "Intermediate", "Advanced"].map((v) => (
+                                            <option key={v} value={v}>
+                                                {v}
+                                            </option>
                                         ))}
                                     </select>
                                 </FormControl>
-                                <FormDescription>
-                                    Current level: {getSkillDescription(field.value)}
-                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -204,12 +247,12 @@ function ProfilePage() {
 
                     {/* Submit */}
                     {isEditing && (
-                        <Button type="submit" className="w-full mt-4">Save Profile</Button>
+                        <Button type="submit" className="w-full mt-4">
+                            Save Profile
+                        </Button>
                     )}
                 </form>
             </Form>
         </div>
     );
 }
-
-export default ProfilePage;

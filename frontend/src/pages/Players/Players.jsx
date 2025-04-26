@@ -1,15 +1,21 @@
-import  { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import PlayerTable from "./Tables/PlayerTable.jsx";
-import TeamTable from "./Tables/TeamTable.jsx"; // <-- Import TeamTable component
+import TeamTable from "./Tables/TeamTable.jsx";
 import PlayerStats from "./PlayerStats";
 import PlayerSettings from "./PlayerSettings.jsx";
 import PlayerSearch from "./PlayerSearch.jsx";
-import LoadingModal from "../Modals/LoadingModal.jsx";
+import LoadingModal from "@/pages/Modals/LoadingModal.jsx";
 import SlidingWindow from "@/components/Navbar/SlidingWindow.jsx";
-import { convertLevel, calculateStats, filterPlayersBySearch } from "@/utils/functions/playerUtils.js";
 import PlayerModalUpdated from "@/pages/Modals/PlayerModalUpdated.jsx";
-import { Switch } from "@/components/ui/switch"; // Import your UI Switch component
+import { Switch } from "@/components/ui/switch";
+import {
+    fetchPlayersData,
+    filterPlayersData,
+    convertLevel,
+    calculateStats,
+} from "@/utils/functions/HelperFunctions.js";
+import {useParams} from "react-router";
 
 const Players = () => {
     const [players, setPlayers] = useState([]);
@@ -20,34 +26,22 @@ const Players = () => {
     const [setSuccessMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-
-    // New state to toggle between Players view and Teams view.
     const [isTeamView, setIsTeamView] = useState(false);
-
+    const { tournamentId } = useParams();
     const triggerRefresh = async () => {
         await fetchPlayers();
     };
 
-    // States for modal & sliding window
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSlidingWindowOpen, setIsSlidingWindowOpen] = useState(false);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-    useEffect(() => {
-        fetchPlayers();
-    }, []);
-
-    useEffect(() => {
-        filterPlayers();
-    }, [players, selectedClub, selectedLevel, searchQuery]);
-
+    // Fetch players using the helper function.
     const fetchPlayers = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get("http://localhost:8080/api/players/all", {
-                headers: { "Content-Type": "application/json" },
-            });
-            setPlayers(response.data);
+            const data = await fetchPlayersData();
+            setPlayers(data);
             setError(null);
         } catch {
             setError("Failed to load player data. Please try again later.");
@@ -57,43 +51,23 @@ const Players = () => {
         }
     };
 
-    const filterPlayers = () => {
-        let filtered = [...players];
-        if (selectedClub) {
-            filtered = filtered.filter((player) => player.clubName === selectedClub);
-        }
-        if (selectedLevel) {
-            filtered = filtered.filter((player) => convertLevel(player.skillLevel) === selectedLevel);
-        }
-        if (searchQuery) {
-            filtered = filterPlayersBySearch(filtered, searchQuery);
-        }
-        setFilteredPlayers(filtered);
-    };
+    useEffect(() => {
+        fetchPlayers();
+    }, []);
 
-    // Group players into teams for the "Teams" view.
-    // Here we group by player.team.id if available; otherwise, we group by clubName.
-    const teams = useMemo(() => {
-        const teamsMap = {};
-        filteredPlayers.forEach((player) => {
-            // Use player.team if it exists; otherwise, use clubName.
-            const key = player.team ? player.team.id : player.clubName || "default";
-            if (!teamsMap[key]) {
-                teamsMap[key] = {
-                    id: key,
-                    name: player.team ? player.team.name : player.clubName || "Unknown Team",
-                    placement: player.team ? player.team.placement : null,
-                    players: [],
-                };
-            }
-            teamsMap[key].players.push(player);
-        });
-        return Object.values(teamsMap);
-    }, [filteredPlayers]);
+    // Filter players based on club, level, and search query using helper function.
+    useEffect(() => {
+        setFilteredPlayers(filterPlayersData(players, selectedClub, selectedLevel, searchQuery));
+    }, [players, selectedClub, selectedLevel, searchQuery]);
 
     const stats = calculateStats(filteredPlayers);
     const clubs = [...new Set(players.map((player) => player.clubName))];
     const levels = [...new Set(players.map((player) => convertLevel(player.skillLevel)))];
+
+    const handleEditTeam = (team) => {
+        console.log("Edit Team clicked:", team);
+        // Additional logic for team editing can be added here.
+    };
 
     return (
         <div className="relative">
@@ -105,18 +79,12 @@ const Players = () => {
                                 <LoadingModal message="Loading Player List" description="Please wait..." />
                             </div>
                         )}
+
                         <div className="flex items-center w-full justify-between">
                             <PlayerSearch onSearchChange={setSearchQuery} />
-                            {/* Options Button (if needed) */}
-                            {/* <button
-                                onClick={() => setIsSlidingWindowOpen(true)}
-                                className="ml-4 dark:hover:text-amber-200 dark:text-gray-100 hover:text-orange-700 text-gray-500 px-4 py-2 transition duration-200 ease-in-out z-50"
-                            >
-                                <IoOptionsSharp className="text-3xl" />
-                            </button> */}
                         </div>
 
-                        {/* New Switch to toggle between Players and Teams view */}
+                        {/* Switch to toggle between Players and Teams */}
                         <div className="flex items-center pb-5 border-b-4 mb-6 gap-2">
                             <span className="text-sm">Players</span>
                             <Switch
@@ -127,15 +95,11 @@ const Players = () => {
                         </div>
 
                         <div className="flex flex-col gap-6">
-                            {/* Conditionally render either the PlayerTable or the TeamTable */}
                             {isTeamView ? (
                                 <TeamTable
-                                    teams={teams}
+                                    tournamentId={tournamentId}
+                                    onEdit={handleEditTeam}
                                     error={error}
-                                    onEdit={(team) => {
-                                        // You can handle team edits here, e.g., open a modal with team details.
-                                        console.log("Team selected:", team);
-                                    }}
                                 />
                             ) : (
                                 <PlayerTable
@@ -166,7 +130,7 @@ const Players = () => {
                 />
             )}
 
-            {/* Sliding Window for Player Stats & Settings */}
+            {/* Sliding Window */}
             <SlidingWindow
                 isOpen={isSlidingWindowOpen}
                 onClose={() => setIsSlidingWindowOpen(false)}
@@ -182,7 +146,9 @@ const Players = () => {
                                         setError("⚠️ No valid player data found in the imported file.");
                                         return;
                                     }
-                                    setSuccessMessage(`✅ File imported successfully! ${importedPlayers.length} players added.`);
+                                    setSuccessMessage(
+                                        `✅ File imported successfully! ${importedPlayers.length} players added.`
+                                    );
                                     setError(null);
                                     fetchPlayers();
                                 }}
@@ -211,6 +177,24 @@ const Players = () => {
             />
         </div>
     );
+};
+
+Players.propTypes = {
+    players: PropTypes.array,
+    error: PropTypes.string,
+    isLoading: PropTypes.bool,
+    setSuccessMessage: PropTypes.func,
+    setError: PropTypes.func,
+    selectedPlayer: PropTypes.object,
+    setSelectedPlayer: PropTypes.func,
+    isModalOpen: PropTypes.bool,
+    setIsModalOpen: PropTypes.func,
+    isSlidingWindowOpen: PropTypes.bool,
+    setIsSlidingWindowOpen: PropTypes.func,
+    fetchPlayers: PropTypes.func,
+    triggerRefresh: PropTypes.func,
+    selectedClub: PropTypes.string,
+    setSelectedClub: PropTypes.func,
 };
 
 export default Players;

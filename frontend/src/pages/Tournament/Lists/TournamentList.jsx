@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth0 } from "@auth0/auth0-react";
 import { convertDate } from "@/utils/functions/dataUtils.js";
-import RegisterModal from "../../Modals/registerModal.jsx";
+import RegisterModal from "@/pages/Modals/registerModal.jsx";
 import { Button } from "@/components/ui/button.jsx";
 
 const TournamentList = () => {
@@ -37,10 +37,26 @@ const TournamentList = () => {
             if (isAuthenticated && user?.sub) {
                 try {
                     const token = await getAccessTokenSilently();
-                    const res = await axios.get(`http://localhost:8080/api/registration/user/${user.sub}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-                    setRegisteredIds(res.data.map((reg) => reg.tournamentId));
+
+                    // Step 1: fetch the full user from backend by Auth0 ID
+                    const userResp = await axios.get(
+                        `http://localhost:8080/api/users/auth0/${user.sub}`,
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                        }
+                    );
+
+                    const userId = userResp.data.id; // this is your internal MongoDB user ID
+
+                    // Step 2: fetch registrations for that userId (you’ll need this endpoint too)
+                    const regResp = await axios.get(
+                        `http://localhost:8080/api/registration/user/${userId}`,
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                        }
+                    );
+
+                    setRegisteredIds(regResp.data.map((reg) => reg.tournamentId));
                 } catch (err) {
                     console.error("Error fetching registration info:", err);
                 }
@@ -91,13 +107,13 @@ const TournamentList = () => {
                         <div className="mt-4 flex justify-center gap-4">
                             <button
                                 onClick={() => window.location.reload()}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:bg-blue-700 dark:hover:bg-blue-800"
                             >
                                 Refresh
                             </button>
                             <button
                                 onClick={() => (window.location.href = "/tournament/setup")}
-                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded dark:bg-green-700 dark:hover:bg-green-800"
                             >
                                 Setup
                             </button>

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import ErrorMessage from "../Error";
 import SlidingWindow from "@/components/Navbar/SlidingWindow.jsx";
 import PlayerStats from "../Players/PlayerStats.jsx";
-import { convertLevel, calculateStats } from "@/utils/functions/playerUtils.js";
+import { convertLevel, calculateStats } from "@/utils/functions/HelperFunctions.js";
 import {
     fetchPlayersAndGenerateTeams,
     handleSubmit,

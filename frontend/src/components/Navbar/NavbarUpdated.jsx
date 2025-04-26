@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Menu } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     Accordion,
     AccordionContent,
@@ -64,6 +65,7 @@ export function NavbarUpdated({
     const [isDarkMode, setIsDarkMode] = useState(
         window.matchMedia("(prefers-color-scheme: dark)").matches
     );
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -88,39 +90,39 @@ export function NavbarUpdated({
         </a>
     ));
     SubMenuLink.displayName = "SubMenuLink";
-    SubMenuLink.propTypes = {
-        item: PropTypes.shape({
-            title: PropTypes.string.isRequired,
-            url: PropTypes.string.isRequired,
-            icon: PropTypes.node,
-            description: PropTypes.string,
-        }).isRequired,
-    };
 
-    const renderDesktopMenuItem = (item, index) =>
-        item.items ? (
-            <NavigationMenuItem key={`${item.title}-${index}`} className={'relative'}>
+    const renderDesktopMenuItem = (item, index) => (
+        <NavigationMenuItem
+            key={`${item.title}-${index}`}
+            className="relative"
+            onMouseEnter={() => setOpenDropdown(item.title)}
+            onMouseLeave={() => setOpenDropdown(null)}
+        >
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
                 <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
-                <NavigationMenuContent className="absolute top-full left-0 bg-popover text-popover-foreground mt-2 p-2 rounded-md shadow-lg z-50">
-                    <div className="grid gap-2 w-fit">
-                        {item.items.map((sub, i) => (
-                            <NavigationMenuLink asChild key={i}>
-                                <SubMenuLink item={sub} />
-                            </NavigationMenuLink>
-                        ))}
-                    </div>
-                </NavigationMenuContent>
-            </NavigationMenuItem>
-        ) : (
-            <NavigationMenuItem key={`${item.title}-${index}`}>
-                <NavigationMenuLink
-                    href={item.url}
-                    className="inline-flex h-10 items-center justify-center rounded-md px-2 py-2 text-sm font-medium hover:bg-muted hover:text-accent-foreground"
-                >
-                    {item.title}
-                </NavigationMenuLink>
-            </NavigationMenuItem>
-        );
+            </motion.div>
+
+            <AnimatePresence>
+                {openDropdown === item.title && item.items && (
+                    <NavigationMenuContent className="absolute top-full left-0 z-50 mt-2">
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-popover text-popover-foreground p-3 rounded-md shadow-lg grid gap-2"
+                        >
+                            {item.items.map((sub, i) => (
+                                <NavigationMenuLink asChild key={i}>
+                                    <SubMenuLink item={sub} />
+                                </NavigationMenuLink>
+                            ))}
+                        </motion.div>
+                    </NavigationMenuContent>
+                )}
+            </AnimatePresence>
+        </NavigationMenuItem>
+    );
 
     const renderMobileMenuItem = (item, index) =>
         item.items ? (
@@ -180,9 +182,9 @@ export function NavbarUpdated({
                                 <SheetTitle>
                                     <div className="flex w-full items-center gap-5">
                                         <a href={logo.url} className="flex items-center">
-                      <span className="text-lg font-semibold tracking-tighter">
-                        {logo.title}
-                      </span>
+                                            <span className="text-lg font-semibold tracking-tighter">
+                                                {logo.title}
+                                            </span>
                                         </a>
                                         <NavbarAuth />
                                         {import.meta.env.DEV && (
@@ -194,7 +196,11 @@ export function NavbarUpdated({
                                 </SheetTitle>
                             </SheetHeader>
                             <div className="flex flex-col gap-10 p-4">
-                                <Accordion type="single" collapsible className="flex w-auto my-8 flex-col gap-4">
+                                <Accordion
+                                    type="single"
+                                    collapsible
+                                    className="flex w-auto my-8 flex-col gap-4"
+                                >
                                     {menu.map(renderMobileMenuItem)}
                                 </Accordion>
                             </div>

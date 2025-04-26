@@ -13,7 +13,8 @@ import {
     TabsTrigger,
     TabsContent,
 } from "@/components/ui/tabs.jsx";
-import {Button} from "@/components/ui/button.jsx"; // Adjust the import paths as needed
+import {Button} from "@/components/ui/button.jsx";
+import PropTypes from "prop-types"; // Adjust the import paths as needed
 
 const SlidingWindow = ({ sections }) => {
     return (
@@ -51,6 +52,16 @@ const SlidingWindow = ({ sections }) => {
             </SheetContent>
         </Sheet>
     );
+};
+
+SlidingWindow.propTypes = {
+    sections: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.string.isRequired,
+            label: PropTypes.string.isRequired,
+            content: PropTypes.node.isRequired,
+        })
+    ).isRequired,
 };
 
 export default SlidingWindow;

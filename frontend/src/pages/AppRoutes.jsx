@@ -1,23 +1,23 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar.jsx";
 import Home from "./Home.jsx";
 import Players from "./Players/Players.jsx";
-import ProfilePage from "./Profile/ProfilePage.jsx";              // ← import the profile page
+import ProfilePage from "./Profile/ProfilePage.jsx";
 import TournamentSetup from "./Setup/TournamentSetup.jsx";
 import TournamentSetupSuccess from "./Setup/Pages/SuccessPage.jsx";
-import TournamentList from "./Tournament/Lists/TournamentList.jsx"; // Used for "My Tournaments"
+import TournamentList from "./Tournament/Lists/TournamentList.jsx";
 import LiveTournament from "./Tournament/LiveTournament.jsx";
 import ErrorPage from "./Error.jsx";
 import LoginPage from "./Auth/LoginUpdated.jsx";
-import SignupPage from "./Auth/Signup.jsx";
+import SignupPage from "./Older Components/SignUp.jsx";
 import MatchTest from "./Tournament/MatchTest.jsx";
 import WindowView from "./Tournament/Viewer/WindowView.jsx";
-import { NavbarUpdated } from "@/components/Navbar/NavbarUpdated.jsx";
 import Page from "./Page.jsx";
 
-// Placeholder components for pages you will build later
-const News = () => <div className="p-6 text-2xl">News Placeholder</div>;
+// ← Import your real NewsPage
+import NewsPage from "./News/NewsPage.jsx";
+
 const Explore = () => <div className="p-6 text-2xl">Explore Placeholder</div>;
 const FindTournaments = () => <div className="p-6 text-2xl">Find Tournaments Placeholder</div>;
 
@@ -26,7 +26,6 @@ function AppRoutes() {
     const [tournamentConfig, setTournamentConfig] = useState(null);
     const navigate = useNavigate();
 
-    // Redirect after tournament setup is complete.
     useEffect(() => {
         if (tournamentSetupComplete) {
             const timer = setTimeout(() => {
@@ -39,7 +38,6 @@ function AppRoutes() {
     return (
         <SidebarProvider>
             <div className="flex h-screen w-screen">
-                {/* Main Content Area for Routing */}
                 <main className="flex-1 overflow-y-auto">
                     <Routes>
                         <Route
@@ -51,11 +49,12 @@ function AppRoutes() {
                             }
                         />
 
+                        {/* ← Updated News route */}
                         <Route
                             path="/news"
                             element={
                                 <Page title="News">
-                                    <News />
+                                    <NewsPage />
                                 </Page>
                             }
                         />
@@ -134,7 +133,6 @@ function AppRoutes() {
                             path="/bracket"
                             element={
                                 <Page title="Bracket">
-                                    {/* You can repurpose TournamentBracket if needed */}
                                     <TournamentList />
                                 </Page>
                             }
