@@ -1,7 +1,9 @@
 package com.example.Toros.controller;
 
+import com.example.Toros.DTO.UserProfileDto;
 import com.example.Toros.model.User;
 import com.example.Toros.service.UserService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,6 +36,25 @@ public class UserController {
 
         User user = userService.getOrCreateByJwt(jwt);
         return ResponseEntity.ok(user);
+    }
+
+    /**
+     * PATCH /api/users/me — Update the logged-in user’s profile
+     */
+    @PatchMapping("/me")
+    public ResponseEntity<User> updateCurrentUser(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody UserProfileDto updateRequest
+    ) {
+        if (jwt == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No JWT presented");
+        }
+
+        String auth0Id = jwt.getSubject();
+        log.debug("🔄 Updating user (sub={}) with {}", auth0Id, updateRequest);
+
+        User updated = userService.updateUserProfile(auth0Id, updateRequest);
+        return ResponseEntity.ok(updated);
     }
 
     /**

@@ -1,60 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router } from "react-router-dom";
-import Layout from "./pages/Layout.jsx";
-import AppRoutes from "./pages/AppRoutes.jsx";
-import "./index.css";
-import Background from "@/assets/Background.jsx";
+// src/App.jsx
+import React from "react"
+import Layout    from "./pages/Layout.jsx"
+import AppRoutes from "./pages/AppRoutes.jsx"
+import "./index.css"
+import Background from "@/assets/Background.jsx"
+import { useAuth } from "@/contexts/AuthContext.jsx"
 
-const App = () => {
-    const [tournamentSetupComplete, setTournamentSetupComplete] = useState(
-        JSON.parse(localStorage.getItem("tournamentSetupComplete")) || false
-    );
-    const [tournamentConfig, setTournamentConfig] = useState(null);
-    const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
-
-    useEffect(() => {
-        localStorage.setItem("tournamentSetupComplete", JSON.stringify(tournamentSetupComplete));
-    }, [tournamentSetupComplete]);
-
-    useEffect(() => {
-        const fetchTournamentStatus = async () => {
-            try {
-                const response = await fetch("/api/tournament/activeTournament", {
-                    headers: { Authorization: `Bearer ${authToken}` },
-                });
-                const data = await response.json();
-
-                if (response.ok && data.length > 0) {
-                    console.log("✅ Active tournaments found:", data);
-                    setTournamentSetupComplete(true);
-                } else {
-                    console.log("⚠️ No active tournaments.");
-                    setTournamentSetupComplete(false);
-                }
-            } catch (error) {
-                console.error("❌ Error fetching active tournaments:", error);
-            }
-        };
-
-        if (authToken) fetchTournamentStatus();
-    }, [authToken]);
+export default function App() {
+    // Pull tournament setup info directly from your authenticated user
+    const { user } = useAuth()
+    const tournamentSetupComplete = user?.tournamentSetupComplete ?? false
+    const tournamentConfig        = user?.tournamentConfig ?? null
 
     return (
-        <Router>
-            <div className="flex h-screen w-screen">
-                <Background />
-                <Layout>
-                    <AppRoutes
-                        setAuthToken={setAuthToken}
-                        authToken={authToken}
-                        setTournamentSetupComplete={setTournamentSetupComplete}
-                        tournamentConfig={tournamentConfig}
-                        setTournamentConfig={setTournamentConfig}
-                    />
-                </Layout>
-            </div>
-        </Router>
-    );
-};
-
-export default App;
+        <div className="flex h-screen w-screen">
+            <Background />
+            <Layout>
+                <AppRoutes
+                    tournamentSetupComplete={tournamentSetupComplete}
+                    tournamentConfig={tournamentConfig}
+                />
+            </Layout>
+        </div>
+    )
+}

@@ -9,7 +9,7 @@ const EndTournamentModal = ({ isOpen, onClose, endTournament }) => {
             await endTournament(); // call the function to end the tournament
             onClose(); // close the modal
             // Navigate back to the tournament list
-            navigate("/tournament/list");
+            navigate("/tournament/my");
         } catch (error) {
             console.error("Error ending tournament:", error);
             alert("An error occurred while ending the tournament.");

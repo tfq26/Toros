@@ -24,6 +24,8 @@ public class User {
 
     private String picture; // Optional profile picture URL
 
+    private String bio;
+
     private String auth0Id;
 
     @NotBlank(message = "First name is required")

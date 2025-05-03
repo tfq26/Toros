@@ -1,6 +1,7 @@
-// TournamentSetup.jsx
+// src/pages/Setup/TournamentSetup.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext.jsx";             // ← NEW
 import ErrorMessage from "../Error";
 import SlidingWindow from "@/components/Navbar/SlidingWindow.jsx";
 import PlayerStats from "../Players/PlayerStats.jsx";
@@ -14,17 +15,15 @@ import {
 // Import step components
 import BasicInfoStep from "./Pages/BasicInfo.jsx";
 import DateTimeStep from "./Pages/DateTimeStep.jsx";
-import ExtendedDetailsStep from "./Pages/OrganizerDetails.jsx";
-import OptionsReviewStep from "./Pages/OptionsReview.jsx";
-import WizardNavigation from "./Components/WizardNavigation.jsx";
-import SuccessPage from "@/pages/Setup/Pages/SuccessPage.jsx";
 import OrganizerDetails from "./Pages/OrganizerDetails.jsx";
 import TournamentDetails from "@/pages/Setup/Pages/TournamentDetails.jsx";
-import TournamentSetupSuccess from "@/pages/Setup/Pages/SuccessPage.jsx"; // Import the newly created Wizard component
+import OptionsReviewStep from "./Pages/OptionsReview.jsx";
+import WizardNavigation from "./Components/WizardNavigation.jsx";
+import TournamentSetupSuccess from "@/pages/Setup/Pages/SuccessPage.jsx";
 
 const TournamentSetup = ({ onSetupComplete }) => {
     const navigate = useNavigate();
-
+    const { user } = useAuth();                                      // ← Get the logged-in user
     const [tournamentConfig, setTournamentConfig] = useState({
         tournamentName: "",
         numCourts: 1,
@@ -33,12 +32,14 @@ const TournamentSetup = ({ onSetupComplete }) => {
         startTime: "",
         matchDuration: 15,
         breakTime: 5,
-        useExistingPlayers: false, // retained for backend, not rendered
-        tiered: false,             // retained for backend, not rendered
+
+        useExistingPlayers: false,
+        tiered: false,
+
         // Extended fields
         location: "",
-        organizer: "",
-        contactInfo: "",
+        organizer: "",          // ← will be prefilled
+        contactInfo: "",        // ← will be prefilled
         tournamentType: "",
         scoringSystem: "",
         rules: "",
@@ -48,40 +49,48 @@ const TournamentSetup = ({ onSetupComplete }) => {
         skillLevel: "",
     });
 
+    // 1️⃣ Prefill organizer/contact from the logged-in user
+    useEffect(() => {
+        if (user) {
+            setTournamentConfig(prev => ({
+                ...prev,
+                organizer:   prev.organizer   || `${user.firstName} ${user.lastName}`,
+                contactInfo: prev.contactInfo || user.email,
+            }));
+        }
+    }, [user]);
+
     const [teams, setTeams] = useState([]);
     const [error, setError] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Fetch teams on mount.
+    // Fetch teams on mount
     useEffect(() => {
-        fetchPlayersAndGenerateTeams(setTeams, setError).then((r) => {
-            console.log("Teams fetched:", r);
-        });
+        fetchPlayersAndGenerateTeams(setTeams, setError);
     }, []);
 
-    // Log tournamentConfig whenever it changes.
+    // Log config changes
     useEffect(() => {
         console.log("TournamentConfig updated:", tournamentConfig);
     }, [tournamentConfig]);
 
-    const playerStats = calculateStats(teams.flat());
-
+    // Set document title
     useEffect(() => {
         document.title = "Tournament Setup";
     }, []);
 
-    // Local change handler to update configuration.
+    // Local config handler
     const localHandleConfigChange = (prop, value) => {
-        setTournamentConfig((prev) => ({ ...prev, [prop]: value }));
+        setTournamentConfig(prev => ({ ...prev, [prop]: value }));
     };
 
-    // Wrap handleSetCurrentTime to use our setter.
+    // Wrap handleSetCurrentTime
     const localHandleSetCurrentTime = () => {
         handleSetCurrentTime(setTournamentConfig);
     };
 
-    // Final submission handler for the wizard.
-    const handleFinalSubmit = (e) => {
+    // Final submit
+    const handleFinalSubmit = e => {
         e.preventDefault();
         const { startDate, startTime, ...rest } = tournamentConfig;
         if (!startDate || !startTime) {
@@ -89,46 +98,57 @@ const TournamentSetup = ({ onSetupComplete }) => {
             return;
         }
         const combinedDateTime = new Date(`${startDate}T${startTime}`);
-
-        // Create payload and log it.
         const payload = {
             ...rest,
             startTime: combinedDateTime.toISOString(),
         };
-        console.log("Submitting tournament setup with payload:", payload);
-
-        // Call your submit handler which is expected to trigger onSetupComplete.
         handleSubmit(e, payload, teams, setError, onSetupComplete, navigate);
     };
+
+    const playerStats = calculateStats(teams.flat());
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
             <div className="w-full max-w-4xl bg-white dark:bg-gray-900 sm:p-8 rounded-xl shadow-2xl">
                 {error && <ErrorMessage message={error} />}
+
                 <WizardNavigation
                     onSubmit={handleFinalSubmit}
                     error={error}
                     stepNames={[
-                        "Tournament Name & Details",
+                        "Details",
                         "Date & Time",
-                        "Extended Details (Basic)",
-                        "Extended Details (Advanced)",
-                        "Options & Review"
+                        "Organizer Info",
+                        "Tournament Info",
+                        "Review",
                     ]}
                     navigationConfig={[
-                        { showBack: true, showNext: true },  // Step 1
-                        { showBack: true, showNext: true },  // Step 2
-                        { showBack: true, showNext: true },  // Step 3
-                        { showBack: true, showNext: true },  // Step 4
-                        { showBack: true, showNext: true }, // Step 5 (Review page: hide nav buttons)
-                        { showBack: false, showNext: true }// Final Step (Success page: hide nav buttons)
+                        { showBack: true, showNext: true },
+                        { showBack: true, showNext: true },
+                        { showBack: true, showNext: true },
+                        { showBack: true, showNext: true },
+                        { showBack: true, showNext: true },
+                        { showBack: false, showNext: false },
                     ]}
                 >
-                    {/* Wizard steps here */}
-                    <BasicInfoStep tournamentConfig={tournamentConfig} handleConfigChange={localHandleConfigChange} />
-                    <DateTimeStep tournamentConfig={tournamentConfig} handleConfigChange={localHandleConfigChange} handleSetCurrentTime={localHandleSetCurrentTime} />
-                    <OrganizerDetails tournamentConfig={tournamentConfig} handleConfigChange={localHandleConfigChange} />
-                    <TournamentDetails tournamentConfig={tournamentConfig} handleConfigChange={localHandleConfigChange} />
+                    <BasicInfoStep
+                        tournamentConfig={tournamentConfig}
+                        handleConfigChange={localHandleConfigChange}
+                    />
+                    <DateTimeStep
+                        tournamentConfig={tournamentConfig}
+                        handleConfigChange={localHandleConfigChange}
+                        handleSetCurrentTime={localHandleSetCurrentTime}
+                    />
+                    {/* Now OrganizerDetails is pre-filled from user */}
+                    <OrganizerDetails
+                        tournamentConfig={tournamentConfig}
+                        handleConfigChange={localHandleConfigChange}
+                    />
+                    <TournamentDetails
+                        tournamentConfig={tournamentConfig}
+                        handleConfigChange={localHandleConfigChange}
+                    />
                     <OptionsReviewStep tournamentConfig={tournamentConfig} />
                     <TournamentSetupSuccess />
                 </WizardNavigation>
@@ -148,9 +168,12 @@ const TournamentSetup = ({ onSetupComplete }) => {
                                 </h3>
                                 {teams.length ? (
                                     <ul className="space-y-2 text-gray-700 dark:text-gray-200">
-                                        {teams.flat().map((player) => (
-                                            <li key={player.id} className="border-b border-gray-300 dark:border-gray-600 pb-2">
-                                                {player.name} — {convertLevel(player.skillLevel) || "Unranked"}
+                                        {teams.flat().map(p => (
+                                            <li
+                                                key={p.id}
+                                                className="border-b border-gray-300 dark:border-gray-600 pb-2"
+                                            >
+                                                {p.name} — {convertLevel(p.skillLevel) || "Unranked"}
                                             </li>
                                         ))}
                                     </ul>

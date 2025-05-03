@@ -25,6 +25,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet.jsx";
 import useDevTools from "@/pages/DevTools/DevTools.jsx";
+import { useAuth } from "@/contexts/AuthContext.jsx";
 import { NavbarAuth } from "../../pages/Auth/NavbarAuth.jsx";
 import { VscTools } from "react-icons/vsc";
 
@@ -62,6 +63,7 @@ export function NavbarUpdated({
                                   menu = defaultMenu,
                               }) {
     const { openDevTools } = useDevTools();
+    const { isDev } = useAuth();
     const [isDarkMode, setIsDarkMode] = useState(
         window.matchMedia("(prefers-color-scheme: dark)").matches
     );
@@ -80,7 +82,7 @@ export function NavbarUpdated({
         <a
             ref={ref}
             href={item.url}
-            className="flex flex-col gap-1 rounded-md w-full leading-normal no-underline transition-colors outline-none select-none hover:bg-muted hover:text-accent-foreground"
+            className="flex flex-col gap-1 rounded-md w-full leading-normal no-underline transition-colors outline-none select-none"
             {...props}
         >
             <div className="px-2 py-1 text-sm font-semibold">{item.title}</div>
@@ -98,13 +100,16 @@ export function NavbarUpdated({
             onMouseEnter={() => setOpenDropdown(item.title)}
             onMouseLeave={() => setOpenDropdown(null)}
         >
-            <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
+            <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+            >
                 <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
             </motion.div>
 
             <AnimatePresence>
                 {openDropdown === item.title && item.items && (
-                    <NavigationMenuContent className="absolute top-full left-0 z-50 mt-2">
+                    <NavigationMenuContent className="absolute top-full left-0 z-50 mt-1">
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -126,7 +131,11 @@ export function NavbarUpdated({
 
     const renderMobileMenuItem = (item, index) =>
         item.items ? (
-            <AccordionItem key={`${item.title}-${index}`} value={item.title} className="border-b-0">
+            <AccordionItem
+                key={`${item.title}-${index}`}
+                value={item.title}
+                className="border-b-0"
+            >
                 <AccordionTrigger className="text-md py-0 font-semibold hover:no-underline">
                     {item.title}
                 </AccordionTrigger>
@@ -137,7 +146,11 @@ export function NavbarUpdated({
                 </AccordionContent>
             </AccordionItem>
         ) : (
-            <a key={`${item.title}-${index}`} href={item.url} className="text-md font-semibold">
+            <a
+                key={`${item.title}-${index}`}
+                href={item.url}
+                className="text-md font-semibold"
+            >
                 {item.title}
             </a>
         );
@@ -161,7 +174,7 @@ export function NavbarUpdated({
                     </NavigationMenu>
                     <div className="flex items-center gap-2">
                         <NavbarAuth />
-                        {import.meta.env.DEV && (
+                        {isDev && (
                             <Button variant="outline" size="sm" onClick={openDevTools}>
                                 <VscTools />
                             </Button>
@@ -182,12 +195,12 @@ export function NavbarUpdated({
                                 <SheetTitle>
                                     <div className="flex w-full items-center gap-5">
                                         <a href={logo.url} className="flex items-center">
-                                            <span className="text-lg font-semibold tracking-tighter">
-                                                {logo.title}
-                                            </span>
+                      <span className="text-lg font-semibold tracking-tighter">
+                        {logo.title}
+                      </span>
                                         </a>
                                         <NavbarAuth />
-                                        {import.meta.env.DEV && (
+                                        {isDev && (
                                             <Button variant="outline" onClick={openDevTools}>
                                                 <VscTools />
                                             </Button>

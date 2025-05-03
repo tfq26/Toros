@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+// src/pages/LiveTournament.jsx
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import MatchTabs from "./MatchTabs";
 import TournamentSidebar from "@/components/Navbar/TournamentSidebar.jsx";
@@ -15,32 +15,41 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet.jsx";
 import { IoSettingsOutline } from "react-icons/io5";
-import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
+import { useTournament } from "@/contexts/TournamentContext.jsx";
 
-const LiveTournament = ({ tournamentConfig, tournamentId }) => {
-    // Extract setupProperties from tournamentConfig if it exists, otherwise default to an empty array.
-    const setupProperties = tournamentConfig?.setupProperties || [];
+const LiveTournament = () => {
+    // ▶️ Pull the current tournament config out of context
+    const { tournamentConfig } = useTournament();
+
+    // Log what we got from context
+    useEffect(() => {
+        console.log("🗒️ tournamentConfig from context:", tournamentConfig);
+    }, [tournamentConfig]);
+
+    // Derive the ID & setupProperties from that config
+    const tournamentId       = tournamentConfig?.id;
+    const setupProperties    = tournamentConfig?.setupProperties || [];
 
     useEffect(() => {
         console.log("Setup Properties in LiveTournament:", setupProperties);
     }, [setupProperties]);
 
-    const [matches, setMatches] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [matches, setMatches]           = useState([]);
+    const [loading, setLoading]           = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [sortOrder, setSortOrder] = useState("desc");
-    const [showWindowView] = useState(false);
+    const [sortOrder, setSortOrder]       = useState("desc");
+    const [showWindowView]                = useState(false);
     const [showEndModal, setShowEndModal] = useState(false);
-    // Remove useNavigate call if not needed:
-    useNavigate();
 
     // Set the document title on mount.
     useEffect(() => {
-        document.title = "Tournament Live";
-    }, []);
+        document.title = tournamentConfig?.tournamentName
+            ? `${tournamentConfig.tournamentName} • Live`
+            : "Tournament Live";
+    }, [tournamentConfig]);
 
-    // Define fetchMatches as a function
+    // Fetch matches
     const fetchMatches = useCallback(async () => {
         setLoading(true);
         try {
@@ -48,7 +57,6 @@ const LiveTournament = ({ tournamentConfig, tournamentId }) => {
                 const tournamentMatches = await fetchMatchesByTournament(tournamentId);
                 setMatches(tournamentMatches);
             } else {
-                // Fallback: fetch all matches.
                 const fullMatches = await fetchAllMatches();
                 setMatches(fullMatches);
             }
@@ -60,7 +68,6 @@ const LiveTournament = ({ tournamentConfig, tournamentId }) => {
         }
     }, [tournamentId]);
 
-    // Wrap fetchMatches in a debounced function with a delay of 500ms.
     const debouncedFetchMatches = useCallback(
         debounce(() => {
             fetchMatches();
@@ -68,13 +75,10 @@ const LiveTournament = ({ tournamentConfig, tournamentId }) => {
         [fetchMatches]
     );
 
-    // Call the debounced fetchMatches function whenever tournamentId changes.
     useEffect(() => {
         debouncedFetchMatches();
-        return () => {
-            debouncedFetchMatches.cancel();
-        };
-    }, [debouncedFetchMatches, tournamentId]);
+        return () => debouncedFetchMatches.cancel();
+    }, [debouncedFetchMatches]);
 
     const updateMatch = async (updatedMatch) => {
         if (!updatedMatch.id) {
@@ -102,28 +106,23 @@ const LiveTournament = ({ tournamentConfig, tournamentId }) => {
         }
     };
 
-    // Button handler for checking duplicate match-ups.
     const checkForDuplicateMatches = () => {
         const getMatchKey = (match) => {
             if (!match.team1 || !match.team2) return null;
             const team1Id = match.team1.id || match.team1.name;
             const team2Id = match.team2.id || match.team2.name;
-            const sortedIds = [team1Id, team2Id].sort();
-            return sortedIds.join("-");
+            return [team1Id, team2Id].sort().join("-");
         };
 
-        const matchupCount = {};
-        matches.forEach((match) => {
-            const key = getMatchKey(match);
-            if (key) {
-                matchupCount[key] = (matchupCount[key] || 0) + 1;
-            }
+        const counts = {};
+        matches.forEach((m) => {
+            const key = getMatchKey(m);
+            if (key) counts[key] = (counts[key] || 0) + 1;
         });
 
-        const duplicates = Object.keys(matchupCount).filter((key) => matchupCount[key] > 1);
-        if (duplicates.length > 0) {
-            const totalDuplicates = duplicates.reduce((acc, key) => acc + (matchupCount[key] - 1), 0);
-            console.log(`Found ${totalDuplicates} duplicate match-up(s):`, duplicates);
+        const dups = Object.entries(counts).filter(([, c]) => c > 1);
+        if (dups.length) {
+            console.log(`Found ${dups.reduce((sum, [, c]) => sum + (c - 1), 0)} duplicates:`, dups);
         } else {
             console.log("No duplicate match-ups found.");
         }
@@ -131,12 +130,18 @@ const LiveTournament = ({ tournamentConfig, tournamentId }) => {
 
     return (
         <div className="flex flex-col p-4">
-            {/* Mobile Header: Title and Hamburger Menu */}
+            {/* Mobile Header */}
             <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-md shadow-md">
-                <h1 className="text-xl font-bold dark:text-white">Live Tournament Matches</h1>
+                <h1 className="text-xl font-bold dark:text-white">
+                    {tournamentConfig?.tournamentName || "Tournament Live"}
+                </h1>
                 <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="outline" size="icon" onClick={() => setIsSidebarOpen(true)}>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setIsSidebarOpen(true)}
+                        >
                             <IoSettingsOutline size={24} />
                         </Button>
                     </SheetTrigger>
@@ -158,20 +163,20 @@ const LiveTournament = ({ tournamentConfig, tournamentId }) => {
 
             {/* Main Content */}
             <div className="flex-grow">
-                {/* Button to check for duplicate match-ups */}
                 <div className="flex justify-center my-2">
                     <Button onClick={checkForDuplicateMatches} variant="outline">
                         Check Duplicate Match-ups
                     </Button>
                 </div>
 
-                {/* Display Tournament Setup Properties if available */}
-                {setupProperties && setupProperties.length > 0 && (
+                {setupProperties.length > 0 && (
                     <div className="mb-4 bg-white dark:bg-gray-800 p-2 rounded shadow">
-                        <h2 className="text-lg font-semibold dark:text-white">Tournament Setup</h2>
+                        <h2 className="text-lg font-semibold dark:text-white">
+                            Tournament Setup
+                        </h2>
                         <ul className="list-disc list-inside text-gray-700 dark:text-gray-300">
-                            {setupProperties.map((prop, index) => (
-                                <li key={index}>{prop}</li>
+                            {setupProperties.map((prop, i) => (
+                                <li key={i}>{prop}</li>
                             ))}
                         </ul>
                     </div>
@@ -196,19 +201,21 @@ const LiveTournament = ({ tournamentConfig, tournamentId }) => {
                 onClose={() => setShowEndModal(false)}
                 endTournament={async () => {
                     try {
-                        const response = await axios.post("http://localhost:8080/api/tournament/end");
-                        if (response.status === 200) {
+                        const res = await axios.post(
+                            "http://localhost:8080/api/tournament/end"
+                        );
+                        if (res.status === 200) {
                             console.log("🏁 Tournament ended successfully.");
                         } else {
                             throw new Error("Failed to end tournament.");
                         }
-                    } catch (error) {
-                        console.error("❌ Error ending tournament:", error);
+                    } catch (err) {
+                        console.error("❌ Error ending tournament:", err);
                     }
                 }}
             />
 
-            {/* Optional: Full screen modal for WindowView */}
+            {/* Full-screen WindowView */}
             {showWindowView && (
                 <div className="fixed inset-0 bg-white dark:bg-gray-800 p-4 z-40 overflow-auto">
                     <WindowView matches={matches} />
@@ -216,13 +223,6 @@ const LiveTournament = ({ tournamentConfig, tournamentId }) => {
             )}
         </div>
     );
-};
-
-LiveTournament.propTypes = {
-    tournamentConfig: PropTypes.shape({
-        setupProperties: PropTypes.array,
-    }),
-    tournamentId: PropTypes.string,
 };
 
 export default LiveTournament;

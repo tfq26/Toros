@@ -81,18 +81,18 @@ export default function ArticleModal({ isOpen, onClose, onSave }) {
                 {/* Left: Article fields */}
                 <div className="space-y-4">
                     <div>
-                        <Label htmlFor="title">Title</Label>
+                        <Label htmlFor="title" className={'py-2'}>Title</Label>
                         <Input
                             id="title"
                             name="title"
                             value={article.title}
                             onChange={handleChange}
                             required
-                            className="w-full"
+                            className="w-full p"
                         />
                     </div>
                     <div>
-                        <Label htmlFor="summary">Summary</Label>
+                        <Label htmlFor="summary" className={'py-2'}>Summary</Label>
                         <textarea
                             id="summary"
                             name="summary"
@@ -104,7 +104,7 @@ export default function ArticleModal({ isOpen, onClose, onSave }) {
                         />
                     </div>
                     <div>
-                        <Label htmlFor="link">Link</Label>
+                        <Label htmlFor="link" className={'py-2'}>Link</Label>
                         <Input
                             id="link"
                             name="link"
@@ -116,7 +116,7 @@ export default function ArticleModal({ isOpen, onClose, onSave }) {
                         />
                     </div>
                     <div>
-                        <Label htmlFor="category">Category</Label>
+                        <Label htmlFor="category" className={'py-2'}>Category</Label>
                         <Input
                             id="category"
                             name="category"
@@ -126,7 +126,7 @@ export default function ArticleModal({ isOpen, onClose, onSave }) {
                         />
                     </div>
                     <div>
-                        <Label htmlFor="source">Source</Label>
+                        <Label htmlFor="source" className={'py-2'}>Source</Label>
                         <Input
                             id="source"
                             name="source"
@@ -136,7 +136,7 @@ export default function ArticleModal({ isOpen, onClose, onSave }) {
                         />
                     </div>
                     <div>
-                        <Label htmlFor="coverImage">Cover Image</Label>
+                        <Label htmlFor="coverImage" className={'py-2'}>Cover Image</Label>
                         <input
                             id="coverImage"
                             name="coverImage"
@@ -153,7 +153,7 @@ export default function ArticleModal({ isOpen, onClose, onSave }) {
                     <img
                         src={article.coverImageUrl || DEFAULT_COVER}
                         alt="Cover Preview"
-                        className="rounded shadow w-full h-64 object-cover"
+                        className="rounded shadow w-full h-64 object-fit aspect-ratio [16/9]"
                     />
                 </div>
             </form>

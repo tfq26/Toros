@@ -1,23 +1,28 @@
-import { Routes, Route } from "react-router-dom";
-import Home from "../Home.jsx";
-import Players from "../Players/Players.jsx";
-import TournamentList from "../Tournament/Lists/TournamentList.jsx"; // ✅ New Tournament Selection View
-import TournamentSetup from "../Setup/TournamentSetup.jsx";
-import { GalleryVerticalEnd } from "lucide-react"
-import TournamentBracket from "../Standings/TeamStandings.jsx";
-import LiveTournament from "../Tournament/LiveTournament.jsx";
-import ErrorPage from "../Error.jsx";
-import LoginPage from "../Auth/LoginUpdated.jsx";
-import SignupPage from "./SignUp.jsx";
-import MatchTest from "../Tournament/MatchTest.jsx";
-import WindowView from "../Tournament/Viewer/WindowView.jsx";
-import SignupUpdated from "@/pages/Auth/SignupUpdated.jsx"; // New viewer page
+// src/pages/AppRoutes.jsx
+import { Routes, Route } from "react-router-dom"
+import PropTypes from "prop-types"
 
-const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tournamentConfig, setTournamentConfig }) => {
+import Home              from "../Home.jsx"
+import Players           from "../Players/Players.jsx"
+import TournamentSetup   from "../Setup/TournamentSetup.jsx"
+import TournamentList    from "../Tournament/Lists/TournamentList.jsx"
+import TournamentBracket from "../Standings/TeamStandings.jsx"
+import LiveTournament    from "../Tournament/LiveTournament.jsx"
+import MatchTest         from "../Tournament/MatchTest.jsx"
+import WindowView        from "../Tournament/Viewer/WindowView.jsx"
+import ErrorPage         from "../Error.jsx"
+
+const AppRoutes = ({
+                       setTournamentSetupComplete,
+                       tournamentConfig,
+                       setTournamentConfig,
+                   }) => {
     return (
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/players" element={<Players />} />
+
+            {/* Tournament Setup Flow */}
             <Route
                 path="/tournament/setup"
                 element={
@@ -27,9 +32,6 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
                     />
                 }
             />
-            <Route path="/bracket" element={<TournamentBracket />} />
-            <Route path="/test-matches" element={<MatchTest />} />
-            {/* ✅ Tournament Selection Step */}
             <Route path="/tournament/list" element={<TournamentList />} />
             <Route
                 path="/tournament/live/:tournamentId"
@@ -40,26 +42,24 @@ const AppRoutes = ({ setAuthToken, authToken, setTournamentSetupComplete, tourna
                     />
                 }
             />
-            {/* Viewer Route */}
-            <Route path="/viewer" element={<WindowView />} />
-            {/* Authentication Routes */}
-            <Route
-                path="/auth/login"
-                element={
-                    // <LoginPage
-                    //     onLogin={(token) => {
-                    //         setAuthToken(token);
-                    //         localStorage.setItem("authToken", token);
-                    //     }}
-                    // />
-                    <LoginPage/>
-                }
-            />
-            <Route path="/auth/signup" element={<SignupUpdated/>}/>
-            {/* Error Handling */}
-            <Route path="*" element={<ErrorPage statusCode={404}/>}/>
-        </Routes>
-    );
-};
 
-export default AppRoutes;
+            {/* Bracket & Matches */}
+            <Route path="/bracket"      element={<TournamentBracket />} />
+            <Route path="/test-matches" element={<MatchTest />} />
+
+            {/* Viewer */}
+            <Route path="/viewer" element={<WindowView />} />
+
+            {/* Catch-all */}
+            <Route path="*" element={<ErrorPage statusCode={404} />} />
+        </Routes>
+    )
+}
+
+AppRoutes.propTypes = {
+    setTournamentSetupComplete: PropTypes.func.isRequired,
+    tournamentConfig:           PropTypes.any,
+    setTournamentConfig:        PropTypes.func.isRequired,
+}
+
+export default AppRoutes

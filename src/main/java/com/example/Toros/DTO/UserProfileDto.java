@@ -25,6 +25,9 @@ public class UserProfileDto {
     // optional field: allow blank
     private String phone;
 
+    // optional field: allow blank
+    private String picture;
+
     @Size(max = 500, message = "Bio must not exceed 500 characters")
     private String bio;
 

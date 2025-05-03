@@ -22,7 +22,9 @@ export default function Background() {
                 <rect width="100%" height="100%" fill="url(#wavy-pattern)"/>
             </svg>
             <div
-                className="absolute inset-0 bg-gradient-to-br from-amber-500/50 via-gray-100/50 to-red-500/50 dark:from-rose-950/30 dark:via-gray-950/50 dark:to-emerald-900/30"/>
+                className="absolute inset-0 bg-gradient-to-br from-white/50
+                 via-gray-100/50 to-red-400/50 dark:from-rose-950/30
+                  dark:via-gray-950/50 dark:to-emerald-900/30"/>
         </div>
     );
 }
