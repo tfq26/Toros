@@ -1,4 +1,3 @@
-// src/components/NavbarUpdated.jsx
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Menu } from "lucide-react";
@@ -31,6 +30,7 @@ import { NavbarAuth } from "../../pages/Auth/NavbarAuth.jsx";
 import { VscTools } from "react-icons/vsc";
 import { Separator } from "@/components/ui/separator.jsx";
 import { useTheme } from "@/contexts/ThemeContext.jsx"; // Import useTheme
+import { Link } from 'react-router-dom';
 
 // Default menu data...
 const defaultMenu = [ /* … */ ];
@@ -41,6 +41,16 @@ const SubMenuLink = React.forwardRef(({ item, ...props }, ref) => (
     </a>
 ));
 SubMenuLink.displayName = "SubMenuLink";
+
+// Framer variants
+const navVariants = {
+    hidden: { opacity: 0, y: -20 },
+    show: { opacity: 1, y: 0, transition: { when: "beforeChildren", staggerChildren: 0.1 } },
+};
+const itemVariants = {
+    hidden: { opacity: 0, y: -10 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
+};
 
 export function NavbarUpdated({
                                   logo = {
@@ -60,15 +70,7 @@ export function NavbarUpdated({
     const isDarkMode = theme === 'dark';
     const logoSrc = isDarkMode && logo.darkSrc ? logo.darkSrc : logo.src;
 
-    // Framer variants
-    const navVariants = {
-        hidden: { opacity: 0, y: -20 },
-        show: { opacity: 1, y: 0, transition: { when: "beforeChildren", staggerChildren: 0.1 } },
-    };
-    const itemVariants = {
-        hidden: { opacity: 0, y: -10 },
-        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
-    };
+
 
     // Desktop menu item with animation variants
     const renderDesktopMenuItem = (item, idx) => (
@@ -77,13 +79,20 @@ export function NavbarUpdated({
             onMouseEnter={() => setOpenDropdown(item.title)}
             onMouseLeave={() => setOpenDropdown(null)}
         >
-            <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }}>
-                <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+            <motion.div variants={itemVariants} whileHover={{ scale: 1.10 }}>
+                {item.hasDropdown ? (
+                    <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+                ) : (
+                    <NavigationMenuLink asChild
+                    className={'"block py-2 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-sm'}>
+                        <Link to={item.url}>{item.title}</Link>
+                    </NavigationMenuLink>
+                )}
             </motion.div>
 
             <AnimatePresence>
-                {openDropdown === item.title && item.items && (
-                    <NavigationMenuContent className="absolute top-full left-0 z-50 mt-1">
+                {openDropdown === item.title && item.hasDropdown && (
+                    <NavigationMenuContent className="absolute top-full left-0 z-50 mt-1 min-w-[200px]">
                         <motion.div
                             variants={itemVariants}
                             initial="hidden"
@@ -93,7 +102,8 @@ export function NavbarUpdated({
                             className="bg-popover text-popover-foreground p-3 rounded-md shadow-lg grid gap-2"
                         >
                             {item.items.map((sub, i) => (
-                                <NavigationMenuLink key={i} className="as-child">
+                                <NavigationMenuLink
+                                    asChild key={i}>
                                     <SubMenuLink item={sub} />
                                 </NavigationMenuLink>
                             ))}
@@ -161,6 +171,9 @@ export function NavbarUpdated({
                                 <VscTools />
                             </Button>
                         )}
+                        <Button variant="outline" size="sm" onClick={toggleDarkMode}>
+                            {isDarkMode ? 'Light' : 'Dark'}
+                        </Button>
                     </motion.div>
                 </div>
 
@@ -179,13 +192,16 @@ export function NavbarUpdated({
                                 <SheetTitle>
                                     <div className="flex items-center justify-between w-full">
                                         <span className="text-lg font-semibold">{logo.title}</span>
-                                        <div className="flex items-center gap-2 mr-10">
+                                        <div className="flex items-center gap-2">
                                             <NavbarAuth />
                                             {isDev && (
                                                 <Button variant="outline" onClick={openDevTools}>
                                                     <VscTools />
                                                 </Button>
                                             )}
+                                            <Button variant="outline" onClick={toggleDarkMode}>
+                                                {isDarkMode ? 'Light' : 'Dark'}
+                                            </Button>
                                         </div>
                                     </div>
                                 </SheetTitle>
@@ -207,7 +223,7 @@ export function NavbarUpdated({
 
             <Separator
                 orientation="horizontal"
-                className={`h-0.5 ${isDarkMode ? 'bg-emerald-700' : 'bg-black'}`}
+                className={`h-0.5 ${isDarkMode ? 'bg-emerald-700' : 'bg-black'} w-1/2`}
             />
         </motion.header>
     );
@@ -231,6 +247,8 @@ NavbarUpdated.propTypes = {
                     description: PropTypes.string,
                 })
             ),
+            hasDropdown: PropTypes.bool
         })
     ),
 };
+

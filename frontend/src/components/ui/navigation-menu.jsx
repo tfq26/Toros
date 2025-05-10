@@ -45,7 +45,7 @@ export const NavigationMenuContent = React.forwardRef(({ className, children, ..
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={cn(
-                "absolute left-0 top-full w-[120%] rounded-md border bg-popover p-1 shadow-md z-50",
+                "absolute left-0 top-full w-[120%] rounded-md border bg-popover p-1 z-50",
                 className
             )}
             {...props}

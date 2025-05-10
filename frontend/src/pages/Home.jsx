@@ -1,5 +1,4 @@
-// src/pages/Home.jsx
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -13,11 +12,13 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
-import { cn } from "@/lib/utils"; // Assuming you have a utils file with cn
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext"; // Import the useTheme hook
 
 function Home() {
     const [images, setImages] = useState([]);
     const [email, setEmail] = useState("");
+    const { isDarkMode } = useTheme(); // Get the current theme
 
     useEffect(() => {
         setImages([
@@ -33,28 +34,27 @@ function Home() {
     const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.2 } } };
     const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } };
 
+    // Determine the image source based on the theme
+    const heroBallSrc = isDarkMode ? "svgs/Hero_Ball_Dark.svg" : "svgs/Hero_Ball.svg";
+
     return (
-        <div className="flex flex-col items-center text-gray-50 dark:text-gray-100">
+        <div className="flex flex-col items-center text-gray-50 dark:text-gray-100 min-h-screen">
             {/* 1. Hero */}
             <motion.section
                 className="min-h-[70vh] w-full flex flex-col items-center justify-center px-4 py-12 text-center relative overflow-hidden"
-                initial={{opacity: 0, y: -50}}
-                animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.8}}
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
             >
                 <motion.img
-                    src={"svgs/Hero_Ball_Dark.svg"}
+                    src={heroBallSrc}  // Use the themed image source
                     alt="Background Spinning Pickleball"
                     className="absolute inset-0 w-full h-full object-contain opacity-30"
-                    style={{pointerEvents: 'none'}}
-                    animate={{rotate: 360}}
-                    transition={{
-                        duration: 10,
-                        ease: 'linear',
-                        repeat: Infinity
-                    }} // Removed 'repeatType: "loop"' as it's the default
+                    style={{ pointerEvents: 'none' }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 10, ease: 'linear', repeat: Infinity }}
                 />
-                <div className="relative z-10"> {/* Added a container for the text and button */}
+                <div className="relative z-10">
                     <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4 drop-shadow-lg">
                         Welcome to Toros
                     </h1>
@@ -69,7 +69,7 @@ function Home() {
                 </div>
             </motion.section>
 
-            <Separator className="w-24 my-12 bg-gray-200 dark:bg-gray-600"/>
+            <Separator className="w-24 my-12 bg-gray-200 dark:bg-gray-600" />
 
             {/* 2. Features */}
             <motion.section
@@ -78,7 +78,7 @@ function Home() {
                 initial="hidden"
                 animate="show"
             >
-            {[
+                {[
                     { icon: <FaCalendarAlt size={32} />, title: "Manage Events", desc: "Create, view, and track all your tournaments in one place." },
                     { icon: <FaNewspaper size={32} />, title: "Latest News", desc: "Stay up-to-date with pickleball headlines and tips." },
                     { icon: <FaChartLine size={32} />, title: "Performance Analytics", desc: "Get match stats and see your improvement over time." },
@@ -175,20 +175,7 @@ function Home() {
                 </div>
             </div>
             </motion.section>
-
-            {/* 6. Footer */}
-            <footer className="w-full bg-gray-900 dark:bg-black text-gray-400 py-6">
-                <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center">
-                    <p className="text-sm">&copy; {new Date().getFullYear()} Toros, Inc.</p>
-                    <div className="flex gap-4 mt-4 sm:mt-0">
-                        <Link to="/about" className="hover:text-white">About</Link>
-                        <Link to="/contact" className="hover:text-white">Contact</Link>
-                        <Link to="/terms" className="hover:text-white">Terms</Link>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }
 
-export default Home;

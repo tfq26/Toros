@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,6 @@ export function NavbarAuth() {
         };
     }, [isOpen]);
 
-
     if (isLoading) return null;
 
     return (
@@ -57,11 +56,12 @@ export function NavbarAuth() {
                     variant="outline"
                     size="icon"
                     ref={triggerRef}
-                    onClick={() => setIsOpen(!isOpen)} // Toggle on click
+                    onClick={() => setIsOpen((prev) => !prev)}
                 >
                     <FaRegUserCircle size={24} />
                 </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent
                 ref={contentRef}
                 align="end"
@@ -83,8 +83,7 @@ export function NavbarAuth() {
                                 setIsOpen(false);
                                 navigate("/profile");
                             }}
-                            className="px-2 rounded-md hover:bg-accent
-                            hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            className="px-2 rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                             View Profile
                         </DropdownMenuItem>
@@ -105,9 +104,7 @@ export function NavbarAuth() {
                                 setIsOpen(false);
                                 loginWithRedirect({ screen_hint: "login" });
                             }}
-                            className="p-4 rounded-md hover:bg-accent
-                            hover:text-accent-foreground focus:bg-accent
-                            focus:text-accent-foreground"
+                            className="p-4 rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                             Login
                         </DropdownMenuItem>
@@ -116,9 +113,7 @@ export function NavbarAuth() {
                                 setIsOpen(false);
                                 loginWithRedirect({ screen_hint: "signup" });
                             }}
-                            className="p-4 rounded-md hover:bg-accent
-                            hover:text-accent-foreground focus:bg-accent
-                            focus:text-accent-foreground"
+                            className="p-4 rounded-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                             Sign Up
                         </DropdownMenuItem>
@@ -130,4 +125,3 @@ export function NavbarAuth() {
 }
 
 export default NavbarAuth;
-
