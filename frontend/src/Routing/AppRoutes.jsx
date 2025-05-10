@@ -3,13 +3,13 @@ import  { useContext } from 'react'
 import { Routes, Route }      from 'react-router-dom'
 import { SidebarProvider }    from '@/components/ui/sidebar.jsx'
 import LoadingModal           from '@/pages/Modals/LoadingModal.jsx'
-import { useAuth }            from '@/contexts/AuthContext.jsx'
-import { LoadingContext }     from '@/contexts/LoadingContext.jsx'
-import { TournamentProvider } from '@/contexts/TournamentContext.jsx'
+import { useAuth }            from '@/Contexts/AuthContext.jsx'
+import { LoadingContext }     from '@/Contexts/LoadingContext.jsx'
+import { TournamentProvider } from '@/Contexts/TournamentContext.jsx'
 
-import PublicRoutes      from '../Routing/PublicRoutes.jsx'
-import NewsRoutes        from '../Routing/NewsRoutes.jsx'
-import TournamentRoutes  from '../Routing/TournamentRoutes.jsx'
+import PublicRoutes      from './PublicRoutes.jsx'
+import NewsRoutes        from './NewsRoutes.jsx'
+import TournamentRoutes  from './TournamentRoutes.jsx'
 
 export default function AppRoutes() {
     const { loadingProfile } = useAuth()

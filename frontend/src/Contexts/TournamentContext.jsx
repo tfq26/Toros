@@ -1,18 +1,22 @@
 // src/contexts/TournamentContext.jsx
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import  { createContext, useState, useContext, useEffect } from 'react';
 import PropTypes from "prop-types";
 import axios from 'axios';
 
 const TournamentContext = createContext();
 
-export function TournamentProvider({ tournamentId, children }) {
+export function TournamentProvider({ tournamentId: initialTournamentId, children }) { // Rename prop to avoid shadowing if you still use it internally
     const [tournamentConfig, setTournamentConfig] = useState(null);
     const [isSetupComplete, setIsSetupComplete]   = useState(false);
-    const [loading, setLoading]                   = useState(true);
+    const [loading, setLoading]                   = useState(false); // Initialize to false
     const [error, setError]                       = useState(null);
+    const [tournamentId, setTournamentId]       = useState(initialTournamentId); // Local state for tournamentId
 
     useEffect(() => {
-        if (!tournamentId) return;
+        if (!tournamentId) {
+            setTournamentConfig(null); // Clear config if no ID
+            return;
+        }
 
         setLoading(true);
         axios
@@ -38,6 +42,8 @@ export function TournamentProvider({ tournamentId, children }) {
                 setIsSetupComplete,
                 loading,
                 error,
+                tournamentId, // Make the current tournamentId available in the context
+                setTournamentId, // Provide a way to update the tournamentId from within the context consumers
             }}
         >
             {children}
@@ -46,7 +52,7 @@ export function TournamentProvider({ tournamentId, children }) {
 }
 
 TournamentProvider.propTypes = {
-    tournamentId: PropTypes.string.isRequired,
+    tournamentId: PropTypes.string, // Make it optional
     children:     PropTypes.node.isRequired,
 };
 

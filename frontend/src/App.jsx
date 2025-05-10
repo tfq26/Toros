@@ -1,7 +1,7 @@
 // src/App.jsx
 import React from "react"
-import Layout    from "./pages/Layout.jsx"
-import AppRoutes from "./pages/AppRoutes.jsx"
+import Layout    from "./pages/Layout/Layout.jsx"
+import AppRoutes from "./Routing/AppRoutes.jsx"
 import "./index.css"
 import Background from "@/assets/Background.jsx"
 import { useAuth } from "@/contexts/AuthContext.jsx"

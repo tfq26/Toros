@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu"; // adjust the import based on your project structure
-import { SidebarMenuButton } from "@/components/ui/sidebar";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu.jsx"; // adjust the import based on your project structure
+import { SidebarMenuButton } from "@/components/ui/sidebar.jsx";
 import { MenubarItem } from "@/components/ui/menubar.jsx";
 import { Button } from "@/components/ui/button.jsx";
 import {Link} from "react-router-dom"; // adjust the import based on your project structure

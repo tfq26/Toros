@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import MatchTabs from "./MatchTabs";
-import TournamentSidebar from "@/components/Navbar/TournamentSidebar.jsx";
+import TournamentSidebar from "@/pages/Tournament/Components/TournamentSidebar.jsx";
 import { fetchAllMatches, fetchMatchesByTournament } from "@/utils/functions/dataUtils.js";
 import WindowView from "./Viewer/WindowView.jsx";
 import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx";

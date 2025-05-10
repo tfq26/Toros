@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import PlayerTable from "./Tables/PlayerTable.jsx";
 import TeamTable from "./Tables/TeamTable.jsx";
-import PlayerStats from "./PlayerStats";
-import PlayerSettings from "./PlayerSettings.jsx";
-import PlayerSearch from "./PlayerSearch.jsx";
+import PlayerStats from "./Components/PlayerStats.jsx";
+import PlayerSettings from "./Components/PlayerSettings.jsx";
+import PlayerSearch from "./Components/PlayerSearch.jsx";
 import LoadingModal from "@/pages/Modals/LoadingModal.jsx";
-import SlidingWindow from "@/components/Navbar/SlidingWindow.jsx";
+import PlayerSidebar from "@/pages/Players/Components/PlayerSidebar.jsx";
 import PlayerModalUpdated from "@/pages/Modals/PlayerModalUpdated.jsx";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -131,7 +131,7 @@ const Players = () => {
             )}
 
             {/* Sliding Window */}
-            <SlidingWindow
+            <PlayerSidebar
                 isOpen={isSlidingWindowOpen}
                 onClose={() => setIsSlidingWindowOpen(false)}
                 sections={[

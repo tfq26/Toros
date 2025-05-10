@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/ui/Forms/login-form.jsx"
-import {SignupForm} from "../Auth/Signup/signup-form-email-pass.jsx"
+import {SignupForm} from "@/pages/Older Components/Signup/signup-form-email-pass.jsx"
 
 export default function SignupUpdated() {
     return (

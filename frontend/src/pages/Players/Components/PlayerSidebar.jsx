@@ -16,7 +16,7 @@ import {
 import {Button} from "@/components/ui/button.jsx";
 import PropTypes from "prop-types"; // Adjust the import paths as needed
 
-const SlidingWindow = ({ sections }) => {
+const PlayerSidebar = ({ sections }) => {
     return (
         <Sheet>
             {/* The SheetTrigger can be styled or wrapped in a button */}
@@ -54,7 +54,7 @@ const SlidingWindow = ({ sections }) => {
     );
 };
 
-SlidingWindow.propTypes = {
+PlayerSidebar.propTypes = {
     sections: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.string.isRequired,
@@ -64,4 +64,4 @@ SlidingWindow.propTypes = {
     ).isRequired,
 };
 
-export default SlidingWindow;
+export default PlayerSidebar;

@@ -1,11 +1,15 @@
-// src/pages/News/ArticleCard.jsx
-import React from 'react'
+// src/components/News/ArticleCard.jsx
+
 import PropTypes from 'prop-types'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card.jsx'
 import { AspectRatio } from '@/components/ui/aspect-ratio.jsx'
 
 const DEFAULT_COVER = '/images/default-cover.jpg'
 
+/**
+ * Displays a single news article as a clickable card.
+ * Wraps the entire card in a link so that clicking anywhere opens the article.
+ */
 export default function ArticleCard({ item }) {
     return (
         <a
@@ -14,12 +18,12 @@ export default function ArticleCard({ item }) {
             rel="noopener noreferrer"
             className="block hover:shadow-lg transition-shadow"
         >
-            <Card className="rounded-lg shadow-md overflow-hidden">
+            <Card className="mx-2 rounded-lg shadow-md overflow-hidden">
                 <AspectRatio ratio={16 / 9}>
                     <img
                         src={item.coverImageUrl || DEFAULT_COVER}
                         alt={item.title}
-                        className="object-cover w-full h-full"
+                        className="object-cover w-full h-auto"
                     />
                 </AspectRatio>
                 <CardHeader className="px-4 pt-4">

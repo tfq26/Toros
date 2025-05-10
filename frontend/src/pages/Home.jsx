@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -38,17 +38,21 @@ function Home() {
             {/* 1. Hero */}
             <motion.section
                 className="min-h-[70vh] w-full flex flex-col items-center justify-center px-4 py-12 text-center relative overflow-hidden"
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
+                initial={{opacity: 0, y: -50}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.8}}
             >
                 <motion.img
-                    src={"/svgs/Hero_Ball.svg"}
+                    src={"svgs/Hero_Ball_Dark.svg"}
                     alt="Background Spinning Pickleball"
                     className="absolute inset-0 w-full h-full object-contain opacity-30"
-                    style={{ pointerEvents: 'none' }}
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 10, ease: 'linear' }}
+                    style={{pointerEvents: 'none'}}
+                    animate={{rotate: 360}}
+                    transition={{
+                        duration: 10,
+                        ease: 'linear',
+                        repeat: Infinity
+                    }} // Removed 'repeatType: "loop"' as it's the default
                 />
                 <div className="relative z-10"> {/* Added a container for the text and button */}
                     <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4 drop-shadow-lg">
@@ -65,7 +69,7 @@ function Home() {
                 </div>
             </motion.section>
 
-            <Separator className="w-24 my-12 bg-gray-200 dark:bg-gray-600" />
+            <Separator className="w-24 my-12 bg-gray-200 dark:bg-gray-600"/>
 
             {/* 2. Features */}
             <motion.section
@@ -74,7 +78,7 @@ function Home() {
                 initial="hidden"
                 animate="show"
             >
-                {[
+            {[
                     { icon: <FaCalendarAlt size={32} />, title: "Manage Events", desc: "Create, view, and track all your tournaments in one place." },
                     { icon: <FaNewspaper size={32} />, title: "Latest News", desc: "Stay up-to-date with pickleball headlines and tips." },
                     { icon: <FaChartLine size={32} />, title: "Performance Analytics", desc: "Get match stats and see your improvement over time." },

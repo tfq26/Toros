@@ -1,5 +1,5 @@
 import React from "react";
-import FileUploader from "../../components/FileUploader.jsx";
+import FileUploader from "../../../components/FileUploader.jsx";
 import AddPlayer from "@/pages/Modals/AddPlayer.jsx"; // Ensure correct path to AddPlayer component
 import * as PropTypes from "prop-types";
 

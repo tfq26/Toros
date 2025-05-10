@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext.jsx";             // ← NEW
 import ErrorMessage from "../Error";
-import SlidingWindow from "@/components/Navbar/SlidingWindow.jsx";
-import PlayerStats from "../Players/PlayerStats.jsx";
+import PlayerSidebar from "@/pages/Players/Components/PlayerSidebar.jsx";
+import PlayerStats from "../Players/Components/PlayerStats.jsx";
 import { convertLevel, calculateStats } from "@/utils/functions/HelperFunctions.js";
 import {
     fetchPlayersAndGenerateTeams,
@@ -154,7 +154,7 @@ const TournamentSetup = ({ onSetupComplete }) => {
                 </WizardNavigation>
             </div>
 
-            <SlidingWindow
+            <PlayerSidebar
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
                 sections={[

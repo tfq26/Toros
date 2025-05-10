@@ -1,10 +1,8 @@
-// src/pages/Profile/ProfilePage.jsx
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext.jsx";
+import { useAuth0 } from "@auth0/auth0-react";
 import LoadingModal from "@/pages/Modals/LoadingModal.jsx";
 import { useNotification } from "@/utils/NotificationProvider.jsx";
 import { motion } from "framer-motion";
-
 import {
     Avatar,
     AvatarFallback,
@@ -21,11 +19,11 @@ import {
 import { Input } from "@/components/ui/input.jsx";
 import { Textarea } from "@/components/ui/textarea.jsx";
 import { Button } from "@/components/ui/button.jsx";
-import { Switch } from "@/components/ui/switch.jsx";
 import { Copy } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { cn } from "@/lib/utils";
 
-import { updateCurrentUserWithToken } from "@/utils/functions/authUtils.js";
+import { updateCurrentUserWithToken, getCurrentUser } from "@/utils/functions/authUtils.js";
 
 const skillOptions = ["Beginner", "Intermediate", "Advanced"];
 
@@ -34,53 +32,88 @@ const containerVariants = {
     visible: {
         opacity: 1,
         y: 0,
-        transition: { staggerChildren: 0.1, when: "beforeChildren" },
+        transition: {
+            staggerChildren: 0.1,
+            when: "beforeChildren",
+        },
     },
 };
 
 const itemVariants = {
     hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { type: "spring", stiffness: 100 },
+    },
 };
+
+//  Extracted fetchProfileData function
+const fetchProfileData = async (isAuthenticated, auth0User, getAccessTokenSilently, setUserData, form, addNotification, setLoadingProfile) => {
+    if (isAuthenticated && auth0User) {
+        setLoadingProfile(true);
+        try {
+            const token = await getAccessTokenSilently();
+            const user = await getCurrentUser(token, getAccessTokenSilently);
+            setUserData(user);
+            form.reset({
+                firstName: user.firstName || "",
+                lastName: user.lastName || "",
+                email: user.email || "",
+                phone: user.phone || "",
+                skillLevel:
+                    user.playerProfile?.skillLevel || skillOptions[0],
+                bio: user.bio || "",
+            });
+        } catch (error) {
+            console.error("Error fetching profile data:", error);
+            addNotification({
+                message: "Failed to load profile data.",
+                type: "error",
+            });
+            setUserData(null);
+        } finally {
+            setLoadingProfile(false);
+        }
+    } else {
+        setLoadingProfile(false);
+        setUserData(null);
+    }
+};
+
 
 export default function ProfilePage() {
     const {
-        user: userData,
         isAuthenticated,
-        loadingProfile,
-        getToken,
-        refreshUser,
-    } = useAuth();
+        user: auth0User,
+        getAccessTokenSilently,
+        logout
+    } = useAuth0();
     const { addNotification } = useNotification();
     const [isEditing, setIsEditing] = useState(false);
+    const [loadingProfile, setLoadingProfile] = useState(true);
+    const [userData, setUserData] = useState(null);
 
     const form = useForm({
         defaultValues: {
             firstName: userData?.firstName ?? "",
-            lastName:  userData?.lastName ?? "",
-            email:     userData?.email ?? "",
-            phone:     userData?.phone ?? "",
+            lastName: userData?.lastName ?? "",
+            email: userData?.email ?? "",
+            phone: userData?.phone ?? "",
             skillLevel: skillOptions[0],
-            bio:        userData?.bio ?? "",
+            bio: userData?.bio ?? "",
         },
     });
-    const { isDirty, register } = form.formState;
 
-    // Seed form when userData arrives
+
+
+    // Fetch user data on component mount and when auth0User changes
     useEffect(() => {
-        if (isAuthenticated && userData) {
-            form.reset({
-                firstName:  userData.firstName  ?? "",
-                lastName:   userData.lastName   ?? "",
-                email:      userData.email      ?? "",
-                phone:      userData.phone      ?? "",
-                skillLevel: userData.playerProfile?.skillLevel ?? skillOptions[0],
-                bio:        userData.bio        ?? "",
-            });
-        }
-    }, [isAuthenticated, userData]);
+        fetchProfileData(isAuthenticated, auth0User, getAccessTokenSilently, setUserData, form, addNotification, setLoadingProfile);
+    }, [isAuthenticated, auth0User, getAccessTokenSilently, form.reset, addNotification]);
 
-    // Warn before unload if form is dirty
+
+    // Warn on unload
     useEffect(() => {
         const handler = (e) => {
             if (form.formState.isDirty) {
@@ -96,14 +129,13 @@ export default function ProfilePage() {
         return () => window.removeEventListener("beforeunload", handler);
     }, [form.formState.isDirty, addNotification]);
 
-    // === Guards ===
     if (loadingProfile) {
         return <LoadingModal message="Loading profile…" />;
     }
     if (!isAuthenticated) {
         return (
             <motion.div
-                className="p-6 text-center text-gray-600"
+                className="p-6 text-center text-gray-500 dark:text-gray-400"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
             >
@@ -111,16 +143,16 @@ export default function ProfilePage() {
             </motion.div>
         );
     }
-    if (userData === null) {
+    if (!userData) {
         return (
             <motion.div
-                className="p-6 text-center text-red-600"
+                className="p-6 text-center text-red-500 dark:text-red-400"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
             >
                 Oops, we couldn’t load your profile. <br />
                 <button
-                    className="mt-2 text-blue-500 underline"
+                    className="mt-2 text-blue-500 dark:text-blue-400 underline"
                     onClick={() => window.location.reload()}
                 >
                     Try again
@@ -133,13 +165,15 @@ export default function ProfilePage() {
         navigator.clipboard
             .writeText(text)
             .then(() =>
-                addNotification({ message: "Copied to clipboard!", type: "success" })
+                addNotification({
+                    message: "Copied to clipboard!",
+                    type: "success",
+                })
             )
             .catch(() =>
                 addNotification({ message: "Copy failed.", type: "error" })
             );
 
-    // Toggle edit mode
     const toggleEdit = (next) => {
         if (!next && form.formState.isDirty) {
             addNotification({
@@ -153,16 +187,14 @@ export default function ProfilePage() {
 
     const onSubmit = async (data) => {
         try {
-            const token = await getToken();
-            await updateCurrentUserWithToken(token, {
-                firstName:  data.firstName,
-                lastName:   data.lastName,
-                email:      data.email,
-                phone:      data.phone,
-                bio:        data.bio,
-                skillLevel: data.skillLevel,
-            });
-            await refreshUser();
+            const token = await getAccessTokenSilently();
+            // Include the picture URL from userData
+            const updateData = {
+                ...data,
+                picture: userData.picture,  //  Include the picture URL
+            };
+            const updatedUser = await updateCurrentUserWithToken(token, updateData);
+            setUserData(updatedUser); // Update the local state
             setIsEditing(false);
             addNotification({ message: "Profile saved!", type: "success" });
         } catch (err) {
@@ -173,85 +205,99 @@ export default function ProfilePage() {
 
     return (
         <motion.div
-            className="max-w-lg mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
+            className="max-w-2xl mx-auto p-6 bg-card dark:bg-card-dark rounded-xl shadow-lg"
             variants={containerVariants}
             initial="hidden"
-            animate="visible"
+            animate="show"
         >
-            {/* Avatar */}
-            <motion.div variants={itemVariants} className="text-center mb-4">
-                {userData.picture ? (
-                    <Avatar className="inline-block h-24 w-24">
-                        <AvatarImage src={userData.picture} alt={userData.username} />
-                        <AvatarFallback>{userData.username[0]}</AvatarFallback>
-                    </Avatar>
-                ) : (
-                    <div className="inline-block w-24 h-24 bg-gray-200 rounded-full">
-                        <span className="text-3xl text-gray-400">?</span>
-                    </div>
-                )}
-            </motion.div>
-
-            {/* Edit switch + Name */}
+            {/* Avatar and Name Section */}
             <motion.div
                 variants={itemVariants}
-                className="flex items-center justify-between mb-6"
+                className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8"
             >
-                <Switch checked={isEditing} onCheckedChange={toggleEdit} />
-                <div className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                    {!isEditing ? (
-                        `${userData.firstName || ""} ${userData.lastName || ""}`.trim()
-                    ) : (
-                        <div className="flex space-x-2">
-                            <Input
-                                {...form.register("firstName")}
-                                placeholder= {userData.firstName || "First Name"}
-                                className="w-1/2"
-                            />
-                            <Input
-                                {...form.register("lastName")}
-                                placeholder= {userData.lastName || "Last Name"}
-                                className="w-1/2"
-                            />
-                        </div>
-                    )}
+                <div className="flex items-center gap-4">
+                    <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
+                        <AvatarImage
+                            src={userData.picture}
+                            alt={userData.username}
+                        />
+                        <AvatarFallback>
+                            {userData.username[0]}
+                        </AvatarFallback>
+                    </Avatar>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                        {!isEditing
+                            ? `${userData.firstName || ""} ${
+                                userData.lastName || ""
+                            }`.trim()
+                            : "Edit Profile"}
+                    </h1>
+                </div>
+                <div className="flex gap-2">
+
+                    <Button
+                        variant="outline"
+                        onClick={() => toggleEdit(!isEditing)}
+                        className="self-start"
+                    >
+                        {isEditing ? "Cancel" : "Edit Profile"}
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={() => logout({ returnTo: window.location.origin })}
+                        className="self-start"
+                    >
+                        Logout
+                    </Button>
                 </div>
             </motion.div>
 
             {/* Form */}
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    {["email", "phone"].map((name) => (
-                        <motion.div variants={itemVariants} key={name}>
-                            <FormField
-                                control={form.control}
-                                name={name}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="capitalize">
-                                            {name}
-                                        </FormLabel>
-                                        <FormControl>
-                                            <div className="relative">
-                                                <Input {...field} disabled={!isEditing} />
-                                                <Button
-                                                    type="button"
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent hover:bg-transparent"
-                                                    onClick={() => copyToClipboard(field.value)}
-                                                    aria-label="Copy"
-                                                >
-                                                    <Copy size={16} />
-                                                </Button>
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </motion.div>
-                    ))}
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {["firstName", "lastName", "email", "phone"].map(
+                        (name) => (
+                            <motion.div variants={itemVariants} key={name}>
+                                <FormField
+                                    control={form.control}
+                                    name={name}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="capitalize">
+                                                {name}
+                                            </FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Input
+                                                        {...field}
+                                                        disabled={!isEditing}
+                                                        className="w-full"
+                                                    />
+                                                    {name !== "bio" && (
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="absolute right-2 top-1/2 -translate-y-1/2"
+                                                            onClick={() =>
+                                                                copyToClipboard(
+                                                                    field.value
+                                                                )
+                                                            }
+                                                            aria-label="Copy"
+                                                        >
+                                                            <Copy size={16} />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </motion.div>
+                        )
+                    )}
 
                     <motion.div variants={itemVariants}>
                         <FormField
@@ -261,7 +307,11 @@ export default function ProfilePage() {
                                 <FormItem>
                                     <FormLabel>Bio</FormLabel>
                                     <FormControl>
-                                        <Textarea {...field} disabled={!isEditing} />
+                                        <Textarea
+                                            {...field}
+                                            disabled={!isEditing}
+                                            className="w-full min-h-[100px]"
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -280,7 +330,12 @@ export default function ProfilePage() {
                                         <select
                                             {...field}
                                             disabled={!isEditing}
-                                            className="w-full border rounded-md p-2 dark:bg-gray-700 dark:text-white"
+                                            className={cn(
+                                                "w-full border rounded-md p-3",
+                                                "bg-background text-foreground",
+                                                "focus:outline-none focus:ring-2 focus:ring-ring",
+                                                "disabled:opacity-50 disabled:cursor-not-allowed"
+                                            )}
                                         >
                                             {skillOptions.map((lvl) => (
                                                 <option key={lvl} value={lvl}>
@@ -297,7 +352,11 @@ export default function ProfilePage() {
 
                     {isEditing && (
                         <motion.div variants={itemVariants}>
-                            <Button type="submit" className="w-full mt-4">
+                            <Button
+                                type="submit"
+                                className="w-full mt-6"
+                                disabled={!form.formState.isDirty}
+                            >
                                 Save Profile
                             </Button>
                         </motion.div>
@@ -307,3 +366,4 @@ export default function ProfilePage() {
         </motion.div>
     );
 }
+
