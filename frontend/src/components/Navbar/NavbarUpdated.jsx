@@ -55,8 +55,8 @@ const defaultMenu = [
 export function NavbarUpdated({
                                   logo = {
                                       url: "/",
-                                      src: "/bull-svgrepo-com_black.svg",
-                                      darkSrc: "/bull-svgrepo-com.svg",
+                                      src: "/svgs/bull-svgrepo-com_black.svg",
+                                      darkSrc: "/svgs/bull-svgrepo-com.svg",
                                       alt: "Logo",
                                       title: "Toros",
                                   },

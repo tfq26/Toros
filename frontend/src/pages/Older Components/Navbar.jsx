@@ -22,7 +22,7 @@ const Navbar = ({ tournamentSetupComplete, user, onLogout }) => {
             Icon: () => (
                 <div className="w-full flex justify-center py-4">
                     <img
-                        src="/bull-svgrepo-com.svg"
+                        src="/svgs/bull-svgrepo-com.svg"
                         alt="Home Icon"
                         className="w-12 h-12"
                     />
