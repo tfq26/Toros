@@ -1,12 +1,23 @@
-// Page.jsx
-import React, { useEffect } from "react";
+// src/pages/Page.jsx
+import { useEffect } from 'react'
+import PropTypes from 'prop-types'
 
-const Page = ({ title, children }) => {
+export default function Page({ title, children }) {
     useEffect(() => {
-        document.title = `Toros - ${title}`;
-    }, [title]);
+        const base = 'Toros'
+        // only interpolate if it's a primitive
+        if (typeof title === 'string' || typeof title === 'number') {
+            document.title = `${base} – ${title}`
+        } else {
+            console.warn('Invalid Page “title” prop:', title)
+            document.title = base
+        }
+    }, [title])
 
-    return children;
-};
+    return <>{children}</>
+}
 
-export default Page;
+Page.propTypes = {
+    title: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    children: PropTypes.node,
+}

@@ -1,77 +1,84 @@
 // src/pages/TournamentRoutes.jsx
-import React, { Suspense } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
-import Page from '../pages/Page.jsx'
-import TournamentSetup        from '../pages/Setup/TournamentSetup.jsx'
-import TournamentSetupSuccess from '../pages/Setup/Pages/SuccessPage.jsx'
-import TournamentList         from '../pages/Tournament/Lists/TournamentList.jsx'
-import LiveTournament         from '../pages/Tournament/LiveTournament.jsx'
+import React, { Suspense } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import Page from '../pages/Page.jsx';
+
+const TournamentSetup        = React.lazy(() => import('../pages/Setup/TournamentSetup'));
+const TournamentSetupSuccess = React.lazy(() => import('../pages/Setup/Pages/SuccessPage'));
+const TournamentList         = React.lazy(() => import('../pages/Tournament/Lists/TournamentList'));
+const LiveTournament         = React.lazy(() => import('../pages/Tournament/LiveTournament.jsx'));
 
 export default function TournamentRoutes({
                                              setTournamentSetupComplete,
                                              tournamentConfig,
                                              setTournamentConfig,
                                          }) {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     return (
-        <Suspense fallback={null}>
-            <Routes>
-                <Route
-                    path="setup"
-                    element={
-                        <Page title="Tournament Setup">
+        <Routes>
+            <Route
+                path="setup"
+                element={
+                    <Page title="Tournament Setup">
+                        <Suspense fallback={<div>Loading setup…</div>}>
                             <TournamentSetup
                                 onSetupComplete={(config) => {
-                                    setTournamentSetupComplete(true)
-                                    setTournamentConfig(config)
-                                    navigate('/tournament/success', { state: { config } })
+                                    setTournamentSetupComplete(true);
+                                    setTournamentConfig(config);
+                                    navigate('/tournament/success', { state: { config } });
                                 }}
                                 setTournamentConfig={setTournamentConfig}
                             />
-                        </Page>
-                    }
-                />
+                        </Suspense>
+                    </Page>
+                }
+            />
 
-                <Route
-                    path="success"
-                    element={
-                        <Page title="Setup Success">
+            <Route
+                path="success"
+                element={
+                    <Page title="Setup Success">
+                        <Suspense fallback={<div>Finalizing…</div>}>
                             <TournamentSetupSuccess />
-                        </Page>
-                    }
-                />
+                        </Suspense>
+                    </Page>
+                }
+            />
 
-                <Route
-                    path="my"
-                    element={
-                        <Page title="My Tournaments">
+            <Route
+                path="my"
+                element={
+                    <Page title="My Tournaments">
+                        <Suspense fallback={<div>Loading your tournaments…</div>}>
                             <TournamentList />
-                        </Page>
-                    }
-                />
+                        </Suspense>
+                    </Page>
+                }
+            />
 
-                <Route
-                    path="find"
-                    element={
-                        <Page title="Find Tournaments">
-                            <div className="p-6 text-2xl">Find Tournaments Placeholder</div>
-                        </Page>
-                    }
-                />
+            <Route
+                path="find"
+                element={
+                    <Page title="Find Tournaments">
+                        <div className="p-6 text-2xl">Find Tournaments Placeholder</div>
+                    </Page>
+                }
+            />
 
-                <Route
-                    path="live/:tournamentId"
-                    element={
-                        <Page title="Live Tournament">
+            <Route
+                path="live/:tournamentId"
+                element={
+                    <Page title="Live Tournament">
+                        <Suspense fallback={<div>Connecting to live match…</div>}>
                             <LiveTournament
                                 tournamentConfig={tournamentConfig}
                                 setTournamentSetupComplete={setTournamentSetupComplete}
                             />
-                        </Page>
-                    }
-                />
-            </Routes>
-        </Suspense>
-    )
+                        </Suspense>
+                    </Page>
+                }
+            />
+        </Routes>
+    );
 }
