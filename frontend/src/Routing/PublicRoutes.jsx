@@ -1,76 +1,74 @@
-// src/pages/PublicRoutes.jsx
-import React, { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Page from '../pages/Page.jsx';  // Page.jsx is alongside PublicRoutes.jsx
+// src/Routing/PublicRoutes.jsx
+import React, { Suspense, lazy } from "react";
+import { Routes, Route } from "react-router-dom";
+import LazyPage from "@/components/layout/LazyPage";
 
-// Lazy-load your pages
-const Home      = React.lazy(() => import('../pages/./Home'));
-const Players   = React.lazy(() => import('../pages/./Players/Players'));
-const Profile   = React.lazy(() => import('../pages/./Profile/ProfilePage'));
-const MatchTest = React.lazy(() => import('../pages/./Tournament/MatchTest'));
-const Viewer    = React.lazy(() => import('../pages/./Tournament/Viewer/WindowView'));
+// Lazy‐loaded pages — each one guaranteed to export a `.default`
+const Home      = lazy(() => import("../pages/Home").then(mod => ({ default: mod.default })));
+const Players   = lazy(() => import("../pages/Players/Players").then(mod => ({ default: mod.default })));
+const Profile   = lazy(() => import("../pages/Profile/ProfilePage").then(mod => ({ default: mod.default })));
+const MatchTest = lazy(() => import("../pages/Tournament/MatchTest").then(mod => ({ default: mod.default })));
+const Viewer    = lazy(() => import("../pages/Tournament/Viewer/WindowView").then(mod => ({ default: mod.default })));
 
 export default function PublicRoutes() {
     return (
-        <Routes>
-            <Route
-                index
-                element={
-                    <Page title="Home">
-                        <Suspense fallback={<div>Loading Home…</div>}>
-                            <Home />
-                        </Suspense>
-                    </Page>
-                }
-            />
-            <Route
-                path="players"
-                element={
-                    <Page title="Players">
-                        <Suspense fallback={<div>Loading Players…</div>}>
-                            <Players />
-                        </Suspense>
-                    </Page>
-                }
-            />
-            <Route
-                path="profile"
-                element={
-                    <Page title="My Profile">
-                        <Suspense fallback={<div>Loading Profile…</div>}>
-                            <Profile />
-                        </Suspense>
-                    </Page>
-                }
-            />
-            <Route
-                path="explore/*"
-                element={
-                    <Page title="Explore">
-                        <div className="p-6 text-2xl">Explore Placeholder</div>
-                    </Page>
-                }
-            />
-            <Route
-                path="test-matches"
-                element={
-                    <Page title="Test Matches">
-                        <Suspense fallback={<div>Loading Test Matches…</div>}>
-                            <MatchTest />
-                        </Suspense>
-                    </Page>
-                }
-            />
-            <Route
-                path="viewer"
-                element={
-                    <Page title="Viewer">
-                        <Suspense fallback={<div>Loading Viewer…</div>}>
-                            <Viewer />
-                        </Suspense>
-                    </Page>
-                }
-            />
-        </Routes>
+        <Suspense fallback={<div className="p-6 text-center">Loading page…</div>}>
+            <Routes>
+                <Route
+                    index
+                    element={
+                        <LazyPage title="Home" fallback="Loading Home…" Component={Home} />
+                    }
+                />
+                <Route
+                    path="players"
+                    element={
+                        <LazyPage
+                            title="Players"
+                            fallback="Loading Players…"
+                            Component={Players}
+                        />
+                    }
+                />
+                <Route
+                    path="profile"
+                    element={
+                        <LazyPage
+                            title="My Profile"
+                            fallback="Loading Profile…"
+                            Component={Profile}
+                        />
+                    }
+                />
+                <Route
+                    path="test-matches"
+                    element={
+                        <LazyPage
+                            title="Test Matches"
+                            fallback="Loading Matches…"
+                            Component={MatchTest}
+                        />
+                    }
+                />
+                <Route
+                    path="viewer"
+                    element={
+                        <LazyPage
+                            title="Viewer"
+                            fallback="Loading Viewer…"
+                            Component={Viewer}
+                        />
+                    }
+                />
+                <Route
+                    path="explore/*"
+                    element={
+                        <LazyPage title="Explore" fallback="Loading Explore…">
+                            <div className="p-6 text-2xl">Explore Placeholder</div>
+                        </LazyPage>
+                    }
+                />
+            </Routes>
+        </Suspense>
     );
 }

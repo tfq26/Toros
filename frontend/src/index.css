@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -110,9 +111,14 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme {
+  --font-bungee-inline: 'Bungee Inline', cursive;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    @apply font-bungee-inline;
   }
   body {
     @apply bg-background text-foreground;

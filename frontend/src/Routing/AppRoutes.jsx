@@ -1,54 +1,77 @@
-// src/pages/AppRoutes.jsx
-import  { useContext } from 'react'
-import { Routes, Route }      from 'react-router-dom'
-import { SidebarProvider }    from '@/components/ui/sidebar.jsx'
-import LoadingModal           from '@/pages/Modals/LoadingModal.jsx'
-import { useAuth }            from '@/Contexts/AuthContext.jsx'
-import { LoadingContext }     from '@/Contexts/LoadingContext.jsx'
-import { TournamentProvider } from '@/Contexts/TournamentContext.jsx'
+// src/Routing/AppRoutes.jsx
+import React, { Suspense, lazy } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Page from '@/pages/Page'
+import { TournamentProvider } from '@/Contexts/TournamentContext.jsx'  // ← correct path & casing
 
-import PublicRoutes      from './PublicRoutes.jsx'
-import NewsRoutes        from './NewsRoutes.jsx'
-import TournamentRoutes  from './TournamentRoutes.jsx'
+// public pages
+const Home     = lazy(() => import('@/pages/Home'))
+const NewsPage = lazy(() => import('@/pages/News/NewsPage'))
 
-export default function AppRoutes() {
-    const { loadingProfile } = useAuth()
-    const { isLoading }      = useContext(LoadingContext)
+// tournament pages
+const TournamentSetup        = lazy(() => import('@/pages/Setup/TournamentSetup'))
+const TournamentSetupSuccess = lazy(() => import('@/pages/Setup/Pages/SuccessPage'))
+const TournamentList         = lazy(() => import('@/pages/Tournament/Lists/TournamentList'))
+const LiveTournament         = lazy(() => import('@/pages/Tournament/LiveTournament'))
 
+export default function AppRoutes({
+                                      setTournamentSetupComplete,
+                                      tournamentConfig,
+                                      setTournamentConfig,
+                                  }) {
     return (
-        <SidebarProvider>
-            <TournamentProvider>
-                <div className="relative flex h-screen w-screen">
-                    <main className="flex-1 overflow-y-auto">
-                        <Routes>
-                            {/* News section */}
-                            <Route path="/news/*" element={<NewsRoutes />} />
+        // Wrap here so all children below can call useTournament()
+        <TournamentProvider>
+            <Suspense fallback={<div className="p-6 text-center">Loading application…</div>}>
+                <Routes>
 
-                            {/* Tournament section */}
-                            <Route path="/tournament/*" element={<TournamentRoutes />} />
+                    {/* ─── Public area ─── */}
+                    <Route element={<Page title="Home" />}>
+                        <Route index element={<Home />} />
+                        <Route path="news" element={<NewsPage />} />
+                    </Route>
 
-                            {/* Public section: home, players, profile, explore, test-matches, viewer */}
-                            <Route path="/*" element={<PublicRoutes />} />
-                        </Routes>
-                    </main>
-
-                    {/* Overlaid loading/auth modals */}
-                    {loadingProfile && (
-                        <LoadingModal
-                            isLoading
-                            message="Checking permissions…"
-                            description="Hang tight while we verify your account."
+                    {/* ─── Tournament area ─── */}
+                    <Route element={<Page title="Tournament" />}>
+                        <Route
+                            path="tournament/setup"
+                            element={
+                                <TournamentSetup
+                                    onSetupComplete={(config) => {
+                                        setTournamentSetupComplete(true)
+                                        setTournamentConfig(config)
+                                    }}
+                                    setTournamentConfig={setTournamentConfig}
+                                />
+                            }
                         />
-                    )}
-                    {!loadingProfile && isLoading && (
-                        <LoadingModal
-                            isLoading
-                            message="Loading…"
-                            description="Please wait while data is fetched."
+                        <Route
+                            path="tournament/success"
+                            element={<TournamentSetupSuccess />}
                         />
-                    )}
-                </div>
-            </TournamentProvider>
-        </SidebarProvider>
+                        <Route path="tournament/my" element={<TournamentList />} />
+                        <Route
+                            path="tournament/find"
+                            element={
+                                <div className="p-6 text-2xl">Find Tournaments Placeholder</div>
+                            }
+                        />
+                        <Route
+                            path="tournament/live/:tournamentId"
+                            element={
+                                <LiveTournament
+                                    // no longer need to pass these; useTournament will supply them
+                                    // tournamentConfig={tournamentConfig}
+                                    // setTournamentSetupComplete={setTournamentSetupComplete}
+                                />
+                            }
+                        />
+                    </Route>
+
+                    {/* ─── Catch-all → back to home ─── */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Suspense>
+        </TournamentProvider>
     )
 }

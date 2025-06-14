@@ -1,11 +1,11 @@
 // src/pages/Page.jsx
 import { useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { Outlet } from 'react-router-dom'
 
-export default function Page({ title, children }) {
+export default function Page({ title }) {
     useEffect(() => {
         const base = 'Toros'
-        // only interpolate if it's a primitive
         if (typeof title === 'string' || typeof title === 'number') {
             document.title = `${base} – ${title}`
         } else {
@@ -14,10 +14,9 @@ export default function Page({ title, children }) {
         }
     }, [title])
 
-    return <>{children}</>
+    return <Outlet />
 }
 
 Page.propTypes = {
     title: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    children: PropTypes.node,
 }

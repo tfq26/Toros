@@ -1,20 +1,16 @@
-// src/pages/NewsRoutes.jsx
-import React, { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Page from '../pages/Page.jsx';                        // same folder
-const NewsPage = React.lazy(() => import('../pages/News/NewsPage'));
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import LazyPage from "@/components/layout/LazyPage"; // ✅ Ensure correct casing
+
+const NewsPage = React.lazy(() => import("../pages/News/NewsPage"));
 
 export default function NewsRoutes() {
     return (
         <Routes>
             <Route
-                path=""
+                index
                 element={
-                    <Page title="News">
-                        <Suspense fallback={<div>Loading news…</div>}>
-                            <NewsPage />
-                        </Suspense>
-                    </Page>
+                    <LazyPage title="News" fallback="Loading News…" Component={NewsPage} />
                 }
             />
         </Routes>
