@@ -1,71 +1,90 @@
 // src/components/TournamentItem.jsx
 import PropTypes from "prop-types";
-import { convertDate } from "@/utils/functions/dataUtils.js";
-import { Button } from "@/components/ui/button.jsx";
+
+// UI Components from your library (like shadcn/ui)
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+// A robust library for date formatting is recommended.
+// If you don't have it: npm install date-fns
+import { format } from "date-fns";
 
 export default function TournamentItem({
                                            tournament,
-                                           actions,
-                                           className = "",
+                                           isRegistered,
+                                           onView,
+                                           onRegister,
                                        }) {
-    return (
-        <li
-            className={`border p-4 rounded-lg transition dark:bg-emerald-950 hover:bg-emerald-100 dark:hover:bg-emerald-900 ${className}`}
-        >
-            <div
-                className="cursor-pointer"
-                onClick={() => {
-                    // Optional: auto-invoke any “view” action on header click
-                    const view = actions.find((a) => a.type === "view");
-                    view?.onClick(tournament.id);
-                }}
-            >
-                <p className="text-lg font-semibold">{tournament.name}</p>
-                <p className="text-gray-600 dark:text-gray-300">ID: {tournament.id}</p>
-                <p className="text-gray-600 dark:text-gray-300">
-                    Started: {convertDate(tournament.startTime, navigator.language)}
-                </p>
-            </div>
+    // REFACTOR: Safely format dates and provide clear fallbacks if data is missing.
+    const startDate = tournament.startDate
+        ? format(new Date(tournament.startDate), "MMM d, yyyy")
+        : "Date TBD";
 
-            <div className="mt-3 flex flex-wrap gap-2">
-                {actions.map((act, i) => (
-                    <Button
-                        key={i}
-                        onClick={() => act.onClick(tournament, tournament.id)}
-                        disabled={act.disabled}
-                        title={act.title}
-                        className={
-                            act.className ||
-                            "bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                        }
-                    >
-                        {act.label}
-                    </Button>
-                ))}
-            </div>
-        </li>
+    const registrationEndDate = tournament.registrationEndDate
+        ? format(new Date(tournament.registrationEndDate), "MMM d, yyyy")
+        : "N/A";
+
+    return (
+        // REFACTOR: Switched from <li> to <Card> for better structure and UI consistency.
+        <Card className="transition-shadow hover:shadow-lg dark:bg-card">
+            <CardHeader
+                onClick={onView} // REFACTOR: Kept the "click header to view" functionality.
+                className="cursor-pointer"
+            >
+                <div className="flex flex-wrap justify-between items-start gap-2">
+                    <div>
+                        <CardTitle>{tournament.name}</CardTitle>
+                        <CardDescription className="pt-1">
+                            {tournament.location || "Location not specified"}
+                        </CardDescription>
+                    </div>
+                    {/* REFACTOR: Added a Badge for a clear visual status indicator. */}
+                    {isRegistered && <Badge variant="secondary">Registered</Badge>}
+                </div>
+            </CardHeader>
+
+            <CardContent>
+                {/* REFACTOR: Displaying more useful information in a structured way. */}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p className="font-semibold text-muted-foreground">Start Date</p>
+                        <p className="text-foreground">{startDate}</p>
+                    </div>
+                    <div>
+                        <p className="font-semibold text-muted-foreground">Registration Closes</p>
+                        <p className="text-foreground">{registrationEndDate}</p>
+                    </div>
+                </div>
+            </CardContent>
+
+            <CardFooter className="flex justify-end gap-3">
+                {/* REFACTOR: Buttons now have specific purposes and use variants for styling. */}
+                <Button variant="outline" onClick={onView}>
+                    View Details
+                </Button>
+                <Button
+                    onClick={onRegister}
+                    disabled={isRegistered}
+                    aria-label={isRegistered ? "You are already registered" : "Register for this tournament"}
+                >
+                    {isRegistered ? "Registered" : "Register Now"}
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }
 
+// REFACTOR: Updated PropTypes to match the new, more explicit props API.
 TournamentItem.propTypes = {
     tournament: PropTypes.shape({
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
-        startTime: PropTypes.string.isRequired,
+        location: PropTypes.string,
+        startDate: PropTypes.string,
+        registrationEndDate: PropTypes.string,
     }).isRequired,
-    actions: PropTypes.arrayOf(
-        PropTypes.shape({
-            label: PropTypes.string.isRequired,
-            onClick: PropTypes.func.isRequired,
-            disabled: PropTypes.bool,
-            title: PropTypes.string,
-            className: PropTypes.string,
-            type: PropTypes.string, // e.g. "register", "view", "contact"
-        })
-    ).isRequired,
-    className: PropTypes.string,
-};
-
-TournamentItem.defaultProps = {
-    className: "",
+    isRegistered: PropTypes.bool.isRequired,
+    onView: PropTypes.func.isRequired,
+    onRegister: PropTypes.func.isRequired,
 };
