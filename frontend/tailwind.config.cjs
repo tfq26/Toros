@@ -1,5 +1,5 @@
 module.exports = {
-	darkMode: ['media', 'class'], // ← Add this line
+	darkMode: ['media', 'class'],
 	content: [
 		'./index.html',
 		'./src/**/*.{js,ts,jsx,tsx}',
@@ -27,38 +27,40 @@ module.exports = {
 					'system-ui',
 					'sans-serif'
 				],
-				// Added Bungee Inline font as kebab-case key
 				'bungee-inline': ['"Bungee Inline"', 'cursive'],
 			},
 			animation: {
 				slow_spin: 'spin 5s linear infinite',
 				glow: 'wiggle 2s linear infinite',
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float-heart': 'floatHeart 4s ease-in-out infinite',
 			},
 			keyframes: {
 				wiggle: {
-					'0%, 100%': {
-						transform: 'rotate(-2deg)'
-					},
-					'50%': {
-						transform: 'rotate(2deg)'
-					}
+					'0%, 100%': { transform: 'rotate(-2deg)' },
+					'50%': { transform: 'rotate(2deg)' }
 				},
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				floatHeart: {
+					'0%': {
+						transform: 'translateY(0) scale(1)',
+						opacity: '1'
 					},
-					to: {
-						height: '0'
+					'50%': {
+						transform: 'translateY(-50px) scale(1.2)',
+						opacity: '0.7'
+					},
+					'100%': {
+						transform: 'translateY(-100px) scale(0.8)',
+						opacity: '0'
 					}
 				}
 			}
@@ -80,6 +82,6 @@ module.exports = {
 		'text-shadow-sm',
 		'text-shadow',
 		'text-shadow-lg',
-		'font-bungee-inline', // ensure our custom font utility is generated
+		'font-bungee-inline',
 	],
 };

@@ -7,18 +7,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/matches")
+// ✨ FIXED: Standardized the base URL to `/api/match` (singular) to align with frontend calls.
+@RequestMapping("/api/match")
 @CrossOrigin(origins = "http://localhost:5173")
 public class MatchController {
 
@@ -48,19 +48,18 @@ public class MatchController {
         }
     }
 
-    /** 🎯 Get All Matches */
+    /** 🎯 Get All Match IDs */
     @GetMapping
-    public ResponseEntity<List<String>> getAllMatches() {
+    public ResponseEntity<List<String>> getAllMatchIds() {
         List<String> matchIds = matchService.getAllMatches();
         if (matchIds.isEmpty()) {
             log.warn("⚠️ No matches found.");
             return ResponseEntity.ok(List.of());
         }
-        matchIds.forEach(matchId -> log.info("📡 Match ID in response: {}", matchId));
         return ResponseEntity.ok(matchIds);
     }
 
-    /** 🎯 Get Matches by Team ID */
+    /** 🎯 Get Match IDs by Team ID */
     @GetMapping("/team/{teamId}")
     public ResponseEntity<?> getMatchesByTeam(@PathVariable String teamId) {
         try {
@@ -77,7 +76,7 @@ public class MatchController {
         }
     }
 
-    /** 🎯 Get Matches by Tournament ID */
+    /** 🎯 Get Match IDs by Tournament ID */
     @GetMapping("/tournament/{tournamentId}")
     public ResponseEntity<?> getMatchesByTournament(@PathVariable String tournamentId) {
         try {
@@ -95,7 +94,8 @@ public class MatchController {
     }
 
     /** 🎯 Update Match */
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    // ✨ FIXED: The path is now simply /{id}, which correctly resolves to /api/match/{id}.
+    @PatchMapping("/{id}")
     public ResponseEntity<?> updateMatch(@PathVariable String id, @RequestBody UpdateMatchRequest request) {
         try {
             log.info("📥 Received match update request: Match ID={}, Team1Score={}, Team2Score={}, Status={}",

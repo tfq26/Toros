@@ -1,83 +1,100 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { FaClock } from "react-icons/fa";
-import { Label } from "@/components/ui/label.jsx";
-import { DateTimePopup } from "@/components/ui/date-picker/date-with-time.jsx";
-import {DatePicker} from "@/components/ui/date-picker/date-picker.jsx";
+import React, { useEffect } from 'react';
+import { useSetupContext } from '@/contexts/SetupContext.jsx';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { TournamentDatePicker } from "@/components/ui/date-picker/date-picker.jsx";
+import { CardDescription, CardFooter } from '@/components/ui/card.jsx';
+import { format } from 'date-fns';
 
-const DateTimeStep = ({ tournamentConfig, handleConfigChange, handleSetCurrentTime }) => {
+const DateTimeStep = () => {
+    const { state, dispatch } = useSetupContext();
+
+    // A single handler to update the date range object in our state
+    const handleDateRangeChange = (newDateRange) => {
+        dispatch({
+            type: 'UPDATE_FIELD',
+            payload: { field: 'dateRange', value: newDateRange }
+        });
+    };
+
+    const handleFieldChange = (field, value) => {
+        dispatch({ type: 'UPDATE_FIELD', payload: { field, value } });
+    };
+
+    // ✨ NEW: Effect to combine date and time into a single value
+    useEffect(() => {
+        const { dateRange, startTime } = state;
+        if (dateRange?.from && startTime) {
+            const [hours, minutes] = startTime.split(':');
+            const newStartDateTime = new Date(dateRange.from);
+
+            newStartDateTime.setHours(parseInt(hours, 10));
+            newStartDateTime.setMinutes(parseInt(minutes, 10));
+            newStartDateTime.setSeconds(0);
+
+            // Dispatch the combined value to the context
+            dispatch({
+                type: 'UPDATE_FIELD',
+                payload: { field: 'startDateTime', value: newStartDateTime }
+            });
+        }
+    }, [state.dateRange, state.startTime, dispatch]);
+
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
-                    <Label className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
-                        Start Date
-                    </Label>
-                    <DatePicker
-                        value={tournamentConfig.startDate}
-                        onChange={(value) =>
-                            handleConfigChange("startDate", value)
-                        }
+        <div className="space-y-8">
+            <CardDescription>
+                Select the start/end dates for your tournament and a specific start time.
+            </CardDescription>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label>Tournament Dates</Label>
+                    <TournamentDatePicker
+                        value={state.dateRange}
+                        onChange={handleDateRangeChange}
+                        className="w-full"
                     />
                 </div>
-                <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
-                    <Label className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
-                        Start Time
-                    </Label>
-                    <div className="flex items-center gap-2">
-                        <Input
-                            type="time"
-                            value={tournamentConfig.startTime}
-                            required
-                            onChange={(e) =>
-                                handleConfigChange("startTime", e.target.value)
-                            }
-                            className="w-fit p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
-                        />
-                        <Button
-                            type="button"
-                            onClick={handleSetCurrentTime}
-                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white py-2 px-4 rounded-md transition"
-                        >
-                            <FaClock size={16} /> Now
-                        </Button>
-                    </div>
+                <div className="space-y-2">
+                    <Label htmlFor="start-time">Start Time</Label>
+                    <Input
+                        id="start-time"
+                        type="time"
+                        value={state.startTime || '09:00'} // Provide a default value
+                        onChange={(e) => handleFieldChange('startTime', e.target.value)}
+                        className="w-full"
+                    />
                 </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <Label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Match Duration (min)
-                    </Label>
+
+            {/* ✨ NEW: Display feedback for the combined date and time */}
+            {state.startDateTime && (
+                <CardFooter className="bg-muted p-4 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                        Tournament will start on: <strong>{format(state.startDateTime, "MMMM do, yyyy 'at' h:mm a")}</strong>
+                    </p>
+                </CardFooter>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div className="space-y-2">
+                    <Label>Match Duration: {state.matchDuration} minutes</Label>
                     <Slider
-                        value={[tournamentConfig.matchDuration]}
+                        value={[state.matchDuration]}
                         max={120}
                         step={5}
-                        onValueChange={(newValue) =>
-                            handleConfigChange("matchDuration", newValue[0])
-                        }
+                        onValueChange={(value) => handleFieldChange('matchDuration', value[0])}
                     />
-                    <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm">
-                        {tournamentConfig.matchDuration} minutes
-                    </p>
                 </div>
-                <div>
-                    <Label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Break Time (min)
-                    </Label>
+                <div className="space-y-2">
+                    <Label>Break Time Between Matches: {state.breakTime} minutes</Label>
                     <Slider
-                        value={[tournamentConfig.breakTime]}
+                        value={[state.breakTime]}
                         max={60}
                         step={5}
-                        onValueChange={(newValue) =>
-                            handleConfigChange("breakTime", newValue[0])
-                        }
+                        onValueChange={(value) => handleFieldChange('breakTime', value[0])}
                     />
-                    <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm">
-                        {tournamentConfig.breakTime} minutes
-                    </p>
                 </div>
             </div>
         </div>

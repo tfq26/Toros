@@ -17,17 +17,22 @@ function useTournaments() {
     const [data, setData] = useState({ tournaments: [], registeredIds: [] });
     const [status, setStatus] = useState("loading");
     const [error, setError] = useState(null);
-    const { isAuthenticated, loginWithRedirect, getAccessTokenSilently, user } = useAuth0();
+    const {
+        isLoading: isAuthLoading,
+        isAuthenticated,
+        getAccessTokenSilently,
+        user
+    } = useAuth0();
     const navigate = useNavigate();
 
     // Modal state
     const [isRegisterOpen, setIsRegisterOpen] = useState(false);
     const [selectedTournament, setSelectedTournament] = useState(null);
 
+    // Corrected fetchData function inside your useTournaments hook
+
     const fetchData = useCallback(async () => {
-        if (!user?.sub) {
-            // If user isn't loaded yet, wait. Can be handled better with Auth0Provider isLoading state.
-            setStatus('loading');
+        if (!isAuthenticated || !user?.sub) {
             return;
         }
 
@@ -35,57 +40,63 @@ function useTournaments() {
         try {
             const token = await getAccessTokenSilently();
 
-            // Fetch active tournaments and user data in parallel for speed
+            // Fetch active tournaments and user data
             const [tournamentsResp, userResp] = await Promise.all([
                 axios.get("http://localhost:8080/api/tournament/active"),
-                axios.get(`http://localhost:8080/api/users/auth0/${user.sub}`, {
+                axios.get(`http://localhost:8080/api/users/by-auth0`, {
                     headers: { Authorization: `Bearer ${token}` },
+                    params: { id: user.sub }
                 }),
             ]);
 
-            const tournaments = Array.isArray(tournamentsResp.data) ? tournamentsResp.data : [];
+            const rawData = tournamentsResp.data;
+            const tournaments = Array.isArray(rawData) ? rawData : [];
             const userId = userResp.data.id;
 
-            // Fetch registrations after getting user ID
-            const regResp = await axios.get(`http://localhost:8080/api/registration/user/${userId}`, {
+            // --- THIS IS THE CORRECTED LINE ---
+            const regResp = await axios.get(`http://localhost:8080/api/users/${userId}/registrations`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+            // --- END OF FIX ---
+
             const registeredIds = regResp.data.map((r) => r.tournamentId);
 
             setData({ tournaments, registeredIds });
             setStatus("success");
         } catch (err) {
-            console.error("Failed to fetch tournament data:", err);
+            console.error("❌ [DEBUG] An error occurred in fetchData:", err);
+            if (err.response) {
+                console.error("❌ [DEBUG] Axios response error:", err.response.data);
+            }
             setError("We couldn't load the tournaments. Please try again.");
             setStatus("error");
         }
-    }, [getAccessTokenSilently, user?.sub]);
+    }, [isAuthenticated, getAccessTokenSilently, user?.sub]);
 
     useEffect(() => {
+        if (isAuthLoading) {
+            setStatus("loading");
+            return;
+        }
         if (isAuthenticated) {
             fetchData();
         } else {
-            // If not authenticated, we can just fetch public tournaments without registration info
-            // For now, we'll just show loading until they are authenticated.
-            setStatus('loading');
+            setStatus("success");
+            setData({ tournaments: [], registeredIds: [] });
         }
-    }, [isAuthenticated, fetchData]);
+    }, [isAuthLoading, isAuthenticated, fetchData]);
 
-    // Actions
+    // ... The rest of the hook (actions, useMemo) remains the same ...
     const handleView = (id) => navigate(`/tournament/live/${id}`);
-
     const handleRegister = (tourney) => {
         if (!isAuthenticated) return loginWithRedirect();
         setSelectedTournament(tourney);
         setIsRegisterOpen(true);
     };
-
     const closeRegister = () => {
         setIsRegisterOpen(false);
         setSelectedTournament(null);
     };
-
-    // Optimistic UI update: Mark as registered instantly
     const onRegistered = (tournamentId) => {
         setData(prevData => ({
             ...prevData,
@@ -94,7 +105,6 @@ function useTournaments() {
         closeRegister();
     };
 
-    // Memoize the return value to stabilize props for child components
     return useMemo(() => ({
         status,
         tournaments: data.tournaments,
@@ -107,7 +117,7 @@ function useTournaments() {
             isOpen: isRegisterOpen,
             tournament: selectedTournament,
             onClose: closeRegister,
-            onRegistered: () => onRegistered(selectedTournament.id)
+            onRegistered: () => onRegistered(selectedTournament?.id)
         }
     }), [data, status, error, fetchData, handleView, handleRegister, isRegisterOpen, selectedTournament]);
 }

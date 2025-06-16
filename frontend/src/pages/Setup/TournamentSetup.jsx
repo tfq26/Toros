@@ -1,199 +1,135 @@
-// src/pages/Setup/TournamentSetup.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext.jsx";             // ← NEW
-import ErrorMessage from "../Error";
-import PlayerSidebar from "@/pages/Players/Components/PlayerSidebar.jsx";
-import PlayerStats from "../Players/Components/PlayerStats.jsx";
-import { convertLevel, calculateStats } from "@/utils/functions/HelperFunctions.js";
-import {
-    fetchPlayersAndGenerateTeams,
-    handleSubmit,
-    handleSetCurrentTime,
-} from "@/utils/functions/setupFunctions.js";
+import { useAuth } from "@/contexts/AuthContext.jsx";
+import { SetupProvider, useSetupContext } from "@/contexts/SetupContext.jsx";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import axios from 'axios';
 
 // Import step components
 import BasicInfoStep from "./Pages/BasicInfo.jsx";
 import DateTimeStep from "./Pages/DateTimeStep.jsx";
 import OrganizerDetails from "./Pages/OrganizerDetails.jsx";
-import TournamentDetails from "@/pages/Setup/Pages/TournamentDetails.jsx";
 import OptionsReviewStep from "./Pages/OptionsReview.jsx";
-import WizardNavigation from "./Components/WizardNavigation.jsx";
-import TournamentSetupSuccess from "@/pages/Setup/Pages/SuccessPage.jsx";
+import SuccessPage from "./Pages/SuccessPage.jsx";
 
-const TournamentSetup = ({ onSetupComplete }) => {
+const SetupWizard = () => {
+    const { user } = useAuth();
+    const { state, dispatch } = useSetupContext();
     const navigate = useNavigate();
-    const { user } = useAuth();                                      // ← Get the logged-in user
-    const [tournamentConfig, setTournamentConfig] = useState({
-        tournamentName: "",
-        numCourts: 1,
-        gamesPerTeam: 1,
-        startDate: "",
-        startTime: "",
-        matchDuration: 15,
-        breakTime: 5,
 
-        useExistingPlayers: false,
-        tiered: false,
+    const [currentStep, setCurrentStep] = useState(0);
+    const [error, setError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-        // Extended fields
-        location: "",
-        organizer: "",          // ← will be prefilled
-        contactInfo: "",        // ← will be prefilled
-        tournamentType: "",
-        scoringSystem: "",
-        rules: "",
-        prizeDistribution: "",
-        format: "",
-        ageGroup: "",
-        skillLevel: "",
-    });
-
-    // 1️⃣ Prefill organizer/contact from the logged-in user
     useEffect(() => {
         if (user) {
-            setTournamentConfig(prev => ({
-                ...prev,
-                organizer:   prev.organizer   || `${user.firstName} ${user.lastName}`,
-                contactInfo: prev.contactInfo || user.email,
-            }));
+            dispatch({
+                type: 'PREFILL_USER',
+                payload: { name: user.name || "Organizer Name", email: user.email },
+            });
         }
-    }, [user]);
+    }, [user, dispatch]);
 
-    const [teams, setTeams] = useState([]);
-    const [error, setError] = useState(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const handleNext = () => setCurrentStep(prev => prev + 1);
+    const handleBack = () => setCurrentStep(prev => prev - 1);
 
-    // Fetch teams on mount
-    useEffect(() => {
-        fetchPlayersAndGenerateTeams(setTeams, setError);
-    }, []);
-
-    // Log config changes
-    useEffect(() => {
-        console.log("TournamentConfig updated:", tournamentConfig);
-    }, [tournamentConfig]);
-
-    // Set document title
-    useEffect(() => {
-        document.title = "Tournament Setup";
-    }, []);
-
-    // Local config handler
-    const localHandleConfigChange = (prop, value) => {
-        setTournamentConfig(prev => ({ ...prev, [prop]: value }));
-    };
-
-    // Wrap handleSetCurrentTime
-    const localHandleSetCurrentTime = () => {
-        handleSetCurrentTime(setTournamentConfig);
-    };
-
-    // Final submit
-    const handleFinalSubmit = e => {
+    const handleFinalSubmit = async (e) => {
         e.preventDefault();
-        const { startDate, startTime, ...rest } = tournamentConfig;
-        if (!startDate || !startTime) {
-            setError("Please provide both a start date and a start time.");
+        setError(null);
+        setIsSubmitting(true);
+
+        if (!state.startDateTime) {
+            setError("Please provide a valid start date and time.");
+            setCurrentStep(1);
+            setIsSubmitting(false);
             return;
         }
-        const combinedDateTime = new Date(`${startDate}T${startTime}`);
+
+        // ✨ FIXED: Create a payload that exactly matches the backend's TournamentSetupRequest DTO.
+        // This renames properties to match the Java class expectations.
         const payload = {
-            ...rest,
-            startTime: combinedDateTime.toISOString(),
+            ...state, // Copy all matching properties
+            skillBased: state.tiered, // Rename 'tiered' to 'skillBased'
+            startTime: state.startDateTime.toISOString(), // Rename 'startDateTime' to 'startTime' and format as ISO string
         };
-        handleSubmit(e, payload, teams, setError, onSetupComplete, navigate);
+        // Clean up the old properties that have been renamed
+        delete payload.tiered;
+        delete payload.startDateTime;
+        delete payload.dateRange; // Also remove the raw dateRange object
+
+        try {
+            console.log("Submitting tournament payload to /api/tournament/setup:", payload);
+
+            // This API call now sends a correctly formatted payload to the endpoint.
+            const response = await axios.post('/api/tournament/setup', payload);
+
+            console.log("Server response:", response.data);
+
+            handleNext();
+
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to create tournament. Please try again.');
+            console.error("Submission Error:", err);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const playerStats = calculateStats(teams.flat());
+    const steps = [
+        { name: "Basics", component: <BasicInfoStep /> },
+        { name: "Date & Time", component: <DateTimeStep /> },
+        { name: "Details", component: <OrganizerDetails /> },
+        { name: "Review", component: <OptionsReviewStep /> },
+        { name: "Complete!", component: <SuccessPage /> },
+    ];
+
+    const progressPercentage = (currentStep / (steps.length - 2)) * 100;
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8">
-            <div className="w-full max-w-4xl bg-white dark:bg-gray-900 sm:p-8 rounded-xl shadow-2xl">
-                {error && <ErrorMessage message={error} />}
+        <Card className="w-full max-w-2xl">
+            <CardHeader>
+                <CardTitle className="text-2xl">Create a New Tournament</CardTitle>
+                <CardDescription>Step {currentStep + 1} of {steps.length -1}: {steps[currentStep].name}</CardDescription>
+                {currentStep < steps.length - 1 && <Progress value={progressPercentage} className="mt-2" />}
+            </CardHeader>
+            <CardContent>
+                {error && <p className="text-destructive text-center mb-4">{error}</p>}
 
-                <WizardNavigation
-                    onSubmit={handleFinalSubmit}
-                    error={error}
-                    stepNames={[
-                        "Details",
-                        "Date & Time",
-                        "Organizer Info",
-                        "Tournament Info",
-                        "Review",
-                    ]}
-                    navigationConfig={[
-                        { showBack: true, showNext: true },
-                        { showBack: true, showNext: true },
-                        { showBack: true, showNext: true },
-                        { showBack: true, showNext: true },
-                        { showBack: true, showNext: true },
-                        { showBack: false, showNext: false },
-                    ]}
-                >
-                    <BasicInfoStep
-                        tournamentConfig={tournamentConfig}
-                        handleConfigChange={localHandleConfigChange}
-                    />
-                    <DateTimeStep
-                        tournamentConfig={tournamentConfig}
-                        handleConfigChange={localHandleConfigChange}
-                        handleSetCurrentTime={localHandleSetCurrentTime}
-                    />
-                    {/* Now OrganizerDetails is pre-filled from user */}
-                    <OrganizerDetails
-                        tournamentConfig={tournamentConfig}
-                        handleConfigChange={localHandleConfigChange}
-                    />
-                    <TournamentDetails
-                        tournamentConfig={tournamentConfig}
-                        handleConfigChange={localHandleConfigChange}
-                    />
-                    <OptionsReviewStep tournamentConfig={tournamentConfig} />
-                    <TournamentSetupSuccess />
-                </WizardNavigation>
-            </div>
+                <div className="min-h-[300px]">
+                    {steps[currentStep].component}
+                </div>
 
-            <PlayerSidebar
-                isOpen={isSidebarOpen}
-                onClose={() => setIsSidebarOpen(false)}
-                sections={[
-                    {
-                        id: "players",
-                        label: "Registered Players",
-                        content: (
-                            <div className="p-4 bg-gray-100 dark:bg-gray-800">
-                                <h3 className="text-xl font-bold mb-3 text-gray-800 dark:text-gray-100">
-                                    📋 Registered Players
-                                </h3>
-                                {teams.length ? (
-                                    <ul className="space-y-2 text-gray-700 dark:text-gray-200">
-                                        {teams.flat().map(p => (
-                                            <li
-                                                key={p.id}
-                                                className="border-b border-gray-300 dark:border-gray-600 pb-2"
-                                            >
-                                                {p.name} — {convertLevel(p.skillLevel) || "Unranked"}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p className="text-gray-600 dark:text-gray-400">
-                                        No registered players found.
-                                    </p>
-                                )}
-                            </div>
-                        ),
-                    },
-                    {
-                        id: "playerStats",
-                        label: "Player Stats",
-                        content: <PlayerStats stats={playerStats} />,
-                    },
-                ]}
-            />
-        </div>
+                <div className="mt-8 pt-6 border-t flex justify-between">
+                    <div>
+                        {currentStep > 0 && currentStep < steps.length - 1 && (
+                            <Button variant="outline" onClick={handleBack} disabled={isSubmitting}>Back</Button>
+                        )}
+                    </div>
+                    <div>
+                        {currentStep < steps.length - 2 && (
+                            <Button onClick={handleNext}>Next</Button>
+                        )}
+                        {currentStep === steps.length - 2 && (
+                            <Button onClick={handleFinalSubmit} disabled={isSubmitting}>
+                                {isSubmitting ? "Creating..." : "Create Tournament"}
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     );
 };
 
-export default TournamentSetup;
+// The main export just provides the context wrapper
+export default function TournamentSetup() {
+    return (
+        <div className="min-h-screen flex items-center justify-center p-4">
+            <SetupProvider>
+                <SetupWizard />
+            </SetupProvider>
+        </div>
+    );
+}

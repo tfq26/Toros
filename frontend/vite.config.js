@@ -14,5 +14,14 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      // This forwards any request starting with /api to your backend
+      '/api': {
+        target: 'http://localhost:8080', // Your Java backend URL
+        changeOrigin: true, // Recommended for virtual-hosted sites
+      },
+    },
+  },
 })
 // https://vitejs.dev/config/

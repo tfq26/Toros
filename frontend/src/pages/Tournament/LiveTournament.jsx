@@ -1,111 +1,73 @@
-// src/pages/Tournament/LiveTournament.jsx
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import debounce from "lodash.debounce";
 
+// Components
 import MatchTabs from "./MatchTabs";
-import WindowView from "./Viewer/WindowView.jsx";
 import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx";
 import { Button } from "@/components/ui/button.jsx";
+import { Separator } from "@/components/ui/separator.jsx";
+import { FaWindowMaximize, FaFlagCheckered, FaExclamationTriangle } from "react-icons/fa";
 
-import {
-    fetchMatchesByTournament,
-} from "@/utils/functions/dataUtils.js";
+// Utilities & Context
+import { fetchMatchesByTournament } from "@/utils/functions/dataUtils.js";
 import { useTournament } from "@/contexts/TournamentContext.jsx";
 
 export default function LiveTournament() {
     const { tournamentId } = useParams();
+
+    // Global state from context
     const {
         tournamentConfig,
         setTournamentConfig,
-        setTournamentSetupComplete,
+        setIsSetupComplete
     } = useTournament();
 
-    // local state for config + loading + error
-    const [config, setConfig] = useState(null);
-    const [loadingConfig, setLoadingConfig] = useState(true);
-    const [configError, setConfigError] = useState(null);
-
-    useEffect(() => {
-        // if we already have the right config in context, use it
-        if (tournamentConfig?.id === tournamentId) {
-            setConfig(tournamentConfig);
-            setLoadingConfig(false);
-            return;
-        }
-
-        // otherwise fetch it
-        setLoadingConfig(true);
-        axios
-            .get(`http://localhost:8080/api/tournament/${tournamentId}`)
-            .then((res) => {
-                setConfig(res.data);
-                setTournamentConfig(res.data);
-                setTournamentSetupComplete(true);
-            })
-            .catch((err) => {
-                console.error("Error loading tournament config:", err);
-                setConfigError(err);
-            })
-            .finally(() => {
-                setLoadingConfig(false);
-            });
-    }, [
-        tournamentConfig,
-        tournamentId,
-        setTournamentConfig,
-        setTournamentSetupComplete,
-    ]);
-
-    // 1) Show loading while fetching config
-    if (loadingConfig) {
-        return (
-            <div className="p-6 text-center">
-                🔄 Loading tournament <strong>{tournamentId}</strong>…
-            </div>
-        );
-    }
-
-    // 2) Show error if the fetch failed
-    if (configError) {
-        return (
-            <div className="p-6 text-center text-red-500">
-                ❌ Couldn’t load tournament: {configError.message}
-            </div>
-        );
-    }
-
-    // 3) If for some reason we still don’t have config
-    if (!config) {
-        return (
-            <div className="p-6 text-center text-gray-500">
-                ⚠️ No tournament data available.
-            </div>
-        );
-    }
-
-    // from here on out, `config` is guaranteed non-null
-    const setupProperties = config.setupProperties || [];
-
-    // update document title
-    useEffect(() => {
-        document.title = config.tournamentName
-            ? `${config.tournamentName} • Live`
-            : "Tournament Live";
-    }, [config]);
-
-    // rest of your match logic…
+    // Page-specific state
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [matches, setMatches] = useState([]);
     const [loadingMatches, setLoadingMatches] = useState(true);
     const [sortOrder, setSortOrder] = useState("desc");
-    const [showWindowView] = useState(false);
     const [showEndModal, setShowEndModal] = useState(false);
 
+    // Effect to fetch main tournament configuration
+    useEffect(() => {
+        if (tournamentConfig?.id === tournamentId) {
+            setIsLoading(false);
+            return;
+        }
+        const fetchTournamentData = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await axios.get(`/api/tournament/${tournamentId}`);
+                setTournamentConfig(response.data);
+                setIsSetupComplete(response.data.status !== 'SETUP');
+            } catch (err) {
+                console.error("Error loading tournament config:", err);
+                setError(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchTournamentData();
+    }, [tournamentId, tournamentConfig?.id, setTournamentConfig, setIsSetupComplete]);
+
+    // Effect to update the browser document title
+    useEffect(() => {
+        if (tournamentConfig) {
+            document.title = tournamentConfig.name ? `${tournamentConfig.name} • Live` : "Tournament Live";
+        }
+    }, [tournamentConfig]);
+
+    // Logic for fetching matches
     const fetchMatches = useCallback(async () => {
+        if (!tournamentConfig?.id) return;
         setLoadingMatches(true);
         try {
-            const ms = await fetchMatchesByTournament(config.id);
+            const ms = await fetchMatchesByTournament(tournamentConfig.id);
             setMatches(ms);
         } catch (err) {
             console.error("Error fetching matches:", err);
@@ -113,64 +75,85 @@ export default function LiveTournament() {
         } finally {
             setLoadingMatches(false);
         }
-    }, [config.id]);
+    }, [tournamentConfig?.id]);
 
-    const debouncedFetch = useCallback(
-        debounce(() => fetchMatches(), 500),
-        [fetchMatches]
-    );
+    const debouncedFetch = useCallback(debounce(() => fetchMatches(), 500), [fetchMatches]);
 
     useEffect(() => {
         debouncedFetch();
         return () => debouncedFetch.cancel();
     }, [debouncedFetch]);
 
-    const updateMatch = async (m) => {
-        if (!m.id) return console.error("Match ID missing!");
+    // Robust optimistic update logic for a single match
+    const updateMatch = async (updatedMatchData) => {
+        const previousMatches = [...matches];
+        const newMatches = matches.map(m =>
+            m.id === updatedMatchData.id ? { ...m, ...updatedMatchData } : m
+        );
+        setMatches(newMatches);
+
         try {
-            const res = await axios.patch(
-                `http://localhost:8080/api/tournament/${m.id}`,
+            await axios.patch(
+                `/api/match/${updatedMatchData.id}`,
                 {
-                    team1Score: m.team1Score,
-                    team2Score: m.team2Score,
-                    status: m.status,
+                    team1Score: updatedMatchData.team1Score,
+                    team2Score: updatedMatchData.team2Score,
+                    status: updatedMatchData.status,
                 }
             );
-            if (res.status === 200) await fetchMatches();
         } catch (e) {
-            console.error("Error updating match:", e);
-            alert("Update failed");
+            console.error("❌ Failed to update match, reverting UI.", e);
+            setMatches(previousMatches);
+            alert("Failed to save match status. Please try again.");
         }
     };
 
-    const checkForDuplicates = () => {
-        /* your duplicate logic */
+    // ✨ FIXED: This now opens the new URL format you requested.
+    const handleOpenWindow = () => {
+        // Your router should now have a route like: /tournament/live/window/:tournamentId
+        window.open(`/tournament/live/window/${tournamentId}`, '_blank', 'noopener,noreferrer');
     };
 
+
+    // Placeholder for duplicate check logic
+    const checkForDuplicates = () => {
+        console.log("Checking for duplicate matches...");
+        alert("Duplicate check feature not yet implemented.");
+    };
+
+    if (isLoading) return <div className="p-6 text-center text-lg">🔄 Loading tournament data...</div>;
+    if (error) return <div className="p-6 text-center text-red-500">❌ Couldn’t load tournament: {error.message}</div>;
+    if (!tournamentConfig) return <div className="p-6 text-center text-gray-500">⚠️ No tournament data available.</div>;
+
     return (
-        <div className="flex flex-col p-4">
-            {/* header, sidebar, etc. */}
-            <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded shadow">
-                <h1 className="text-xl font-bold dark:text-white">
-                    {config.tournamentName}
+        <div className="flex flex-col p-4 gap-4">
+            {/* Header */}
+            <div className="flex items-center justify-between bg-card text-card-foreground p-4 rounded-lg shadow">
+                <h1 className="text-2xl font-bold">
+                    {tournamentConfig.name}
                 </h1>
-                {/* …sheet trigger/sidebar… */}
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleOpenWindow}>
+                        <FaWindowMaximize className="mr-2 h-4 w-4" /> Window View
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => setShowEndModal(true)}>
+                        <FaFlagCheckered className="mr-2 h-4 w-4" /> End Tournament
+                    </Button>
+                </div>
             </div>
 
-            {/* main content */}
+            {/* Main Content */}
             <div className="flex-grow">
-                <Button onClick={checkForDuplicates} variant="outline">
-                    Check Duplicate Match-ups
-                </Button>
+                <div className="mb-4">
+                    <Button onClick={checkForDuplicates} variant="secondary">
+                        <FaExclamationTriangle className="mr-2 h-4 w-4" /> Check Duplicate Match-ups
+                    </Button>
+                </div>
 
-                {setupProperties.length > 0 && (
-                    <div className="mb-4 bg-white dark:bg-gray-800 p-2 rounded shadow">
-                        {/* … */}
-                    </div>
-                )}
+                <Separator className="my-4" />
 
                 {loadingMatches ? (
-                    <p className="text-center">Loading matches…</p>
+                    <p className="text-center py-8">Loading matches…</p>
                 ) : (
                     <MatchTabs
                         matches={matches}
@@ -182,25 +165,19 @@ export default function LiveTournament() {
                 )}
             </div>
 
-            {/* end modal & window view */}
+            {/* Modals and other overlays */}
             <EndTournamentModalUpdated
                 isOpen={showEndModal}
                 onClose={() => setShowEndModal(false)}
                 endTournament={async () => {
                     try {
-                        await axios.post("http://localhost:8080/api/tournament/end");
+                        await axios.post(`/api/tournament/${tournamentConfig.id}/end`);
                         console.log("Tournament ended.");
                     } catch (e) {
-                        console.error(e);
+                        console.error("Failed to end tournament:", e);
                     }
                 }}
             />
-
-            {showWindowView && (
-                <div className="fixed inset-0 bg-white dark:bg-gray-800 p-4 z-40">
-                    <WindowView matches={matches} />
-                </div>
-            )}
         </div>
     );
 }

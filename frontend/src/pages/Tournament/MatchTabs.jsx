@@ -63,7 +63,7 @@ const MatchTabs = ({matches, sortOrder, refreshMatches, updateMatch}) => {
                         <Button
                             key={tab}
                             onClick={() => setSelectedTab(tab)}
-                            className={`px-4 py-2 font-semibold ${
+                            className={`px-4 py-2 font-semibold cursor-pointer ${
                                 selectedTab === tab
                                     ? "border-b-2 dark:bg-red-700 border-orange-100 text-orange-100"
                                     : "text-emerald-400 dark:bg-gray-950"

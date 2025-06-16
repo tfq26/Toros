@@ -12,10 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
-
+import java.util.Optional; // Make sure this is imported
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -81,14 +80,16 @@ public class UserService {
         });
     }
 
+    // --- FIX 1: Change this method to return Optional<User> ---
     public Optional<User> findByAuth0Id(String auth0Id) {
+        // This now correctly returns the Optional from the repository
         return userRepository.findByAuth0Id(auth0Id);
     }
 
-    public User getUserById(String id) {
-        return userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    // --- FIX 2: Change this method to return Optional<User> ---
+    public Optional<User> getUserById(String id) {
+        // The findById method from MongoRepository already returns an Optional
+        return userRepository.findById(id);
     }
 
     /**

@@ -3,8 +3,8 @@
   "version": "0.6.2",
   "private": true,
   "scripts": {
+    "backend": "node tools/start-backend.js",
     "frontend": "cd frontend && npm run dev",
-    "backend": "cd backend && (./mvnw spring-boot:run || mvnw.cmd spring-boot:run)",
     "start": "concurrently \"npm run backend\" \"npm run frontend\"",
     "build": "react-scripts build",
     "test": "react-scripts test",

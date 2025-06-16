@@ -1,141 +1,143 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion.jsx";
+import { Link, NavLink } from 'react-router-dom';
+
+// Custom hook for scroll detection
+import { useScrollPosition } from "@/hooks/useScrollPosition.js";
+
+// UI and Custom Components/Hooks
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion.jsx";
 import { Button } from "@/components/ui/button.jsx";
-import {
-    NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu.jsx";
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet.jsx";
-import useDevTools from "@/pages/DevTools/DevTools.jsx";
-import { useAuth } from "@/contexts/AuthContext.jsx";
-import { NavbarAuth } from "../../pages/Auth/NavbarAuth.jsx";
-import { VscTools } from "react-icons/vsc";
-import { Separator } from "@/components/ui/separator.jsx";
-import { useTheme } from "@/contexts/ThemeContext.jsx"; // Import useTheme
-import { Link } from 'react-router-dom';
+// ✨ NEW: Imported SheetDescription
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet.jsx";
+import { useTheme } from "@/contexts/ThemeContext.jsx";
+import { ActionButtons } from "./ActionButtons.jsx";
 
-// Default menu data...
-const defaultMenu = [ /* … */ ];
-
-const SubMenuLink = React.forwardRef(({ item, ...props }, ref) => (
-    <a ref={ref} href={item.url} className="block py-2 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors" {...props}>
-        {item.title}
-    </a>
-));
-SubMenuLink.displayName = "SubMenuLink";
-
-// Framer variants
+// Animation Variants
 const navVariants = {
     hidden: { opacity: 0, y: -20 },
-    show: { opacity: 1, y: 0, transition: { when: "beforeChildren", staggerChildren: 0.1 } },
+    show: { opacity: 1, y: 0, transition: { staggerChildren: 0.1 } },
 };
+
 const itemVariants = {
     hidden: { opacity: 0, y: -10 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
+    show: { opacity: 1, y: 0 },
 };
 
-export function NavbarUpdated({
-                                  logo = {
-                                      url: "/",
-                                      src: "/svgs/bull-svgrepo-com_black.svg",
-                                      darkSrc: "/svgs/bull-svgrepo-com.svg",
-                                      alt: "Logo",
-                                      title: "Toros",
-                                  },
-                                  menu = defaultMenu,
-                              }) {
-    const { openDevTools } = useDevTools();
-    const { isDev } = useAuth();
-    const { theme, toggleDarkMode } = useTheme(); // Use the hook
+const dropdownVariants = {
+    hidden: { opacity: 0, y: 5, scale: 0.98 },
+    show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: "easeInOut" } },
+    exit: { opacity: 0, y: 5, scale: 0.98, transition: { duration: 0.1, ease: "easeIn" } },
+};
+
+
+// Default prop values for robustness
+const defaultLogo = {
+    url: "/",
+    src: "svgs/bull-svgrepo-com_black.svg",
+    darkSrc: "svgs/bull-svgrepo-com.svg",
+    alt: "Default Logo",
+    title: "Site",
+};
+
+export function NavbarEnhanced({ logo = defaultLogo, menu = [] }) {
+    const { theme } = useTheme();
+    const scrolled = useScrollPosition();
     const [openDropdown, setOpenDropdown] = useState(null);
+    const navRef = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (navRef.current && !navRef.current.contains(event.target)) {
+                setOpenDropdown(null);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [navRef]);
+
 
     const isDarkMode = theme === 'dark';
-    const logoSrc = isDarkMode && logo.darkSrc ? logo.darkSrc : logo.src;
+    const logoSrc = isDarkMode && logo?.darkSrc ? logo.darkSrc : logo?.src;
 
-
-
-    // Desktop menu item with animation variants
+    // Simpler desktop menu with useState
     const renderDesktopMenuItem = (item, idx) => (
-        <NavigationMenuItem
+        <div
             key={`${item.title}-${idx}`}
-            onMouseEnter={() => setOpenDropdown(item.title)}
-            onMouseLeave={() => setOpenDropdown(null)}
+            className="relative"
+            onMouseEnter={() => item.hasDropdown && setOpenDropdown(item.title)}
+            onMouseLeave={() => item.hasDropdown && setOpenDropdown(null)}
         >
-            <motion.div variants={itemVariants} whileHover={{ scale: 1.10 }}>
-                {item.hasDropdown ? (
-                    <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
-                ) : (
-                    <NavigationMenuLink asChild
-                    className={'"block py-2 px-4 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-sm'}>
-                        <Link to={item.url}>{item.title}</Link>
-                    </NavigationMenuLink>
-                )}
-            </motion.div>
+            {item.hasDropdown ? (
+                <button
+                    aria-haspopup="true"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 px-4"
+                >
+                    {item.title}
+                </button>
+            ) : (
+                <NavLink
+                    to={item.url}
+                    className={({ isActive }) =>
+                        `inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-10 px-4
+                        ${isActive ? 'bg-accent text-accent-foreground' : 'bg-transparent hover:bg-accent hover:text-accent-foreground'}`
+                    }
+                >
+                    {item.title}
+                </NavLink>
+            )}
 
             <AnimatePresence>
                 {openDropdown === item.title && item.hasDropdown && (
-                    <NavigationMenuContent className="absolute top-full left-0 z-50 mt-1 min-w-[200px]">
-                        <motion.div
-                            variants={itemVariants}
-                            initial="hidden"
-                            animate="show"
-                            exit="hidden"
-                            transition={{ duration: 0.2 }}
-                            className="bg-popover text-popover-foreground p-3 rounded-md shadow-lg grid gap-2"
-                        >
-                            {item.items.map((sub, i) => (
-                                <NavigationMenuLink
-                                    asChild key={i}>
-                                    <SubMenuLink item={sub} />
-                                </NavigationMenuLink>
+                    <motion.div
+                        variants={dropdownVariants}
+                        initial="hidden"
+                        animate="show"
+                        exit="exit"
+                        className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50"
+                    >
+                        <ul className="grid gap-1 p-2 rounded-md shadow-lg bg-popover text-popover-foreground w-[280px]">
+                            {item.items && item.items.map((sub, i) => (
+                                <li key={i}>
+                                    <Link
+                                        to={sub.url}
+                                        className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                        onClick={() => setOpenDropdown(null)}
+                                    >
+                                        <div className="text-sm font-medium leading-none">{sub.title}</div>
+                                        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                            {sub.description}
+                                        </p>
+                                    </Link>
+                                </li>
                             ))}
-                        </motion.div>
-                    </NavigationMenuContent>
+                        </ul>
+                    </motion.div>
                 )}
             </AnimatePresence>
-        </NavigationMenuItem>
+        </div>
     );
 
-    // Mobile menu item with motion on accordion triggers
     const renderMobileMenuItem = (item, idx) =>
-        item.items ? (
+        item.hasDropdown ? (
             <AccordionItem key={`${item.title}-${idx}`} value={item.title}>
-                <motion.div variants={itemVariants}>
-                    <AccordionTrigger className="…">{item.title}</AccordionTrigger>
-                </motion.div>
-                <AccordionContent className="mt-4 space-y-2">
-                    {item.items.map((sub, i) => (
-                        <SubMenuLink key={i} item={sub} />
+                <AccordionTrigger>{item.title}</AccordionTrigger>
+                <AccordionContent className="pl-4">
+                    {item.items && item.items.map((sub, i) => (
+                        <Link key={i} to={sub.url} className="block py-2 text-muted-foreground hover:text-foreground">
+                            {sub.title}
+                        </Link>
                     ))}
                 </AccordionContent>
             </AccordionItem>
         ) : (
-            <motion.a
-                key={`${item.title}-${idx}`}
-                href={item.url}
-                variants={itemVariants}
-                className="text-md font-semibold block py-1"
-            >
+            <Link key={`${item.title}-${idx}`} to={item.url} className="block py-3 font-medium text-lg">
                 {item.title}
-            </motion.a>
+            </Link>
         );
 
     return (
@@ -143,93 +145,63 @@ export function NavbarUpdated({
             variants={navVariants}
             initial="hidden"
             animate="show"
-            className={`w-full top-0 z-50 ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}
+            className={`sticky top-0 z-50 w-full transition-all duration-300
+                ${scrolled ? 'border-b bg-background/80 backdrop-blur-sm' : 'bg-transparent'}`
+            }
+            ref={navRef}
         >
-            <motion.nav className="flex items-center justify-between px-4 py-2">
-                {/* Logo */}
-                <motion.div
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.1 }}
-                    className="flex items-center gap-2"
-                >
-                    <a href={logo.url}>
-                        <img src={logoSrc} alt={logo.alt} className="h-8" />
-                    </a>
-                </motion.div>
-
-                {/* Desktop Menu */}
-                <div className="hidden md:flex items-center gap-6">
-                    <NavigationMenu>
-                        <NavigationMenuList>
-                            {menu.map(renderDesktopMenuItem)}
-                        </NavigationMenuList>
-                    </NavigationMenu>
-                    <motion.div className="flex items-center gap-2" variants={itemVariants}>
-                        <NavbarAuth />
-                        {isDev && (
-                            <Button variant="outline" size="sm" onClick={openDevTools}>
-                                <VscTools />
-                            </Button>
-                        )}
-                        <Button variant="outline" size="sm" onClick={toggleDarkMode}>
-                            {isDarkMode ? 'Light' : 'Dark'}
-                        </Button>
+            <nav className="container flex items-center justify-between px-4 py-3 mx-auto">
+                <div className="flex items-center gap-6">
+                    <motion.div variants={itemVariants}>
+                        <Link to={logo.url} className="flex items-center gap-2" aria-label={logo.title}>
+                            <img src={logoSrc} alt={logo.alt} className="h-12" />
+                        </Link>
                     </motion.div>
+
+                    <div className="hidden md:flex items-center">
+                        {menu.map(renderDesktopMenuItem)}
+                    </div>
                 </div>
 
-                {/* Mobile Menu */}
+                <motion.div variants={itemVariants} className="hidden md:flex items-center gap-4">
+                    <ActionButtons />
+                </motion.div>
+
                 <div className="md:hidden">
                     <Sheet>
                         <SheetTrigger asChild>
-                            <motion.div variants={itemVariants} whileTap={{ scale: 0.9 }}>
-                                <Button variant="outline" size="icon">
-                                    <Menu size={24} />
-                                </Button>
-                            </motion.div>
+                            <Button variant="outline" size="icon">
+                                <Menu size={24} />
+                                <span className="sr-only">Open menu</span>
+                            </Button>
                         </SheetTrigger>
-                        <SheetContent className={`overflow-y-auto ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
+                        <SheetContent>
                             <SheetHeader>
-                                <SheetTitle>
-                                    <div className="flex items-center justify-between w-full">
-                                        <span className="text-lg font-semibold">{logo.title}</span>
-                                        <div className="flex items-center gap-2">
-                                            <NavbarAuth />
-                                            {isDev && (
-                                                <Button variant="outline" onClick={openDevTools}>
-                                                    <VscTools />
-                                                </Button>
-                                            )}
-                                            <Button variant="outline" onClick={toggleDarkMode}>
-                                                {isDarkMode ? 'Light' : 'Dark'}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </SheetTitle>
+                                <SheetTitle>{logo.title}</SheetTitle>
+                                {/* ✨ FIXED: Added SheetDescription for accessibility */}
+                                <SheetDescription className="sr-only">
+                                    Main navigation menu and site actions.
+                                </SheetDescription>
                             </SheetHeader>
-                            <motion.div
-                                variants={navVariants}
-                                initial="hidden"
-                                animate="show"
-                                className="flex flex-col gap-4 px-4 py-2"
-                            >
-                                <Accordion type="single" collapsible className="space-y-2">
-                                    {menu.map(renderMobileMenuItem)}
+                            <div className="mt-6 flex flex-col gap-2">
+                                {menu.filter(item => !item.hasDropdown).map(renderMobileMenuItem)}
+                                <Accordion type="single" collapsible className="w-full">
+                                    {menu.filter(item => item.hasDropdown).map(renderMobileMenuItem)}
                                 </Accordion>
-                            </motion.div>
+                            </div>
                         </SheetContent>
                     </Sheet>
                 </div>
-            </motion.nav>
-
-            <Separator
-                orientation="horizontal"
-                className={`h-0.5 ${isDarkMode ? 'bg-emerald-700' : 'bg-black'} w-1/2`}
+            </nav>
+            <motion.div layout
+                        className={`h-0.5 ${isDarkMode ? 'bg-emerald-700' : 'bg-black'}`}
+                        style={{ width: scrolled ? '100%' : '50%', transition: 'width 0.5s ease-in-out' }}
             />
         </motion.header>
     );
 }
 
-NavbarUpdated.propTypes = {
+NavbarEnhanced.propTypes = {
     logo: PropTypes.shape({
         url: PropTypes.string.isRequired,
         src: PropTypes.string.isRequired,
@@ -240,15 +212,15 @@ NavbarUpdated.propTypes = {
     menu: PropTypes.arrayOf(
         PropTypes.shape({
             title: PropTypes.string.isRequired,
+            url: PropTypes.string,
+            hasDropdown: PropTypes.bool,
             items: PropTypes.arrayOf(
                 PropTypes.shape({
                     title: PropTypes.string.isRequired,
-                    url: PropTypes.string.isRequired,
+                    url: `string`.isRequired,
                     description: PropTypes.string,
                 })
             ),
-            hasDropdown: PropTypes.bool
         })
     ),
 };
-

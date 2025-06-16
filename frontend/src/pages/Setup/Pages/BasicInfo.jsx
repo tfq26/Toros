@@ -1,49 +1,54 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label.jsx";
+import React from 'react';
+import { useSetupContext } from '@/contexts/SetupContext.jsx';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CardDescription } from '@/components/ui/card';
 
-const BasicInfoStep = ({ tournamentConfig, handleConfigChange }) => {
+const BasicInfoStep = () => {
+    const { state, dispatch } = useSetupContext();
+
+    const handleChange = (e) => {
+        const { name, value, type } = e.target;
+        dispatch({
+            type: 'UPDATE_FIELD',
+            payload: { field: name, value: type === 'number' ? parseInt(value, 10) : value },
+        });
+    };
+
     return (
-        <div className="space-y-6 p-10">
-            <div>
+        <div className="space-y-6">
+            <CardDescription>Start with the essential details for your tournament.</CardDescription>
+            <div className="space-y-2">
+                <Label htmlFor="tournamentName">Tournament Name</Label>
                 <Input
-                    type="text"
-                    value={tournamentConfig.tournamentName}
-                    onChange={(e) =>
-                        handleConfigChange("tournamentName", e.target.value)
-                    }
-                    required
-                    placeholder="Enter Tournament Name"
-                    className="w-full text-lg p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    id="tournamentName"
+                    name="tournamentName"
+                    value={state.tournamentName}
+                    onChange={handleChange}
+                    placeholder="e.g., Summer Pickleball Classic"
                 />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <Label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Number of Courts
-                    </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="numCourts">Number of Courts</Label>
                     <Input
+                        id="numCourts"
+                        name="numCourts"
                         type="number"
-                        value={tournamentConfig.numCourts}
-                        onChange={(e) =>
-                            handleConfigChange("numCourts", parseInt(e.target.value, 10))
-                        }
-                        max={20}
-                        className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+                        value={state.numCourts}
+                        onChange={handleChange}
+                        min="1"
                     />
                 </div>
-                <div>
-                    <Label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Games per Team
-                    </Label>
+                <div className="space-y-2">
+                    <Label htmlFor="gamesPerTeam">Guaranteed Games per Team</Label>
                     <Input
+                        id="gamesPerTeam"
+                        name="gamesPerTeam"
                         type="number"
-                        value={tournamentConfig.gamesPerTeam}
-                        onChange={(e) =>
-                            handleConfigChange("gamesPerTeam", parseInt(e.target.value, 10))
-                        }
-                        max={20}
-                        className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+                        value={state.gamesPerTeam}
+                        onChange={handleChange}
+                        min="1"
                     />
                 </div>
             </div>

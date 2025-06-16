@@ -1,200 +1,131 @@
-import { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import  { useState } from "react";
+import { usePlayers } from "@/hooks/usePlayers.js"; // Import the new hook
+
+// UI Components
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { FaPlus, FaSync } from "react-icons/fa";
+
+// Child Components
 import PlayerTable from "./Tables/PlayerTable.jsx";
 import TeamTable from "./Tables/TeamTable.jsx";
 import PlayerStats from "./Components/PlayerStats.jsx";
-import PlayerSettings from "./Components/PlayerSettings.jsx";
 import PlayerSearch from "./Components/PlayerSearch.jsx";
-import LoadingModal from "@/pages/Modals/LoadingModal.jsx";
-import PlayerSidebar from "@/pages/Players/Components/PlayerSidebar.jsx";
+import PlayerFilters from "./Components/PlayerFilters.jsx"; // A new component for filters
 import PlayerModalUpdated from "@/pages/Modals/PlayerModalUpdated.jsx";
-import { Switch } from "@/components/ui/switch";
-import {
-    fetchPlayersData,
-    filterPlayersData,
-    convertLevel,
-    calculateStats,
-} from "@/utils/functions/HelperFunctions.js";
-import {useParams} from "react-router";
+import { Skeleton } from "@/components/ui/skeleton.jsx";
 
-const Players = () => {
-    const [players, setPlayers] = useState([]);
-    const [filteredPlayers, setFilteredPlayers] = useState([]);
-    const [selectedClub, setSelectedClub] = useState("");
-    const [selectedLevel, setSelectedLevel] = useState("");
-    const [error, setError] = useState(null);
-    const [setSuccessMessage] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isTeamView, setIsTeamView] = useState(false);
-    const { tournamentId } = useParams();
-    const triggerRefresh = async () => {
-        await fetchPlayers();
-    };
+const PlayersPage = () => {
+    const {
+        status,
+        error,
+        players,
+        stats,
+        clubs,
+        levels,
+        filters,
+        actions,
+    } = usePlayers();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isSlidingWindowOpen, setIsSlidingWindowOpen] = useState(false);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-    // Fetch players using the helper function.
-    const fetchPlayers = async () => {
-        setIsLoading(true);
-        try {
-            const data = await fetchPlayersData();
-            setPlayers(data);
-            setError(null);
-        } catch {
-            setError("Failed to load player data. Please try again later.");
-            setPlayers([]);
-        } finally {
-            setIsLoading(false);
-        }
+    const handleEditPlayer = (player) => {
+        setSelectedPlayer(player);
+        setIsModalOpen(true);
     };
 
-    useEffect(() => {
-        fetchPlayers();
-    }, []);
+    const handleAddPlayer = () => {
+        setSelectedPlayer(null); // Ensure modal opens in 'add' mode
+        setIsModalOpen(true);
+    };
 
-    // Filter players based on club, level, and search query using helper function.
-    useEffect(() => {
-        setFilteredPlayers(filterPlayersData(players, selectedClub, selectedLevel, searchQuery));
-    }, [players, selectedClub, selectedLevel, searchQuery]);
-
-    const stats = calculateStats(filteredPlayers);
-    const clubs = [...new Set(players.map((player) => player.clubName))];
-    const levels = [...new Set(players.map((player) => convertLevel(player.skillLevel)))];
-
-    const handleEditTeam = (team) => {
-        console.log("Edit Team clicked:", team);
-        // Additional logic for team editing can be added here.
+    const renderContent = () => {
+        if (status === 'loading') {
+            return <TableSkeleton />;
+        }
+        if (status === 'error') {
+            return (
+                <div className="text-center py-10">
+                    <p className="text-destructive font-semibold">{error}</p>
+                    <Button onClick={actions.refresh} variant="outline" className="mt-4">
+                        <FaSync className="mr-2" />
+                        Try Again
+                    </Button>
+                </div>
+            );
+        }
+        return (
+            <TabsContent value="players" className="mt-0">
+                <PlayerTable players={players} onEdit={handleEditPlayer} />
+            </TabsContent>
+        );
     };
 
     return (
-        <div className="relative">
-            <div className="w-full pl-20 pr-6 py-4">
-                <div className="flex flex-col lg:flex-row gap-6 w-full">
-                    <div className="relative flex-1 min-w-0 pr-12">
-                        {isLoading && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-10">
-                                <LoadingModal message="Loading Player List" description="Please wait..." />
-                            </div>
-                        )}
-
-                        <div className="flex items-center w-full justify-between">
-                            <PlayerSearch onSearchChange={setSearchQuery} />
-                        </div>
-
-                        {/* Switch to toggle between Players and Teams */}
-                        <div className="flex items-center pb-5 border-b-4 mb-6 gap-2">
-                            <span className="text-sm">Players</span>
-                            <Switch
-                                checked={isTeamView}
-                                onCheckedChange={(checked) => setIsTeamView(checked)}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 p-4 md:p-6">
+            {/* Main Content Area */}
+            <div className="lg:col-span-3">
+                <Card>
+                    <CardHeader>
+                        {/* Header with Search, Filters, and Actions */}
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                            <PlayerSearch onSearchChange={actions.setSearchQuery} />
+                            <PlayerFilters
+                                clubs={clubs}
+                                levels={levels}
+                                selectedClub={filters.selectedClub}
+                                selectedLevel={filters.selectedLevel}
+                                onClubChange={actions.setSelectedClub}
+                                onLevelChange={actions.setSelectedLevel}
                             />
-                            <span className="text-sm">Teams</span>
+                            <Button onClick={handleAddPlayer}>
+                                <FaPlus className="mr-2" /> Add Player
+                            </Button>
                         </div>
-
-                        <div className="flex flex-col gap-6">
-                            {isTeamView ? (
-                                <TeamTable
-                                    tournamentId={tournamentId}
-                                    onEdit={handleEditTeam}
-                                    error={error}
-                                />
-                            ) : (
-                                <PlayerTable
-                                    players={filteredPlayers}
-                                    error={error}
-                                    onEdit={(player) => {
-                                        setSelectedPlayer(player);
-                                        setIsModalOpen(true);
-                                    }}
-                                />
-                            )}
-                        </div>
-                    </div>
-                </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Tabs defaultValue="players" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="players">Players</TabsTrigger>
+                                <TabsTrigger value="teams">Teams</TabsTrigger>
+                            </TabsList>
+                            {renderContent()}
+                            <TabsContent value="teams">
+                                <TeamTable />
+                            </TabsContent>
+                        </Tabs>
+                    </CardContent>
+                </Card>
             </div>
 
-            {/* Player Modal */}
+            {/* Sidebar / Stats Area */}
+            <div className="lg:col-span-1">
+                <PlayerStats stats={stats} />
+            </div>
+
+            {/* Player Modal for Add/Edit */}
             {isModalOpen && (
                 <PlayerModalUpdated
                     isModalOpen={isModalOpen}
-                    onClose={() => {
-                        setIsModalOpen(false);
-                        setSelectedPlayer(null);
-                    }}
+                    onClose={() => setIsModalOpen(false)}
                     selectedPlayer={selectedPlayer}
-                    refreshPlayers={fetchPlayers}
-                    triggerRefresh={triggerRefresh}
+                    refreshPlayers={actions.refresh}
                 />
             )}
-
-            {/* Sliding Window */}
-            <PlayerSidebar
-                isOpen={isSlidingWindowOpen}
-                onClose={() => setIsSlidingWindowOpen(false)}
-                sections={[
-                    {
-                        id: "settings",
-                        label: "Settings",
-                        content: (
-                            <PlayerSettings
-                                isLoading={isLoading}
-                                onFileSelect={(importedPlayers) => {
-                                    if (!importedPlayers || importedPlayers.length === 0) {
-                                        setError("⚠️ No valid player data found in the imported file.");
-                                        return;
-                                    }
-                                    setSuccessMessage(
-                                        `✅ File imported successfully! ${importedPlayers.length} players added.`
-                                    );
-                                    setError(null);
-                                    fetchPlayers();
-                                }}
-                                onStatusUpdate={setSuccessMessage}
-                                clubs={clubs}
-                                levels={levels}
-                                selectedClub={selectedClub}
-                                selectedLevel={selectedLevel}
-                                onFilterChange={(type, value) => {
-                                    if (type === "club") setSelectedClub(value);
-                                    if (type === "level") setSelectedLevel(value);
-                                }}
-                                onAddPlayer={() => {
-                                    setSelectedPlayer(null);
-                                    setIsModalOpen(true);
-                                }}
-                            />
-                        ),
-                    },
-                    {
-                        id: "stats",
-                        label: "Stats",
-                        content: <PlayerStats stats={stats} />,
-                    },
-                ]}
-            />
         </div>
     );
 };
 
-Players.propTypes = {
-    players: PropTypes.array,
-    error: PropTypes.string,
-    isLoading: PropTypes.bool,
-    setSuccessMessage: PropTypes.func,
-    setError: PropTypes.func,
-    selectedPlayer: PropTypes.object,
-    setSelectedPlayer: PropTypes.func,
-    isModalOpen: PropTypes.bool,
-    setIsModalOpen: PropTypes.func,
-    isSlidingWindowOpen: PropTypes.bool,
-    setIsSlidingWindowOpen: PropTypes.func,
-    fetchPlayers: PropTypes.func,
-    triggerRefresh: PropTypes.func,
-    selectedClub: PropTypes.string,
-    setSelectedClub: PropTypes.func,
-};
+// A simple skeleton component for the loading state
+const TableSkeleton = () => (
+    <div className="space-y-4 p-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+    </div>
+);
 
-export default Players;
+export default PlayersPage;

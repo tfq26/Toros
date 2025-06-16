@@ -30,36 +30,23 @@ public class TournamentController {
         this.tournamentService = tournamentService;
     }
 
-    /** 🎯 Setup Tournament with Extended Properties */
+    /**
+     * Creates a new tournament from a setup request.
+     * ✨ FIXED: This method now correctly calls the refactored service method.
+     * It accepts the request body and passes it directly to the service.
+     */
     @PostMapping("/setup")
     public ResponseEntity<?> setupTournament(@RequestBody TournamentSetupRequest request) {
         try {
-            log.info("🛠️ Setting up tournament: {}", request.getTournamentName());
-            Tournament tournament = tournamentSetupService.setupTournament(
-                    request.getTournamentName(),
-                    request.getNumCourts(),
-                    request.getGamesPerTeam(),
-                    request.isSkillBased(),
-                    request.getStartTime(),
-                    request.getMatchDuration(),
-                    request.getBreakTime(),
-                    request.getConfirmDelete(),
-                    request.getLocation(),
-                    request.getOrganizer(),
-                    request.getContactInfo(),
-                    request.getTournamentType(),
-                    request.getScoringSystem(),
-                    request.getRules(),
-                    request.getPrizeDistribution(),
-                    request.getFormat(),
-                    request.getAgeGroup(),
-                    request.getSkillLevel()
-            );
+            log.info("🛠️ Received request to set up tournament: {}", request.getTournamentName());
+
+            // This now passes the single request object to the service, resolving the error.
+            Tournament tournament = tournamentSetupService.setupTournament(request);
 
             if (tournament == null) {
-                log.warn("Tournament setup aborted due to duplicate tournament.");
+                log.warn("Tournament setup aborted due to a duplicate tournament name.");
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("Tournament with the given name already exists and deletion was not confirmed.");
+                        .body("A tournament with this name already exists.");
             }
 
             log.info("✅ Tournament '{}' setup successfully!", tournament.getName());
@@ -67,7 +54,7 @@ public class TournamentController {
         } catch (Exception e) {
             log.error("❌ Error setting up tournament: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to setup tournament.");
+                    .body("Failed to set up the tournament due to an internal error.");
         }
     }
 
