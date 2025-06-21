@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSetupContext } from '@/contexts/SetupContext.jsx';
+import { useSetup } from '@/contexts/SetupContext.jsx';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,7 +8,7 @@ import { CardDescription } from '@/components/ui/card';
 
 
 const OrganizerDetails = () => {
-    const { state, dispatch } = useSetupContext();
+    const { state, dispatch } = useSetup();
 
     const handleChange = (e) => {
         dispatch({

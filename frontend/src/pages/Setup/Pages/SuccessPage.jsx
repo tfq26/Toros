@@ -4,11 +4,11 @@ import { motion } from 'framer-motion';
 import { FaCheckCircle } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSetupContext } from '@/contexts/SetupContext'; // To display the tournament name
+import { useSetup } from '@/contexts/SetupContext'; // To display the tournament name
 
 const TournamentSetupSuccess = () => {
     // Get the final tournament name from the context to personalize the message
-    const { state } = useSetupContext();
+    const { state } = useSetup();
 
     // Animation variants for the container and its children
     const containerVariants = {

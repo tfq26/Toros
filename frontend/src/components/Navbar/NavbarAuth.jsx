@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button.jsx";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu.jsx";
 import { FaRegUserCircle } from "react-icons/fa";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils.js";
 
 export function NavbarAuth() {
     const {

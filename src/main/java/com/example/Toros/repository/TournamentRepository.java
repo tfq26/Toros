@@ -20,10 +20,13 @@ public interface TournamentRepository extends MongoRepository<Tournament, String
      * You can now call:
      *    tournamentRepository.findByParticipantUserId(userId);
      */
-    @Query("{ 'players': ?0 }")
-    List<Tournament> findByParticipantUserId(String userId);
+    List<Tournament> findByOrganizer(String organizerId);
 
-    // (Alternatively, you could use Spring Data’s naming convention:
-    // List<Tournament> findByPlayersContaining(String userId);
-    // )
+    // ✨ Method for finding tournaments by their status (e.g., "ACTIVE", "SETUP", "COMPLETED").
+    // Assumes your Tournament model has a field named 'status'.
+    List<Tournament> findByStatus(String status);
+
+    // ✨ Method for finding tournaments a user is registered in.
+    // Assumes your Tournament model has a list field named 'players'.
+    List<Tournament> findByPlayersContaining(String userId);
 }

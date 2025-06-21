@@ -1,27 +1,32 @@
-// src/contexts/LoadingContext.jsx
-import React, { createContext, useState } from 'react'
-import PropTypes from 'prop-types'
+import React, { createContext, useState, useContext } from 'react';
+import PropTypes from 'prop-types';
 
-// Create the context with default values
-export const LoadingContext = createContext({
-    isLoading: false,
-    setLoading: () => {},
-})
+// 1. Create the context (private)
+const LoadingContext = createContext(null);
 
 /**
- * LoadingProvider wraps your app (or part of it) and
- * gives access to `isLoading` and `setLoading` via context.
+ * LoadingProvider wraps your app and gives access to
+ * `isLoading` and `setLoading` via the useLoading hook.
  */
 export function LoadingProvider({ children }) {
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false);
 
     return (
         <LoadingContext.Provider value={{ isLoading, setLoading: setIsLoading }}>
             {children}
         </LoadingContext.Provider>
-    )
+    );
 }
 
 LoadingProvider.propTypes = {
     children: PropTypes.node.isRequired,
-}
+};
+
+// 2. Create and export the custom hook
+export const useLoading = () => {
+    const context = useContext(LoadingContext);
+    if (context === null) {
+        throw new Error('useLoading must be used within a LoadingProvider');
+    }
+    return context;
+};

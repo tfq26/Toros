@@ -85,7 +85,7 @@ const MatchCard = ({ match, updateMatch }) => {
                     <div className="flex justify-between items-center gap-4">
                         <CardTitle>Match {match.id?.slice(-4) || "N/A"}</CardTitle>
                         {/* REFACTOR: Upgraded to shadcn/ui Select component */}
-                        <Select onValueChange={handleStatusChange} defaultValue={match.status}>
+                        <Select onValueChange={handleStatusChange} defaultValue={match.status || "Scheduled"}>
                             <SelectTrigger className="w-[150px]">
                                 <SelectValue placeholder="Set Status" />
                             </SelectTrigger>

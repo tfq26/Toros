@@ -18,11 +18,16 @@ export default function LiveTournament() {
     const { tournamentId } = useParams();
 
     // Global state from context
+    const tournamentContext = useTournament();
+    if (!tournamentContext) {
+        return <div className="p-6 text-center text-red-500">❌ Tournament context unavailable.</div>;
+    }
+
     const {
         tournamentConfig,
         setTournamentConfig,
         setIsSetupComplete
-    } = useTournament();
+    } = tournamentContext;
 
     // Page-specific state
     const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +47,7 @@ export default function LiveTournament() {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await axios.get(`/api/tournament/${tournamentId}`);
+                const response = await axios.get(`/api/tournaments/${tournamentId}`);
                 setTournamentConfig(response.data);
                 setIsSetupComplete(response.data.status !== 'SETUP');
             } catch (err) {

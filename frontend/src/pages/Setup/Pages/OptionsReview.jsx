@@ -1,5 +1,5 @@
 import 'react';
-import { useSetupContext } from "@/contexts/SetupContext.jsx";
+import { useSetup } from "@/contexts/SetupContext.jsx";
 import { CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { format } from "date-fns"; // A great library for formatting dates
@@ -49,7 +49,7 @@ const formatDateRange = (range) => {
 
 
 const OptionsReviewStep = () => {
-    const { state } = useSetupContext(); // Get the final state from the context
+    const { state } = useSetup(); // Get the final state from the context
 
     return (
         <div className="space-y-6">

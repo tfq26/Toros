@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useTheme } from '@/contexts/ThemeContext.jsx';
 
 // Data for sections - improves readability by separating data from presentation
 const featuresData = [
@@ -43,6 +43,11 @@ export default function Home() {
             "https://placehold.co/600x400/FF6347/000000?text=Tournament+4",
         ]);
         document.title = "Toros - The Ultimate Pickleball Tournament Experience";
+    }, []);
+
+    useEffect(() => {
+        console.log("🏠 [Home] component mounted");
+        console.log("🎨 Dark mode enabled:", isDarkMode);
     }, []);
 
     const handleSubscribe = (e) => {

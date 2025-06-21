@@ -56,7 +56,7 @@ export default function RegisterModal({
             const userId = user?.sub;
 
             const res = await axios.post(
-                "http://localhost:8080/api/tournament/register",
+                "http://localhost:8080/api/tournaments/register",
                 { tournamentId: tournament.id, userId },
                 {
                     headers: {
@@ -102,7 +102,7 @@ export default function RegisterModal({
                     : null,
             };
             await axios.post(
-                "http://localhost:8080/api/tournament/register/guest",
+                "http://localhost:8080/api/tournaments/register/guest",
                 payload
             );
             onRegistered();

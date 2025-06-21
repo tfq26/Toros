@@ -10,7 +10,7 @@ const MatchTest = () => {
     const fetchMatches = async () => {
         setLoading(true);
         try {
-            const response = await axios.get("http://localhost:8080/api/tournament/matches");
+            const response = await axios.get("http://localhost:8080/api/tournaments/matches");
             console.log("📡 API Response:", response.data);
             setMatches(response.data || []); // ✅ Ensure we set an array
             setError(null);

@@ -1,90 +1,84 @@
-// src/components/TournamentItem.jsx
 import PropTypes from "prop-types";
 
-// UI Components from your library (like shadcn/ui)
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-// A robust library for date formatting is recommended.
-// If you don't have it: npm install date-fns
+// A robust library for date formatting
 import { format } from "date-fns";
 
-export default function TournamentItem({
-                                           tournament,
-                                           isRegistered,
-                                           onView,
-                                           onRegister,
-                                       }) {
-    // REFACTOR: Safely format dates and provide clear fallbacks if data is missing.
+// ✨ NEW: A helper to map tournament status to badge colors for a better UI
+const statusBadgeMap = {
+    SETUP: { text: "Setup", className: "bg-yellow-500 hover:bg-yellow-500" },
+    ACTIVE: { text: "Live", className: "bg-green-500 hover:bg-green-500 animate-pulse" },
+    COMPLETED: { text: "Completed", className: "bg-gray-500 hover:bg-gray-500" },
+    DEFAULT: { text: "Unknown", className: "bg-gray-400 hover:bg-gray-400" },
+};
+
+
+// ✨ MODIFIED: The component now takes an `onManage` prop instead of registration props.
+export default function TournamentItem({ tournament, onView, onManage }) {
+
     const startDate = tournament.startDate
         ? format(new Date(tournament.startDate), "MMM d, yyyy")
         : "Date TBD";
 
-    const registrationEndDate = tournament.registrationEndDate
-        ? format(new Date(tournament.registrationEndDate), "MMM d, yyyy")
-        : "N/A";
+    // ✨ NEW: Get the status information for the badge
+    const statusInfo = statusBadgeMap[tournament.status?.toUpperCase()] || statusBadgeMap.DEFAULT;
 
     return (
-        // REFACTOR: Switched from <li> to <Card> for better structure and UI consistency.
         <Card className="transition-shadow hover:shadow-lg dark:bg-card">
-            <CardHeader
-                onClick={onView} // REFACTOR: Kept the "click header to view" functionality.
-                className="cursor-pointer"
-            >
+            <CardHeader>
                 <div className="flex flex-wrap justify-between items-start gap-2">
+                    {/* The title and description remain the same */}
                     <div>
                         <CardTitle>{tournament.name}</CardTitle>
                         <CardDescription className="pt-1">
                             {tournament.location || "Location not specified"}
                         </CardDescription>
                     </div>
-                    {/* REFACTOR: Added a Badge for a clear visual status indicator. */}
-                    {isRegistered && <Badge variant="secondary">Registered</Badge>}
+                    {/* ✨ REPLACED: The "Registered" badge is now a dynamic "Status" badge. */}
+                    <Badge className={statusInfo.className}>{statusInfo.text}</Badge>
                 </div>
             </CardHeader>
 
             <CardContent>
-                {/* REFACTOR: Displaying more useful information in a structured way. */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                         <p className="font-semibold text-muted-foreground">Start Date</p>
                         <p className="text-foreground">{startDate}</p>
                     </div>
                     <div>
-                        <p className="font-semibold text-muted-foreground">Registration Closes</p>
-                        <p className="text-foreground">{registrationEndDate}</p>
+                        <p className="font-semibold text-muted-foreground">Format</p>
+                        <p className="text-foreground">{tournament.format || 'N/A'}</p>
                     </div>
                 </div>
             </CardContent>
 
             <CardFooter className="flex justify-end gap-3">
-                {/* REFACTOR: Buttons now have specific purposes and use variants for styling. */}
+                {/* ✨ REPLACED: The button actions are now relevant for a tournament owner. */}
                 <Button variant="outline" onClick={onView}>
-                    View Details
+                    View Live
                 </Button>
-                <Button
-                    onClick={onRegister}
-                    disabled={isRegistered}
-                    aria-label={isRegistered ? "You are already registered" : "Register for this tournament"}
-                >
-                    {isRegistered ? "Registered" : "Register Now"}
+                <Button onClick={onManage}>
+                    Manage
                 </Button>
             </CardFooter>
         </Card>
     );
 }
 
-// REFACTOR: Updated PropTypes to match the new, more explicit props API.
+// ✨ MODIFIED: PropTypes are updated to match the new component signature.
 TournamentItem.propTypes = {
     tournament: PropTypes.shape({
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         location: PropTypes.string,
         startDate: PropTypes.string,
-        registrationEndDate: PropTypes.string,
+        format: PropTypes.string,
+        status: PropTypes.string, // Added status for the badge
     }).isRequired,
-    isRegistered: PropTypes.bool.isRequired,
     onView: PropTypes.func.isRequired,
-    onRegister: PropTypes.func.isRequired,
+    onManage: PropTypes.func.isRequired, // Replaced onRegister with onManage
 };

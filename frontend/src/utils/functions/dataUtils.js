@@ -69,7 +69,7 @@ export async function loadTeamDetails(tournamentId) {
 export async function fetchTournamentById(tournamentId) {
     try {
         console.log(`Fetching tournament with ID: ${tournamentId}`);
-        const response = await axios.get(`http://localhost:8080/api/tournament/${tournamentId}`);
+        const response = await axios.get(`http://localhost:8080/api/tournaments/${tournamentId}`);
         console.log(`Fetched tournament ${tournamentId}:`, response.data);
         return response.data;
     } catch (error) {

@@ -1,134 +1,104 @@
-// src/pages/TournamentList.jsx
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth0 } from "@auth0/auth0-react";
 
-// Assuming you have these components from your UI library (like shadcn/ui)
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { FaSpinner } from "react-icons/fa";
+import { FaSpinner, FaPlusCircle } from "react-icons/fa";
 
 import TournamentItem from "../Components/TournamentItem.jsx";
-import RegisterModal from "@/pages/Modals/registerModal.jsx";
 
-// --- Custom Hook for All Tournament Logic ---
-function useTournaments() {
-    const [data, setData] = useState({ tournaments: [], registeredIds: [] });
+// ✨ RENAMED: The hook now has a more specific purpose.
+function useMyTournaments() {
+    const [tournaments, setTournaments] = useState([]);
     const [status, setStatus] = useState("loading");
     const [error, setError] = useState(null);
     const {
         isLoading: isAuthLoading,
         isAuthenticated,
         getAccessTokenSilently,
-        user
+        loginWithRedirect,
     } = useAuth0();
     const navigate = useNavigate();
 
-    // Modal state
-    const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-    const [selectedTournament, setSelectedTournament] = useState(null);
+    // Inside your useMyTournaments hook
 
-    // Corrected fetchData function inside your useTournaments hook
+    // In your useMyTournaments hook inside MyTournamentsPage.jsx
 
     const fetchData = useCallback(async () => {
-        if (!isAuthenticated || !user?.sub) {
+        // This check correctly prevents the call if the user is not logged in.
+        if (!isAuthenticated) {
+            setStatus("unauthenticated");
             return;
         }
 
         setStatus("loading");
         try {
+            // STEP 1: Get the access token from Auth0 before making the call.
+            console.log("Getting access token...");
             const token = await getAccessTokenSilently();
+            console.log("Token received, making API call...");
 
-            // Fetch active tournaments and user data
-            const [tournamentsResp, userResp] = await Promise.all([
-                axios.get("http://localhost:8080/api/tournament/active"),
-                axios.get(`http://localhost:8080/api/users/by-auth0`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: { id: user.sub }
-                }),
-            ]);
-
-            const rawData = tournamentsResp.data;
-            const tournaments = Array.isArray(rawData) ? rawData : [];
-            const userId = userResp.data.id;
-
-            // --- THIS IS THE CORRECTED LINE ---
-            const regResp = await axios.get(`http://localhost:8080/api/users/${userId}/registrations`, {
-                headers: { Authorization: `Bearer ${token}` },
+            // STEP 2: Include the token in the 'Authorization' header of your request.
+            const response = await axios.get("http://localhost:8080/api/tournaments/my", {
+                headers: {
+                    Authorization: `Bearer ${token}` // ✨ This is the critical fix
+                }
             });
-            // --- END OF FIX ---
 
-            const registeredIds = regResp.data.map((r) => r.tournamentId);
-
-            setData({ tournaments, registeredIds });
+            // Assuming the response data is the array of tournaments
+            setTournaments(Array.isArray(response.data) ? response.data : []);
             setStatus("success");
+
         } catch (err) {
-            console.error("❌ [DEBUG] An error occurred in fetchData:", err);
-            if (err.response) {
-                console.error("❌ [DEBUG] Axios response error:", err.response.data);
-            }
-            setError("We couldn't load the tournaments. Please try again.");
+            console.error("Error fetching user's tournaments:", err);
+            setError("We couldn't load your tournaments. Please try again.");
             setStatus("error");
         }
-    }, [isAuthenticated, getAccessTokenSilently, user?.sub]);
+    }, [isAuthenticated, getAccessTokenSilently]);
 
     useEffect(() => {
-        if (isAuthLoading) {
-            setStatus("loading");
-            return;
-        }
-        if (isAuthenticated) {
+        if (!isAuthLoading) {
             fetchData();
-        } else {
-            setStatus("success");
-            setData({ tournaments: [], registeredIds: [] });
         }
-    }, [isAuthLoading, isAuthenticated, fetchData]);
+    }, [isAuthLoading, fetchData]);
 
-    // ... The rest of the hook (actions, useMemo) remains the same ...
+    // ✨ NEW: Handler for managing a tournament.
+    const handleManage = (id) => navigate(`/tournament/manage/${id}`);
     const handleView = (id) => navigate(`/tournament/live/${id}`);
-    const handleRegister = (tourney) => {
-        if (!isAuthenticated) return loginWithRedirect();
-        setSelectedTournament(tourney);
-        setIsRegisterOpen(true);
-    };
-    const closeRegister = () => {
-        setIsRegisterOpen(false);
-        setSelectedTournament(null);
-    };
-    const onRegistered = (tournamentId) => {
-        setData(prevData => ({
-            ...prevData,
-            registeredIds: [...prevData.registeredIds, tournamentId]
-        }));
-        closeRegister();
-    };
+
+    // ✨ REMOVED: All state and handlers related to registration have been deleted.
 
     return useMemo(() => ({
         status,
-        tournaments: data.tournaments,
-        registeredIds: data.registeredIds,
+        tournaments,
         error,
         refetch: fetchData,
         handleView,
-        handleRegister,
-        modalProps: {
-            isOpen: isRegisterOpen,
-            tournament: selectedTournament,
-            onClose: closeRegister,
-            onRegistered: () => onRegistered(selectedTournament?.id)
-        }
-    }), [data, status, error, fetchData, handleView, handleRegister, isRegisterOpen, selectedTournament]);
+        handleManage, // ✨ Exposing the new handler
+        isAuthenticated,
+        loginWithRedirect,
+    }), [status, tournaments, error, fetchData, isAuthenticated, loginWithRedirect]);
 }
 
 
-// --- The Refactored UI Component ---
-export default function TournamentList() {
-    const { status, tournaments, registeredIds, error, refetch, handleView, handleRegister, modalProps } = useTournaments();
+// ✨ RENAMED: The component now has a more descriptive name.
+export default function MyTournamentsPage() {
+    const {
+        status,
+        tournaments,
+        error,
+        refetch,
+        handleView,
+        handleManage,
+        isAuthenticated,
+        loginWithRedirect
+    } = useMyTournaments();
 
     useEffect(() => {
-        document.title = "Tournament List";
+        document.title = "My Tournaments";
     }, []);
 
     const renderContent = () => {
@@ -136,7 +106,17 @@ export default function TournamentList() {
             return (
                 <div className="flex flex-col items-center justify-center gap-4 py-10">
                     <FaSpinner className="animate-spin text-4xl text-gray-400" />
-                    <p className="text-muted-foreground">Loading tournaments...</p>
+                    <p className="text-muted-foreground">Loading your tournaments...</p>
+                </div>
+            );
+        }
+
+        // ✨ NEW: A dedicated state for when the user is not logged in.
+        if (status === 'unauthenticated' || !isAuthenticated) {
+            return (
+                <div className="text-center py-10">
+                    <h3 className="text-xl font-semibold text-foreground">Please log in to view your tournaments.</h3>
+                    <Button onClick={() => loginWithRedirect()} className="mt-6">Log In</Button>
                 </div>
             );
         }
@@ -160,9 +140,10 @@ export default function TournamentList() {
                     <TournamentItem
                         key={t.id}
                         tournament={t}
-                        isRegistered={registeredIds.includes(t.id)}
+                        // ✨ REMOVED: isRegistered prop is gone.
                         onView={() => handleView(t.id)}
-                        onRegister={() => handleRegister(t)}
+                        // ✨ REPLACED: onRegister is now onManage.
+                        onManage={() => handleManage(t.id)}
                     />
                 ))}
             </ul>
@@ -172,37 +153,32 @@ export default function TournamentList() {
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6">
             <Card className="w-full max-w-4xl">
-                <CardHeader>
-                    <CardTitle className="text-center text-3xl font-bold">
-                        Active Tournaments
-                    </CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-3xl font-bold">My Tournaments</CardTitle>
+                    <Button onClick={() => navigate("/tournament/setup")}>
+                        <FaPlusCircle className="mr-2" /> Create New
+                    </Button>
                 </CardHeader>
                 <CardContent>
                     {renderContent()}
                 </CardContent>
             </Card>
-
-            {modalProps.isOpen && <RegisterModal {...modalProps} />}
+            {/* ✨ REMOVED: The RegisterModal is no longer needed here. */}
         </div>
     );
 }
 
-// A small component for the empty state to keep the main return clean
+// ✨ UPDATED: The message is now more appropriate for this page.
 const NoTournamentsFound = ({ onRefresh }) => {
     const navigate = useNavigate();
     return (
         <div className="text-center py-10">
-            <h3 className="text-xl font-semibold text-foreground">No active tournaments found.</h3>
-            <p className="text-muted-foreground mt-2">Check back later or set up a new one!</p>
+            <h3 className="text-xl font-semibold text-foreground">You haven&#39;t created any tournaments yet.</h3>
+            <p className="text-muted-foreground mt-2">Get started by setting up your first one!</p>
             <div className="mt-6 flex justify-center gap-4">
-                <Button variant="outline" onClick={onRefresh}>Refresh</Button>
+                <Button variant="outline" onClick={onRefresh}>Refresh List</Button>
                 <Button onClick={() => navigate("/tournament/setup")}>Setup a Tournament</Button>
             </div>
         </div>
     );
 };
-// PropTypes can be added later if needed, but for now, this is a functional component
-// that uses hooks to manage state and side effects cleanly.
-// This keeps the component focused on rendering and logic, while the custom hook handles data fetching and state management.
-// This approach allows for better separation of concerns and makes the component easier to test and maintain.
-

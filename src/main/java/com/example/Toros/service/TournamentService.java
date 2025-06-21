@@ -26,38 +26,35 @@ public class TournamentService {
         this.teamRepository = teamRepository;
     }
 
+    // ✨ 1. NEW METHOD IMPLEMENTED ✨
+    // This is required for the `GET /api/tournaments/my` endpoint.
+    public List<Tournament> findTournamentsByOrganizerId(String auth0Id) {
+        log.info("SERVICE: Finding tournaments for organizer with Auth0 ID: {}", auth0Id);
+        // This relies on a new method in your TournamentRepository
+        return tournamentRepository.findByOrganizer(auth0Id);
+    }
+
+    // ✨ 2. REFACTORED METHOD ✨
+    // This is more explicit than the old getTournaments(boolean isActive) method.
+    public List<Tournament> getTournamentsByStatus(String status) {
+        log.info("SERVICE: Finding tournaments with status: {}", status);
+        // This relies on a new method in your TournamentRepository
+        return tournamentRepository.findByStatus(status);
+    }
+
     /**
-     * ✅ Retrieve Tournaments and filter based on status
+     * Returns all tournaments.
      */
-    public List<Tournament> getTournaments(boolean isActive) {
-        try {
-            List<Tournament> tournaments;
-            if (isActive) {
-                tournaments = tournamentRepository.findByIsActiveTrue();
-                if (tournaments.isEmpty()) {
-                    log.warn("⚠️ No active tournaments found.");
-                } else {
-                    log.info("🎾 Active Tournaments retrieved: {}", tournaments.size());
-                }
-            } else {
-                tournaments = tournamentRepository.findAll();
-                if (tournaments.isEmpty()) {
-                    log.info("⚠️ No tournaments retrieved from the database.");
-                } else {
-                    log.info("📂 Retrieved {} tournaments from the database.", tournaments.size());
-                }
-            }
-            return tournaments;
-        } catch (Exception e) {
-            log.error("Function getTournaments is throwing an error: {}", e.getMessage(), e);
-            throw e;
-        }
+    public List<Tournament> getAllTournaments() {
+        log.info("SERVICE: Finding all tournaments.");
+        return tournamentRepository.findAll();
     }
 
     /**
      * 📊 Get Standings as Team IDs
      */
     public List<String> getStandings() {
+        // ... (this method is fine as is)
         try {
             List<Team> teams = teamRepository.findAll();
             if (teams.isEmpty()) {
@@ -80,55 +77,40 @@ public class TournamentService {
      * Returns tournaments where this user is registered
      */
     public List<Tournament> getTournamentsForUser(String userId) {
-        // e.g. query by a join table: tournament_participants
-        return tournamentRepository.findByParticipantUserId(userId);
+        // This assumes your repository has a method to find tournaments by participant.
+        return tournamentRepository.findByPlayersContaining(userId);
     }
 
     /**
      * ✅ Fetch a Tournament by ID
      */
     public Optional<Tournament> getTournamentById(String tournamentId) {
-        try {
-            return tournamentRepository.findById(tournamentId);
-        } catch (Exception e) {
-            log.error("Function getTournamentById is throwing an error: {}", e.getMessage(), e);
-            throw e;
-        }
+        return tournamentRepository.findById(tournamentId);
     }
 
     /**
-     * 🏁 End Active Tournament
+     * 🏁 End a specific Tournament
      */
     @Transactional
-    public void endTournament() {
-        try {
-            // Retrieve all active tournaments
-            List<Tournament> activeTournaments = tournamentRepository.findByIsActiveTrue();
+    public void endTournament(String tournamentId) {
+        log.info("SERVICE: Attempting to end tournament with ID: {}", tournamentId);
+        // ✨ 3. REFACTORED METHOD ✨
+        // This now finds a specific tournament to end, which is more robust.
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new IllegalArgumentException("Tournament not found with ID: " + tournamentId));
 
-            // For this example, we are ending only the first active tournament
-            Optional<Tournament> activeTournamentOpt = activeTournaments.stream().findFirst();
-
-            activeTournamentOpt.ifPresentOrElse(tournament -> {
-                tournament.setActive(false);
-                tournamentRepository.save(tournament);
-                log.info("🏆 Tournament '{}' marked as COMPLETED.", tournament.getName());
-            }, () -> log.warn("⚠️ No active tournament found."));
-        } catch (Exception e) {
-            log.error("Function endTournament is throwing an error: {}", e.getMessage(), e);
-            throw e;
-        }
+        tournament.setStatus("COMPLETED"); // Assuming a 'status' field
+        tournament.setActive(false);      // And an 'active' field
+        tournamentRepository.save(tournament);
+        log.info("🏆 Tournament '{}' marked as COMPLETED.", tournament.getName());
     }
 
     /**
      * Registers a user on a tournament by adding their userId to the tournament.players list.
-     *
-     * @param tournamentId the ID of the tournament to register to
-     * @param userId       the ID of the user to register
-     * @return the updated Tournament
-     * @throws IllegalArgumentException if the tournament does not exist
      */
     @Transactional
     public Tournament register(String tournamentId, String userId) {
+        // ... (this method is fine as is)
         Tournament tour = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new IllegalArgumentException("Tournament not found: " + tournamentId));
 
@@ -136,7 +118,6 @@ public class TournamentService {
             tour.setPlayers(new ArrayList<>());
         }
 
-        // Return 409 Conflict if already registered
         if (tour.getPlayers().contains(userId)) {
             log.warn("User {} is already registered for tournament {}", userId, tournamentId);
             throw new IllegalStateException("User is already registered for this tournament.");

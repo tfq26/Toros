@@ -1,11 +1,11 @@
 import React from 'react';
-import { useSetupContext } from '@/contexts/SetupContext.jsx';
+import { useSetup } from '@/contexts/SetupContext.jsx';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardDescription } from '@/components/ui/card';
 
 const BasicInfoStep = () => {
-    const { state, dispatch } = useSetupContext();
+    const { state, dispatch } = useSetup();
 
     const handleChange = (e) => {
         const { name, value, type } = e.target;

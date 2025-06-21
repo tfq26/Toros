@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useSetupContext } from '@/contexts/SetupContext.jsx';
+import { useSetup } from '@/contexts/SetupContext.jsx';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { CardDescription, CardFooter } from '@/components/ui/card.jsx';
 import { format } from 'date-fns';
 
 const DateTimeStep = () => {
-    const { state, dispatch } = useSetupContext();
+    const { state, dispatch } = useSetup();
 
     // A single handler to update the date range object in our state
     const handleDateRangeChange = (newDateRange) => {

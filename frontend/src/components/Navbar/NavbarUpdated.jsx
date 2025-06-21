@@ -10,10 +10,10 @@ import { useScrollPosition } from "@/hooks/useScrollPosition.js";
 // UI and Custom Components/Hooks
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion.jsx";
 import { Button } from "@/components/ui/button.jsx";
-// ✨ NEW: Imported SheetDescription
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet.jsx";
-import { useTheme } from "@/contexts/ThemeContext.jsx";
+import { useTheme } from '@/contexts/ThemeContext.jsx';
 import { ActionButtons } from "./ActionButtons.jsx";
+import { NavbarAuth } from "@/components/Navbar/NavbarAuth.jsx";
 
 // Animation Variants
 const navVariants = {
@@ -32,8 +32,6 @@ const dropdownVariants = {
     exit: { opacity: 0, y: 5, scale: 0.98, transition: { duration: 0.1, ease: "easeIn" } },
 };
 
-
-// Default prop values for robustness
 const defaultLogo = {
     url: "/",
     src: "svgs/bull-svgrepo-com_black.svg",
@@ -55,16 +53,12 @@ export function NavbarEnhanced({ logo = defaultLogo, menu = [] }) {
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [navRef]);
-
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const isDarkMode = theme === 'dark';
     const logoSrc = isDarkMode && logo?.darkSrc ? logo.darkSrc : logo?.src;
 
-    // Simpler desktop menu with useState
     const renderDesktopMenuItem = (item, idx) => (
         <div
             key={`${item.title}-${idx}`}
@@ -101,7 +95,7 @@ export function NavbarEnhanced({ logo = defaultLogo, menu = [] }) {
                         className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50"
                     >
                         <ul className="grid gap-1 p-2 rounded-md shadow-lg bg-popover text-popover-foreground w-[280px]">
-                            {item.items && item.items.map((sub, i) => (
+                            {item.items?.map((sub, i) => (
                                 <li key={i}>
                                     <Link
                                         to={sub.url}
@@ -127,7 +121,7 @@ export function NavbarEnhanced({ logo = defaultLogo, menu = [] }) {
             <AccordionItem key={`${item.title}-${idx}`} value={item.title}>
                 <AccordionTrigger>{item.title}</AccordionTrigger>
                 <AccordionContent className="pl-4">
-                    {item.items && item.items.map((sub, i) => (
+                    {item.items?.map((sub, i) => (
                         <Link key={i} to={sub.url} className="block py-2 text-muted-foreground hover:text-foreground">
                             {sub.title}
                         </Link>
@@ -146,7 +140,7 @@ export function NavbarEnhanced({ logo = defaultLogo, menu = [] }) {
             initial="hidden"
             animate="show"
             className={`sticky top-0 z-50 w-full transition-all duration-300
-                ${scrolled ? 'border-b bg-background/80 backdrop-blur-sm' : 'bg-transparent'}`
+                ${scrolled ? 'border-b bg-red-800/80 backdrop-blur-sm' : 'bg-red-800/80'}`
             }
             ref={navRef}
         >
@@ -176,14 +170,16 @@ export function NavbarEnhanced({ logo = defaultLogo, menu = [] }) {
                             </Button>
                         </SheetTrigger>
                         <SheetContent>
-                            <SheetHeader>
+                            <SheetHeader className="flex flex-row items-center justify-between mb-4">
                                 <SheetTitle>{logo.title}</SheetTitle>
-                                {/* ✨ FIXED: Added SheetDescription for accessibility */}
-                                <SheetDescription className="sr-only">
-                                    Main navigation menu and site actions.
-                                </SheetDescription>
+                                <div className="flex items-center gap-2">
+                                    <ActionButtons />
+                                </div>
                             </SheetHeader>
-                            <div className="mt-6 flex flex-col gap-2">
+                            <SheetDescription className="sr-only">
+                                Main navigation menu and site actions.
+                            </SheetDescription>
+                            <div className="flex flex-col gap-2">
                                 {menu.filter(item => !item.hasDropdown).map(renderMobileMenuItem)}
                                 <Accordion type="single" collapsible className="w-full">
                                     {menu.filter(item => item.hasDropdown).map(renderMobileMenuItem)}
@@ -207,7 +203,6 @@ NavbarEnhanced.propTypes = {
         src: PropTypes.string.isRequired,
         darkSrc: PropTypes.string,
         alt: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
     }),
     menu: PropTypes.arrayOf(
         PropTypes.shape({
@@ -217,7 +212,7 @@ NavbarEnhanced.propTypes = {
             items: PropTypes.arrayOf(
                 PropTypes.shape({
                     title: PropTypes.string.isRequired,
-                    url: `string`.isRequired,
+                    url: PropTypes.string.isRequired,
                     description: PropTypes.string,
                 })
             ),

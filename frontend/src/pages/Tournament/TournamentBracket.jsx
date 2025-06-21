@@ -35,7 +35,7 @@ function TeamStandings() {
     // Fetch all matches for bracket data
     const fetchAllMatches = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/api/tournament/live");
+            const response = await axios.get("http://localhost:8080/api/tournaments/live");
             if (Array.isArray(response.data)) {
                 setMatches(response.data);
             } else {
@@ -101,7 +101,7 @@ function TeamStandings() {
     const fetchTeamMatches = async (Name) => {
         console.log("Fetching matches for team name:", Name);
         try {
-            const response = await axios.get(`http://localhost:8080/api/tournament/teamMatchesByName/${encodeURIComponent(Name)}`);
+            const response = await axios.get(`http://localhost:8080/api/tournaments/teamMatchesByName/${encodeURIComponent(Name)}`);
             setTeamMatches(response.data);
             console.log("API response for team matches:", response.data);
             console.log("Updated teamMatches state:", teamMatches);

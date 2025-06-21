@@ -1,14 +1,15 @@
+// src/contexts/SetupContext.jsx
+
 import { createContext, useContext, useReducer, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-// ✨ MODIFIED: Added startTime and startDateTime to the initial state
 const initialState = {
     tournamentName: "",
     numCourts: 1,
     gamesPerTeam: 1,
-    dateRange: null, // Holds { from: Date, to: Date }
-    startTime: '09:00', // Default start time
-    startDateTime: null, // Will hold the combined Date object
+    dateRange: null,
+    startTime: '09:00',
+    startDateTime: null,
     matchDuration: 15,
     breakTime: 5,
     useExistingPlayers: false,
@@ -25,18 +26,11 @@ const initialState = {
     skillLevel: "All Levels",
 };
 
-// The reducer function is already correct and flexible
 function setupReducer(state, action) {
-    // ✨ NEW: Added logging to trace state updates for debugging.
-    console.log('[SetupContext] Action Dispatched:', action);
-
+    // console.log('[SetupContext] Action Dispatched:', action); // Optional: uncomment for debugging
     switch (action.type) {
-        case 'UPDATE_FIELD': { // Added braces to create a block scope
-            const newState = { ...state, [action.payload.field]: action.payload.value };
-            // ✨ NEW: Log the specific field that was updated.
-            console.log(`[SetupContext] Field Updated: '${action.payload.field}'`, 'New Value:', newState[action.payload.field]);
-            return newState;
-        }
+        case 'UPDATE_FIELD':
+            return { ...state, [action.payload.field]: action.payload.value };
         case 'PREFILL_USER':
             return {
                 ...state,
@@ -50,9 +44,10 @@ function setupReducer(state, action) {
     }
 }
 
-const SetupContext = createContext();
+// 1. Create the context (private)
+const SetupContext = createContext(null);
 
-// The Provider Component
+// 2. Export the Provider component
 export const SetupProvider = ({ children }) => {
     const [state, dispatch] = useReducer(setupReducer, initialState);
 
@@ -66,11 +61,11 @@ SetupProvider.propTypes = {
     children: PropTypes.node.isRequired,
 };
 
-// The custom hook for easy access
-export const useSetupContext = () => {
+// 3. Export the custom hook (✨ Renamed for consistency)
+export const useSetup = () => {
     const context = useContext(SetupContext);
-    if (context === undefined) {
-        throw new Error('useSetupContext must be used within a SetupProvider');
+    if (context === null) {
+        throw new Error('useSetup must be used within a SetupProvider');
     }
     return context;
 };

@@ -1,21 +1,27 @@
+// src/pages/Layout/Layout.jsx
 import React from "react";
-import { Outlet } from "react-router-dom"; // ✨ NEW: Import Outlet
-import { NavbarEnhanced  } from "@/components/Navbar/NavbarUpdated.jsx";
-import PropTypes from "prop-types";
-import { mainNavigation, siteLogo } from "@/Routing/Navigation.js"; // ✨ NEW: Import siteLogo
+import { Outlet } from "react-router-dom";
+import { NavbarEnhanced } from "@/components/Navbar/NavbarUpdated.jsx";
+import { mainNavigation, siteLogo } from "@/Routing/Navigation.js";
 import Footer from "./Footer.jsx";
+import { useTheme } from '@/contexts/ThemeContext.jsx';
+import ErrorHandler from "@/Contexts/Handlers/ErrorHandler.js"; // ✨ NEW: Import the theme hook
 
-export default function Layout() { // ✨ REMOVED: `children` prop is no longer needed
+export default function Layout() {
+    const themeClass = useTheme(); // ✨ NEW: Get the theme class
+
     return (
-        <div className="h-screen w-full overflow-x-hidden flex flex-col">
-            <header className="sticky top-0 z-50 bg-transparent px-2 pt-2">
-                {/* ✨ FIXED: Pass both the menu and logo props */}
+        // ✨ UPDATED: The theme class is now applied here
+        <div className={`${themeClass} min-h-screen w-full flex flex-col`}>
+            <ErrorHandler /> {/* ✨ ADD IT HERE (position doesn't matter much) */}
+            <header className="sticky top-0 z-50">
                 <NavbarEnhanced menu={mainNavigation} logo={siteLogo} />
             </header>
 
-            {/* ✨ FIXED: Added `overflow-y-auto` to allow this section to scroll independently */}
-            <main className="flex-grow overflow-y-auto">
-                {/* ✨ This Outlet component tells the router where to render the nested pages */}
+            <main className="flex-1 w-full overflow-y-auto text-white p-6">
+                {/* You can remove this h1, it was likely for testing.
+                  <h1>This is from Layout directly</h1>
+                */}
                 <Outlet />
             </main>
 
@@ -23,8 +29,3 @@ export default function Layout() { // ✨ REMOVED: `children` prop is no longer 
         </div>
     );
 }
-
-// ✨ REMOVED: The propTypes for children are no longer needed.
-// Layout.propTypes = {
-//     children: PropTypes.node.isRequired,
-// };

@@ -1,11 +1,11 @@
 // src/components/layout/ActionButtons.jsx
-import React from "react";
+import "react";
 import { Button } from "@/components/ui/button.jsx";
 import { VscTools } from "react-icons/vsc";
 import { useAuth } from "@/contexts/AuthContext.jsx";
-import { useTheme } from "@/contexts/ThemeContext.jsx";
+import { useTheme } from '@/contexts/ThemeContext.jsx';
 import useDevTools from "@/pages/DevTools/DevTools.jsx";
-import { NavbarAuth } from "../../pages/Auth/NavbarAuth.jsx";
+import { NavbarAuth } from "./NavbarAuth.jsx";
 import { Sun, Moon } from "lucide-react"; // More semantic icons
 
 export function ActionButtons() {

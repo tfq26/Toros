@@ -29,7 +29,7 @@ const KnockoutSetup = () => {
     const handleSubmit = async () => {
         try {
             const response = await axios.post(
-                "http://localhost:8080/api/tournament/knockout/setup",
+                "http://localhost:8080/api/tournaments/knockout/setup",
                 { selectedTeams }
             );
             if (response.status === 200) {

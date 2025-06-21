@@ -31,7 +31,7 @@ const TournamentSidebar = ({
             return;
         }
         axios
-            .get(`http://localhost:8080/api/tournament/${tournamentID}`)
+            .get(`http://localhost:8080/api/tournaments/${tournamentID}`)
             .then((response) => {
                 const tournament = response.data;
                 if (tournament && tournament.setupProperties) {

@@ -40,7 +40,7 @@ export const fetchPlayersAndGenerateTeams = async (setTeams, setError) => {
 export const handleTournamentSetup = async (formData, onError, onSuccess) => {
     try {
         console.log("Sending tournament setup request with data:", formData);
-        const response = await fetch("http://localhost:8080/api/tournament/setup", {
+        const response = await fetch("http://localhost:8080/api/tournaments/setup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData),

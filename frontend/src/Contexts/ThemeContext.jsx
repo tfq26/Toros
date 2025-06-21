@@ -1,31 +1,30 @@
-// src/contexts/ThemeContext.jsx
-import  { createContext, useState, useEffect, useContext } from 'react';
+// src/contexts/ThemeContext.jsx (Optional modification for ALWAYS syncing)
+
+import { createContext, useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-export const ThemeContext = createContext({
-    theme: 'light',
-    setTheme: () => {},
-});
+const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
-    const [theme, setTheme] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light';
-        }
-        return 'light';
-    });
+    // 1. MODIFIED: Always initialize state from the OS preference, ignore localStorage.
+    const [theme, setTheme] = useState(
+        () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    );
 
+    // This effect to update the DOM is still needed.
     useEffect(() => {
         document.documentElement.classList.toggle('dark', theme === 'dark');
+        // You could optionally remove saving to localStorage
+        // localStorage.setItem('theme', theme);
     }, [theme]);
 
+    // 2. MODIFIED: The OS change listener now ALWAYS updates the theme.
     useEffect(() => {
         const media = window.matchMedia('(prefers-color-scheme: dark)');
-        const handler = (e) => {
-            setTheme(e.matches ? 'dark' : 'light');
-        };
+
+        // The handler no longer checks for a stored theme.
+        const handler = (e) => setTheme(e.matches ? 'dark' : 'light');
+
         media.addEventListener('change', handler);
         return () => media.removeEventListener('change', handler);
     }, []);
@@ -41,7 +40,11 @@ ThemeProvider.propTypes = {
     children: PropTypes.node.isRequired,
 };
 
-// Create the custom hook
+// 3. Create and export the custom hook with a safety check
 export const useTheme = () => {
-    return useContext(ThemeContext);
+    const context = useContext(ThemeContext);
+    if (context === null) {
+        throw new Error('useTheme must be used within a ThemeProvider');
+    }
+    return context;
 };

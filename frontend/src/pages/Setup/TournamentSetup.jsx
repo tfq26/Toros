@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext.jsx";
-import { SetupProvider, useSetupContext } from "@/contexts/SetupContext.jsx";
+import { SetupProvider, useSetup } from "@/contexts/SetupContext.jsx";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -16,7 +16,7 @@ import SuccessPage from "./Pages/SuccessPage.jsx";
 
 const SetupWizard = () => {
     const { user } = useAuth();
-    const { state, dispatch } = useSetupContext();
+    const { state, dispatch } = useSetup();
     const navigate = useNavigate();
 
     const [currentStep, setCurrentStep] = useState(0);
@@ -60,10 +60,10 @@ const SetupWizard = () => {
         delete payload.dateRange; // Also remove the raw dateRange object
 
         try {
-            console.log("Submitting tournament payload to /api/tournament/setup:", payload);
+            console.log("Submitting tournament payload to /api/tournaments/setup:", payload);
 
             // This API call now sends a correctly formatted payload to the endpoint.
-            const response = await axios.post('/api/tournament/setup', payload);
+            const response = await axios.post('/api/tournaments/setup', payload);
 
             console.log("Server response:", response.data);
 
