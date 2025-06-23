@@ -1,28 +1,49 @@
-const { exec } = require("child_process");
+const { exec, execSync } = require("child_process");
 const os = require("os");
 const path = require("path");
 const fs = require("fs");
 const open = require("open");
 
+const isMac = os.platform() === "darwin";
+const isWindows = os.platform() === "win32";
 const dotenvPath = path.resolve(__dirname, "../main.env");
-require("dotenv").config({ path: dotenvPath });
 
-console.log("✅ main.env loaded:", fs.existsSync(dotenvPath));
-console.log("🔍 JAVA_HOME:", process.env.JAVA_HOME);
+// 🧠 Load .env file on Windows only
+if (isWindows && fs.existsSync(dotenvPath)) {
+    require("dotenv").config({ path: dotenvPath });
+    console.log("✅ Loaded main.env:", dotenvPath);
+}
 
+// 🧠 Auto-detect JAVA_HOME on macOS if not set
+if (isMac && !process.env.JAVA_HOME) {
+    try {
+        const javaHome = execSync("/usr/libexec/java_home").toString().trim();
+        if (javaHome) {
+            process.env.JAVA_HOME = javaHome;
+            console.log("🔍 Auto-detected JAVA_HOME:", javaHome);
+        }
+    } catch (err) {
+        console.error("❌ Could not auto-detect JAVA_HOME on macOS:", err);
+        process.exit(1);
+    }
+}
+
+// ❌ Fallback check
 if (!process.env.JAVA_HOME) {
-    console.error("❌ JAVA_HOME is not set. Please define it in main.env or in your environment.");
+    console.error("❌ JAVA_HOME is not set. Please define it in your system or .env file.");
     process.exit(1);
 }
 
-const isWindows = os.platform() === "win32";
+console.log("✅ JAVA_HOME:", process.env.JAVA_HOME);
 const command = isWindows ? "mvnw.cmd spring-boot:run" : "./mvnw spring-boot:run";
+console.log("🚀 Starting backend with:", command);
 
-console.log("🚀 Starting backend server...");
+const subprocess = exec(command, {
+    cwd: path.resolve(__dirname, ".."),
+    env: process.env,
+});
 
-const subprocess = exec(command, { env: process.env });
-
-// ✅ Wait until backend prints "Tomcat started" before opening frontend
+// Wait for backend to start before opening browser
 subprocess.stdout?.on("data", (data) => {
     process.stdout.write(data);
 

@@ -42,7 +42,7 @@
     "docker": "^1.0.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^11.18.2",
-    "jspdf": "^3.0.1",
+    "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.4",
     "lucide-react": "^0.515.0",
     "luxon": "^3.6.1",
