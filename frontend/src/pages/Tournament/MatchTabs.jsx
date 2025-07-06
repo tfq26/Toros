@@ -41,6 +41,11 @@ const MatchTabs = ({matches, sortOrder, refreshMatches, updateMatch}) => {
         return new Date(a.startTime) - new Date(b.startTime);
     });
 
+    console.log("Props being sent to MatchTable:", {
+        isMobile,
+        matchCount: filteredMatches.length
+    });
+
     return (
         <div className="flex flex-col w-full">
             {/* Filter Controls: Use a Select on mobile; buttons on desktop */}
@@ -76,28 +81,28 @@ const MatchTabs = ({matches, sortOrder, refreshMatches, updateMatch}) => {
             )}
 
             {/* View Mode Toggle using a Switch */}
-            <div className="flex items-center pb-5 border-b-4 mb-6 gap-2">
-                <span className="text-sm">Table</span>
-                <Switch
-                    checked={isCardView}
-                    onCheckedChange={(checked) => setIsCardView(checked)}
-                />
-                <span className="text-sm">Card</span>
-            </div>
+            {/*<div className="flex items-center pb-5 border-b-4 mb-6 gap-2">*/}
+            {/*    <span className="text-sm">Table</span>*/}
+            {/*    <Switch*/}
+            {/*        checked={isCardView}*/}
+            {/*        onCheckedChange={(checked) => setIsCardView(checked)}*/}
+            {/*    />*/}
+            {/*    <span className="text-sm">Card</span>*/}
+            {/*</div>*/}
 
             {/* Render matches based on the view mode */}
             {isCardView ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {sortedMatches.map((match) => (
-                        <MatchCard key={match.id} match={match} updateMatch={updateMatch}/>
+                        <MatchCard key={match.id} match={match} updateMatch={updateMatch} refreshMatches={refreshMatches} matches={matches} isMobile={isMobile} />
                     ))}
                 </div>
             ) : (
                 <MatchTableUpdated
-                    matches={sortedMatches}
-                    refreshMatches={refreshMatches}
+                    matches={filteredMatches}
                     updateMatch={updateMatch}
-                    isMobile={isMobile} // Pass the detected isMobile value dynamically
+                    refreshMatches={refreshMatches} // <-- Add the missing prop here
+                    isMobile={isMobile}
                 />
             )}
         </div>

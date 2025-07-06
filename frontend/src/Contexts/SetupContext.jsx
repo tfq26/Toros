@@ -24,6 +24,10 @@ const initialState = {
     format: "Singles",
     ageGroup: "All Ages",
     skillLevel: "All Levels",
+    auth0UserId: null,
+    auth0AccessToken: null,
+    authorizedUsers: [],
+    privateTournament: false,
 };
 
 function setupReducer(state, action) {

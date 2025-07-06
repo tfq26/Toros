@@ -38,10 +38,11 @@ public class TeamController {
         }
     }
 
-    /** 🎯 Get Team Standings */
+    // AFTER (Correct)
     @GetMapping("/standings")
-    public ResponseEntity<List<String>> getTeamStandings() {
-        List<String> standings = tournamentService.getStandings();
+    public ResponseEntity<List<Team>> getTeamStandings() {
+        // We get the full Team objects from the service
+        List<Team> standings = teamService.getStandings();
         return ResponseEntity.ok(standings);
     }
 
@@ -94,4 +95,31 @@ public class TeamController {
                     .body(Collections.singletonMap("error", "Failed to get teams."));
         }
     }
+    // ✨ NEW: Endpoint to update an existing team's details
+    @PutMapping("/{id}")
+    public ResponseEntity<Team> updateTeam(@PathVariable String id, @RequestBody Team teamDetails) {
+        try {
+            Team updatedTeam = teamService.updateTeam(id, teamDetails);
+            return ResponseEntity.ok(updatedTeam);
+        } catch (RuntimeException e) {
+            // Handle cases where the team is not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    // ✨ NEW: Endpoint to delete a single team by its ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTeam(@PathVariable String id) {
+        try {
+            teamService.deleteTeam(id);
+            return ResponseEntity.noContent().build(); // 204 No Content is standard for a successful delete
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
+
+
+

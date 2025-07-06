@@ -1,32 +1,54 @@
 package com.example.Toros.repository;
 
 import com.example.Toros.model.Tournament;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface TournamentRepository extends MongoRepository<Tournament, String> {
 
-    /** Get a list of all active tournaments */
-    List<Tournament> findByIsActiveTrue();
+    // Fetches a SINGLE tournament and populates all related data.
+    @Aggregation(pipeline = {
+            "{ '$match': { '_id': ?0 } }",
+            "{ '$lookup': { 'from': 'teams', 'localField': 'teams', 'foreignField': '_id', 'as': 'teams' } }",
+            "{ '$lookup': { 'from': 'matches', 'localField': 'matches', 'foreignField': '_id', 'as': 'matches' } }",
+            // ✨ FIX: Add this stage to populate the players array
+            "{ '$lookup': { 'from': 'players', 'localField': 'players', 'foreignField': '_id', 'as': 'players' } }"
+    })
+    Optional<Tournament> findAndPopulateById(String tournamentId);
 
-    /** Find a tournament by name */
-    Optional<Tournament> findByNameAndIsActiveTrue(String name);
+    // Fetches ALL tournaments and populates all related data.
+    @Aggregation(pipeline = {
+            "{ '$lookup': { 'from': 'teams', 'localField': 'teams', 'foreignField': '_id', 'as': 'teams' } }",
+            "{ '$lookup': { 'from': 'matches', 'localField': 'matches', 'foreignField': '_id', 'as': 'matches' } }",
+            // ✨ FIX: Add this stage to populate the players array
+            "{ '$lookup': { 'from': 'players', 'localField': 'players', 'foreignField': '_id', 'as': 'players' } }"
+    })
+    List<Tournament> findAllAndPopulate();
 
-    /**
-     * Find all tournaments where the given userId appears in the players list.
-     * You can now call:
-     *    tournamentRepository.findByParticipantUserId(userId);
-     */
-    List<Tournament> findByOrganizer(String organizerId);
+    // Fetches tournaments for a specific organizer and populates all related data.
+    @Aggregation(pipeline = {
+            "{ '$match': { 'auth0Id': ?0 } }",
+            "{ '$lookup': { 'from': 'teams', 'localField': 'teams', 'foreignField': '_id', 'as': 'teams' } }",
+            "{ '$lookup': { 'from': 'matches', 'localField': 'matches', 'foreignField': '_id', 'as': 'matches' } }",
+            // ✨ FIX: Add this stage to populate the players array
+            "{ '$lookup': { 'from': 'players', 'localField': 'players', 'foreignField': '_id', 'as': 'players' } }"
+    })
+    List<Tournament> findByAuth0IdAndPopulate(String auth0Id);
 
-    // ✨ Method for finding tournaments by their status (e.g., "ACTIVE", "SETUP", "COMPLETED").
-    // Assumes your Tournament model has a field named 'status'.
+    // ✨ Also adding the populated version for your DevToolsController to use
+    @Aggregation(pipeline = {
+            "{ '$match': { 'isActive': true } }",
+            "{ '$lookup': { 'from': 'teams', 'localField': 'teams', 'foreignField': '_id', 'as': 'teams' } }",
+            "{ '$lookup': { 'from': 'matches', 'localField': 'matches', 'foreignField': '_id', 'as': 'matches' } }",
+            "{ '$lookup': { 'from': 'players', 'localField': 'players', 'foreignField': '_id', 'as': 'players' } }"
+    })
+    List<Tournament> findActiveAndPopulate();
+
+    // Other simple queries that do not need population can remain as they are.
     List<Tournament> findByStatus(String status);
-
-    // ✨ Method for finding tournaments a user is registered in.
-    // Assumes your Tournament model has a list field named 'players'.
     List<Tournament> findByPlayersContaining(String userId);
+    Optional<Tournament> findByNameAndIsActiveTrue(String name);
 }

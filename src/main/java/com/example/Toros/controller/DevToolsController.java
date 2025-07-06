@@ -59,7 +59,10 @@ public class DevToolsController {
     @DeleteMapping("/tournaments/active")
     public List<Tournament> deleteAllActiveTournaments() {
         log.info("Marking all active tournaments as inactive");
-        List<Tournament> activeTournaments = tournamentRepository.findByIsActiveTrue();
+        List<Tournament> activeTournaments = tournamentRepository.findAllAndPopulate()
+                .stream()
+                .filter(Tournament::isActive)
+                .toList();
         activeTournaments.forEach(tournament -> tournament.setActive(false));
         return tournamentRepository.saveAll(activeTournaments);
     }

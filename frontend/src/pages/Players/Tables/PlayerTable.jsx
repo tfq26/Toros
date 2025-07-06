@@ -9,14 +9,29 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table.jsx";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge.jsx";
+import { cn } from "@/lib/utils";
 
-const PlayerTable = ({ players, error, onEdit }) => {
-    const flatPlayers = Object.values(players).flat();
+// Helper to determine badge color based on status
+const getStatusVariant = (status) => {
+    switch (status) {
+        case "Checked In":
+            return "success"; // Assumes you have a 'success' variant in your Badge component
+        case "Withdrawn":
+            return "destructive";
+        case "Registered":
+        default:
+            return "default";
+    }
+};
 
+// Reworked PlayerTable to be a simpler, presentational component
+const PlayerTable = ({ players = [], onEdit }) => {
     // State for sort configuration
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
+    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
 
-    // Handler to update sort configuration based on header clicks
+    // Handler to update sort configuration
     const handleSort = (key) => {
         let direction = "ascending";
         if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -27,17 +42,16 @@ const PlayerTable = ({ players, error, onEdit }) => {
 
     // Memoized sorted players based on sortConfig
     const sortedPlayers = useMemo(() => {
-        let sortablePlayers = [...flatPlayers];
+        let sortablePlayers = [...players];
         if (sortConfig.key !== null) {
             sortablePlayers.sort((a, b) => {
-                let aValue, bValue;
-                if (sortConfig.key === "placement") {
-                    aValue = a.skillLevel;
-                    bValue = b.skillLevel;
-                } else if (sortConfig.key === "clubName") {
-                    aValue = a.clubName ? a.clubName.toLowerCase() : "";
-                    bValue = b.clubName ? b.clubName.toLowerCase() : "";
-                }
+                // Ensure 'a' and 'b' are valid objects before accessing properties
+                const aSafe = a || {};
+                const bSafe = b || {};
+
+                const aValue = aSafe[sortConfig.key] ? String(aSafe[sortConfig.key]).toLowerCase() : '';
+                const bValue = bSafe[sortConfig.key] ? String(bSafe[sortConfig.key]).toLowerCase() : '';
+
                 if (aValue < bValue) {
                     return sortConfig.direction === "ascending" ? -1 : 1;
                 }
@@ -48,7 +62,7 @@ const PlayerTable = ({ players, error, onEdit }) => {
             });
         }
         return sortablePlayers;
-    }, [flatPlayers, sortConfig]);
+    }, [players, sortConfig]);
 
     // Utility to display an arrow for sorted columns
     const getSortIndicator = (key) => {
@@ -58,94 +72,92 @@ const PlayerTable = ({ players, error, onEdit }) => {
         return "";
     };
 
-    return (
-        <div className="w-full rounded-lg">
-            <div className="overflow-x-auto rounded-lg w-full flex-grow min-h-[600px]">
-                {/* Desktop Table View */}
-                <div className="hidden md:block">
-                    <Table className="w-full">
-                        <TableHeader className="bg-amber-500 dark:bg-gray-950 hover:bg-gray-950 ">
-                            <TableRow>
-                                <TableHead className="font-bold text-4xl text-gray-800 dark:text-gray-100 px-6 py-4">
-                                    Name
-                                </TableHead>
-                                <TableHead
-                                    className="font-bold text-4xl text-gray-800 dark:text-gray-100 cursor-pointer px-6"
-                                    onClick={() => handleSort("placement")}
-                                >
-                                    Placement{getSortIndicator("placement")}
-                                </TableHead>
-                                <TableHead
-                                    className="font-bold text-4xl text-gray-800 dark:text-gray-100 cursor-pointer px-6"
-                                    onClick={() => handleSort("clubName")}
-                                >
-                                    ClubName{getSortIndicator("clubName")}
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {!error && sortedPlayers.length > 0 ? (
-                                sortedPlayers.map((player, index) => (
-                                    <TableRow
-                                        key={`player-${index}`}
-                                        className=" even:bg-amber-100 odd:bg-amber-200 hover:bg-amber-200 transition dark:hover:bg-emerald-700/50
-                                         dark:even:bg-emerald-800 dark:odd:bg-emerald-900"
-                                    >
-                                        <TableCell
-                                            className="px-6 py-4 font-medium cursor-pointer hover:underline text-2xl text-gray-800 dark:text-gray-100"
-                                            onClick={() => onEdit(player)}
-                                        >
-                                            {player.name || "N/A"}
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-xl text-gray-800 dark:text-gray-100">
-                                            {convertLevel(player.skillLevel)}
-                                        </TableCell>
-                                        <TableCell className="px-6 py-4 text-xl text-gray-800 dark:text-gray-100">
-                                            {player.clubName || "N/A"}
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={3} className="text-center py-6 text-gray-600 dark:text-gray-300 text-3xl">
-                                        No players found
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+    // Render a message if no players are available
+    if (players.length === 0) {
+        return (
+            <div className="text-center py-10 text-muted-foreground">
+                <p>No players found.</p>
+                <p className="text-sm mt-1">Try adjusting your filters or add a new player.</p>
+            </div>
+        );
+    }
 
-                {/* Mobile List View */}
-                <div className="block md:hidden">
-                    <ul className="divide-y divide-gray-200">
-                        {!error && sortedPlayers.length > 0 ? (
-                            sortedPlayers.map((player, index) => (
-                                <li
-                                    key={`player-mobile-${index}`}
-                                    className="py-4 px-6 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                                    onClick={() => onEdit(player)}
-                                >
-                  <span className="text-2xl text-gray-800 dark:text-gray-100">
-                    {player.name || "N/A"}
-                  </span>
-                                </li>
-                            ))
-                        ) : (
-                            <li className="py-6 text-center text-gray-600 dark:text-gray-300 text-3xl">
-                                No players found
-                            </li>
-                        )}
-                    </ul>
-                </div>
+    return (
+        <div className="w-full rounded-lg border">
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort("name")}>
+                                Name{getSortIndicator("name")}
+                            </TableHead>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort("skillLevel")}>
+                                Skill Level{getSortIndicator("skillLevel")}
+                            </TableHead>
+                            <TableHead className="cursor-pointer" onClick={() => handleSort("clubName")}>
+                                Club Name{getSortIndicator("clubName")}
+                            </TableHead>
+                            <TableHead className="text-center cursor-pointer" onClick={() => handleSort("status")}>
+                                Status{getSortIndicator("status")}
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {sortedPlayers.map((player) => (
+                            <TableRow
+                                key={player.id}
+                                className="hover:bg-muted/50 cursor-pointer transition-colors duration-200 bg-muted"
+                                onClick={() => onEdit && onEdit(player)}
+                            >
+                                <TableCell className="font-medium">{player.name || "N/A"}</TableCell>
+                                <TableCell>{convertLevel(player.skillLevel)}</TableCell>
+                                <TableCell>{player.clubName || "N/A"}</TableCell>
+                                <TableCell className="text-center">
+                                    <Badge variant={getStatusVariant(player.status)}>
+                                        {player.status || "N/A"}
+                                    </Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="block md:hidden space-y-3 p-2">
+                {sortedPlayers.map((player) => (
+                    <Card
+                        key={player.id}
+                        className="cursor-pointer"
+                        onClick={() => onEdit && onEdit(player)}
+                    >
+                        <CardHeader className="flex flex-row items-center justify-between p-4">
+                            <CardTitle className="text-lg">{player.name}</CardTitle>
+                            <Badge variant={getStatusVariant(player.status)}>
+                                {player.status}
+                            </Badge>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0 text-sm text-muted-foreground">
+                            <p><strong>Skill:</strong> {convertLevel(player.skillLevel)}</p>
+                            <p><strong>Club:</strong> {player.clubName || "N/A"}</p>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         </div>
     );
 };
 
 PlayerTable.propTypes = {
-    players: PropTypes.any,
-    error: PropTypes.any,
+    // Expects a simple array of player objects
+    players: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+        name: PropTypes.string,
+        skillLevel: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        clubName: PropTypes.string,
+        status: PropTypes.string,
+    })).isRequired,
     onEdit: PropTypes.func.isRequired,
 };
 

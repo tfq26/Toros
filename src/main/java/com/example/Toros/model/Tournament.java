@@ -2,9 +2,11 @@ package com.example.Toros.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,14 +36,16 @@ public class Tournament {
     private String format; // e.g., "Round Robin", "Single Elimination", "Double Elimination"
     private String ageGroup; // e.g., "18+", "35+", "50+"
     private String skillLevel; // e.g., "Beginner", "Intermediate", "Advanced"
-
+    private String auth0Id; // Auth0 ID for the organizer, if applicable
     // Store setup properties as a List<String> or Map<String, Object>
     private List<String> setupProperties; // Example: ["Match Duration: 15min", "Double Elimination: true"]
     private Map<String, Object> setupPropertiesMap; // If you prefer key-value pairs
 
     // Now storing only IDs rather than full objects
-    private List<String> teams; // Stores team IDs
-    private List<String> matches; // Stores match IDs
+    @DBRef
+    private List<Team> teams = new ArrayList<>();
+    @DBRef
+    private List<Match> matches = new ArrayList<>();
     private List<String> finalPlacements; // Final ranking after tournament completion
     private List<String> players;
 }

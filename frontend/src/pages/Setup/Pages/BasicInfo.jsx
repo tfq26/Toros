@@ -16,21 +16,26 @@ const BasicInfoStep = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <CardDescription>Start with the essential details for your tournament.</CardDescription>
-            <div className="space-y-2">
-                <Label htmlFor="tournamentName">Tournament Name</Label>
+        // Increased vertical spacing
+        <div className="space-y-8 md:space-y-8">
+            <CardDescription className="text-lg md:text-xl">
+                Start with the essential details for your tournament.
+            </CardDescription>
+            <div className="space-y-3">
+                {/* Larger label and input */}
+                <Label htmlFor="tournamentName" className="text-base md:text-lg">Tournament Name</Label>
                 <Input
                     id="tournamentName"
                     name="tournamentName"
                     value={state.tournamentName}
                     onChange={handleChange}
                     placeholder="e.g., Summer Pickleball Classic"
+                    className="h-12 md:h-14 text-lg"
                 />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Label htmlFor="numCourts">Number of Courts</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                    <Label htmlFor="numCourts" className="text-base md:text-lg">Number of Courts</Label>
                     <Input
                         id="numCourts"
                         name="numCourts"
@@ -38,10 +43,11 @@ const BasicInfoStep = () => {
                         value={state.numCourts}
                         onChange={handleChange}
                         min="1"
+                        className="h-12 md:h-14 text-lg"
                     />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="gamesPerTeam">Guaranteed Games per Team</Label>
+                <div className="space-y-3">
+                    <Label htmlFor="gamesPerTeam" className="text-base md:text-lg">Guaranteed Games per Team</Label>
                     <Input
                         id="gamesPerTeam"
                         name="gamesPerTeam"
@@ -49,6 +55,7 @@ const BasicInfoStep = () => {
                         value={state.gamesPerTeam}
                         onChange={handleChange}
                         min="1"
+                        className="h-12 md:h-14 text-lg"
                     />
                 </div>
             </div>

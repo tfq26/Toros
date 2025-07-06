@@ -1,27 +1,24 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs components
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FaSpinner, FaPlusCircle } from "react-icons/fa";
+import { Link } from "react-router-dom"; // Import Link for navigation
 
 import TournamentItem from "../components/TournamentItem.jsx";
-import NoTournamentsFound from "../components/NoTournamentsFound.jsx"; // Assuming this is now a separate component
+import NoTournamentsFound from "../components/NoTournamentsFound.jsx";
 import useMyTournaments from "@/hooks/useMyTournaments.js";
 import { useResponsive } from "@/contexts/ResponsiveContext.jsx";
 
-export default function TournamentList() {
+export default function MyTournamentList() {
     const navigate = useNavigate();
     const { isMobile } = useResponsive();
-    const [activeTab, setActiveTab] = useState("mine"); // State to manage the active tab
-
     const {
         status,
         tournaments,
         error,
-        refetchAll,
-        refetchMine,
+        refetchMine, // We only need refetchMine
         handleView,
         handleManage,
         handleTournamentClick,
@@ -29,26 +26,18 @@ export default function TournamentList() {
         loginWithRedirect,
     } = useMyTournaments();
 
-    // On mount and whenever activeTab changes, call the appropriate fetch
+    // On mount, fetch the user's tournaments
     useEffect(() => {
-        document.title = activeTab === 'all' ? "All Tournaments" : "My Tournaments";
-        if (activeTab === 'all') {
-            refetchAll();
-        } else {
-            refetchMine();
-        }
-    }, [activeTab, refetchAll, refetchMine]);
-
-    const onRefresh = () => (activeTab === 'all' ? refetchAll() : refetchMine());
+        document.title = "My Tournaments";
+        refetchMine();
+    }, [refetchMine]);
 
     const renderContent = () => {
         if (status === "loading") {
             return (
                 <div className="flex flex-col items-center justify-center gap-4 py-10">
                     <FaSpinner className="animate-spin text-4xl text-gray-400" />
-                    <p className="text-muted-foreground">
-                        {activeTab === 'all' ? "Loading all tournaments..." : "Loading your tournaments..."}
-                    </p>
+                    <p className="text-muted-foreground">Loading your tournaments...</p>
                 </div>
             );
         }
@@ -70,16 +59,13 @@ export default function TournamentList() {
             return (
                 <div className="text-center py-10">
                     <p className="text-lg font-semibold text-destructive">{error}</p>
-                    <Button onClick={onRefresh} className="mt-4">
-                        Try Again
-                    </Button>
+                    <Button onClick={refetchMine} className="mt-4">Try Again</Button>
                 </div>
             );
         }
 
         if (tournaments.length === 0) {
-            // Pass the activeTab to the NoTournamentsFound component
-            return <NoTournamentsFound viewType={activeTab} onRefresh={onRefresh} />;
+            return <NoTournamentsFound viewType="mine" onRefresh={refetchMine} />;
         }
 
         return (
@@ -88,9 +74,10 @@ export default function TournamentList() {
                     <TournamentItem
                         key={t.id}
                         tournament={t}
-                        onView={() => handleView(t.id)}
+                        // When the user owns the tournament, provide the onManage function
                         onManage={() => handleManage(t.id)}
-                        onClick={() => handleTournamentClick(t.id)}
+                        // We also pass onView to make the whole card clickable
+                        onView={() => handleView(t.id)}
                     />
                 ))}
             </ul>
@@ -99,21 +86,17 @@ export default function TournamentList() {
 
     return (
         <TooltipProvider>
-            <div className="flex flex-col items-center min-h-screen rounded-lg p-4 sm:p-6">
+            <div className="flex flex-col items-center min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6">
                 <Card className="w-full max-w-4xl">
                     <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 shadow-xl p-4 bg-secondary rounded-lg">
+                        <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4">
                             <CardTitle className="text-2xl sm:text-3xl font-bold">
-                                Tournaments
+                                My Tournaments
                             </CardTitle>
-                            {isAuthenticated && (
-                                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                                    <TabsList  className={"w-full sm:w-auto bg-accent text-muted"}>
-                                        <TabsTrigger value="mine">Mine</TabsTrigger>
-                                        <TabsTrigger value="all">All</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
-                            )}
+                            {/* Link to the other page */}
+                            <Button asChild variant="outline" size="sm">
+                                <Link to="/tournaments/all">View All</Link>
+                            </Button>
                         </div>
                         {isAuthenticated && (
                             <Tooltip>
@@ -129,9 +112,7 @@ export default function TournamentList() {
                                         </span>
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Create a new tournament</p>
-                                </TooltipContent>
+                                <TooltipContent><p>Create a new tournament</p></TooltipContent>
                             </Tooltip>
                         )}
                     </CardHeader>

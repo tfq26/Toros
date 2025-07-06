@@ -1,6 +1,16 @@
-import  { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import { Input } from "@/components/ui/input.jsx";
+import { Button } from "@/components/ui/button.jsx";
 import {
     Select,
     SelectTrigger,
@@ -8,181 +18,156 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select.jsx";
-import { savePlayerData, convertLevel } from "@/utils/functions/HelperFunctions.js";
-import DialogProvider from "../../utils/DialogProvider.jsx";
-import PropTypes from "prop-types"; // Adjust path if needed
+import { Separator } from "@/components/ui/separator";
 
-// Helper to return a description for a given skill level.
-const getSkillDescription = (skillLevel) => {
-    switch (skillLevel) {
-        case 1:
-            return "Beginner";
-        case 2:
-            return "Intermediate";
-        case 3:
-            return "Advanced";
-        default:
-            return "Unknown";
-    }
-};
-
-const PlayerModalUpdated = ({ isModalOpen, onClose, selectedPlayer, refreshPlayers }) => {
-    const [playerName, setPlayerName] = useState("");
-    const [playerSkill, setPlayerSkill] = useState(1);
-    const [status, setStatus] = useState("Registered");
+// A robust and self-contained modal for editing player details.
+const PlayerModalUpdated = ({ isModalOpen, onClose, player, onSave }) => {
+    // Local state for form data, initialized from the player prop.
+    const [formData, setFormData] = useState({
+        name: "",
+        skillLevel: 1,
+        status: "Registered",
+    });
+    const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState(null);
 
+    // useEffect to populate the form whenever a new player is selected.
     useEffect(() => {
-        if (selectedPlayer) {
-            setPlayerName(selectedPlayer.name || "");
-            setPlayerSkill(selectedPlayer.skillLevel ?? 1);
-            setStatus(selectedPlayer.status || "Registered");
-        }
-    }, [selectedPlayer]);
-
-    // This function is called when the form is submitted, e.g., by pressing Enter.
-    const handleSave = async () => {
-        try {
-            const formData = {
-                name: playerName,
-                age: selectedPlayer.age,
-                email: selectedPlayer.email,
-                phone: selectedPlayer.phone,
-                teamNumber: selectedPlayer.teamNumber,
-                clubName: selectedPlayer.clubName,
-                skillLevel: playerSkill,
-                status,
-            };
-            await savePlayerData({
-                formData,
-                player: selectedPlayer,
-                refreshPlayers,
-                setIsDirty: () => {},
-                setShowCheckmark: () => {},
+        if (player) {
+            setFormData({
+                name: player.name || "",
+                skillLevel: player.skillLevel || 1,
+                status: player.status || "Registered",
             });
-            onClose();
+        }
+    }, [player]);
+
+    // Handler for text input changes.
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    // Handler for select dropdown changes.
+    const handleSelectChange = (name, value) => {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    // Called when the user clicks the "Save Changes" button.
+    const handleConfirmSave = async () => {
+        setError(null);
+        setIsSaving(true);
+        try {
+            // The parent component's onSave function handles the API call.
+            if (onSave) {
+                await onSave({ ...player, ...formData });
+            }
+            onClose(); // Close the modal on success.
         } catch (err) {
             console.error("Error saving player data:", err);
-            setError("Error saving player data.");
+            setError("Failed to save changes. Please try again.");
+        } finally {
+            setIsSaving(false);
         }
     };
 
-    // If modal is not open or there is no selected player, render nothing.
-    if (!isModalOpen || !selectedPlayer) return null;
+    // If the modal isn't open or there's no player, render nothing.
+    if (!isModalOpen || !player) return null;
 
     return (
-        <DialogProvider
-            isOpen={isModalOpen}
-            onOpenChange={(open) => {
-                if (!open) onClose();
-            }}
-            title="Edit Player Information"
-            description="Edit player details. Changes will be saved for this tournament only."
-            onConfirm={handleSave}
-            onCancel={onClose}
-            confirmText="Save"
-        >
-            {/* Wrap everything in a form to allow Enter to submit */}
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSave();
-                }}
-                className="grid gap-4"
-            >
-                {/* Name Field */}
-                <div className="flex items-center gap-2">
-                    <Label htmlFor="name" className="text-sm font-medium">
-                        Name
-                    </Label>
-                    <Input
-                        id="name"
-                        type="text"
-                        placeholder="Enter your name"
-                        value={playerName}
-                        onChange={(e) => setPlayerName(e.target.value)}
-                        className="w-full"
-                    />
-                </div>
+        <Dialog open={isModalOpen} onOpenChange={onClose}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Edit Player: {player.name}</DialogTitle>
+                    <DialogDescription>
+                        Make changes to the player's information below. Click save when you're done.
+                    </DialogDescription>
+                </DialogHeader>
 
-                {/* Skill Level Field */}
-                <div className="flex flex-col items-center gap-2">
-                    <Label htmlFor="skillLevel" className="text-sm font-medium">
-                        Skill Level
-                    </Label>
-                    <Input
-                        id="skillLevel"
-                        type="range"
-                        min="1"
-                        max="3"
-                        step="1"
-                        value={playerSkill}
-                        onChange={(e) => setPlayerSkill(Number(e.target.value))}
-                        className="w-full"
-                        // The arrow keys should natively adjust the range slider.
-                    />
-                    <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
-                        {getSkillDescription(playerSkill)} ({playerSkill})
-                    </p>
-                </div>
-
-                {/* Status Field */}
-                <div className="flex flex-col items-center gap-2">
-                    <Label htmlFor="status" className="text-sm font-medium">
-                        Status
-                    </Label>
-                    <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Registered">Registered</SelectItem>
-                            <SelectItem value="Checked In">Checked In</SelectItem>
-                            <SelectItem value="Withdrawn">Withdrawn</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Mobile-only information */}
-                <div className="md:hidden mt-4 space-y-4">
-                    <div className="flex items-center gap-3">
-                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Club Name
-                        </Label>
-                        <p className="text-base text-gray-800 dark:text-gray-100">
-                            {selectedPlayer.clubName || "N/A"}
-                        </p>
+                <div className="grid gap-4 py-4">
+                    {/* Name Field */}
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">Name</Label>
+                        <Input
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            className="col-span-3"
+                        />
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Rank
-                        </Label>
-                        <p className="text-base text-gray-800 dark:text-gray-100">
-                            {convertLevel(selectedPlayer.skillLevel)}
-                        </p>
+
+                    {/* Skill Level Field */}
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="skillLevel" className="text-right">Skill Level</Label>
+                        <Select
+                            value={String(formData.skillLevel)}
+                            onValueChange={(value) => handleSelectChange("skillLevel", Number(value))}
+                        >
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select skill level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="1">1.0 - Beginner</SelectItem>
+                                <SelectItem value="2">2.0 - Novice</SelectItem>
+                                <SelectItem value="3">3.0 - Intermediate</SelectItem>
+                                <SelectItem value="4">4.0 - Advanced</SelectItem>
+                                <SelectItem value="5">5.0 - Expert</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Status Field */}
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="status" className="text-right">Status</Label>
+                        <Select
+                            value={formData.status}
+                            onValueChange={(value) => handleSelectChange("status", value)}
+                        >
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Registered">Registered</SelectItem>
+                                <SelectItem value="Checked In">Checked In</SelectItem>
+                                <SelectItem value="Withdrawn">Withdrawn</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
-                {error && <p className="text-sm text-red-500 text-center mt-2">{error}</p>}
-            </form>
-        </DialogProvider>
+                {/* Display non-editable context info */}
+                <Separator />
+                <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex justify-between"><span>Club:</span> <span className="font-medium text-foreground">{player.clubName || "N/A"}</span></div>
+                    <div className="flex justify-between"><span>Team:</span> <span className="font-medium text-foreground">{player.teamName || "N/A"}</span></div>
+                </div>
+
+                {error && <p className="text-sm text-destructive text-center">{error}</p>}
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button onClick={handleConfirmSave} disabled={isSaving}>
+                        {isSaving ? "Saving..." : "Save Changes"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 
 PlayerModalUpdated.propTypes = {
     isModalOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    selectedPlayer: PropTypes.shape({
+    player: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         name: PropTypes.string,
-        age: PropTypes.number,
-        email: PropTypes.string,
-        phone: PropTypes.string,
-        teamNumber: PropTypes.number,
-        clubName: PropTypes.string,
         skillLevel: PropTypes.number,
         status: PropTypes.string,
+        clubName: PropTypes.string,
+        teamName: PropTypes.string,
     }),
-    refreshPlayers: PropTypes.func.isRequired,
+    onSave: PropTypes.func,
 };
 
 export default PlayerModalUpdated;

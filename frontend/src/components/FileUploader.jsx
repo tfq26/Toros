@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { Label } from "@/components/ui/label.jsx";
@@ -16,13 +16,10 @@ const DEFAULT_VALUES = {
 const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-    // importedPlayers will hold the processed player data after upload
     const [importedPlayers, setImportedPlayers] = useState(null);
-    // showConfirm controls the dialog visibility (shown after a successful upload)
     const [showConfirm, setShowConfirm] = useState(false);
     const fileInputRef = useRef(null);
 
-    // When a file is chosen, process it immediately
     const handleFileSelection = (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -30,7 +27,6 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
         processFile(file);
     };
 
-    // Process the file: read, parse, and call backend upload
     const processFile = async (file) => {
         setIsLoading(true);
         toast.info("Processing file...", { duration: 5000 });
@@ -49,17 +45,15 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                     return;
                 }
 
-                // Map and apply default values as needed
                 jsonData = jsonData.map((player) => ({
                     name: player.name || DEFAULT_VALUES.name,
                     teamNumber: player.teamNumber || DEFAULT_VALUES.teamNumber,
                     clubName: player.clubName || DEFAULT_VALUES.clubName,
-                    SkillLevel: player.SkillLevel || DEFAULT_VALUES.SkillLevel,
+                    placement: player.placement || DEFAULT_VALUES.placement,
                     registered: player.registered !== undefined ? player.registered : false,
                 }));
 
                 console.log("🔍 Processed JSON Data:", jsonData);
-                // Upload the file and player data to the backend
                 await uploadPlayersToBackend(file, jsonData);
             };
 
@@ -75,8 +69,6 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
         }
     };
 
-    // Upload the file using axios and, if successful, store the player data
-    // and show the confirmation dialog
     const uploadPlayersToBackend = async (file, playersData) => {
         const formData = new FormData();
         formData.append("file", file);
@@ -95,7 +87,6 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
                     `✅ Players uploaded successfully! (${playersData.length} players added)`,
                     { duration: 5000 }
                 );
-                // Instead of immediately applying the data, store it and show a confirmation dialog
                 setImportedPlayers(playersData);
                 setShowConfirm(true);
             } else {
@@ -107,16 +98,16 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
         }
     };
 
-    // When the user confirms in the dialog, call onFileSelect with the imported data
     const handleConfirmProceed = () => {
+        // close dialog immediately
+        setShowConfirm(false);
+
         if (importedPlayers) {
             onFileSelect(importedPlayers);
         }
         setImportedPlayers(null);
-        setShowConfirm(false);
     };
 
-    // If the user cancels, just dismiss the dialog (the backend update cannot be reverted)
     const handleConfirmCancel = () => {
         setImportedPlayers(null);
         setShowConfirm(false);
@@ -140,9 +131,8 @@ const FileUploader = ({ onFileSelect, onStatusUpdate }) => {
 
             {isLoading && <p className="text-blue-500 mt-2">Importing file, please wait...</p>}
 
-            {/* Confirmation dialog shown after a successful file import */}
             <DialogProvider
-                isOpen={showConfirm}
+                open={showConfirm}
                 onOpenChange={setShowConfirm}
                 title="Confirm Import"
                 description="The file has been successfully imported. Importing a new file will overwrite all existing player data. Do you want to proceed?"

@@ -19,7 +19,6 @@ public class TeamService {
     private final PlayerRepository playerRepository;
     private static final String ALPHANUMERIC_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int ID_LENGTH = 8;
-    // The factor to be used for calculating the average skill level
     private static final double SKILL_DIVISOR = 1.86983748392031;
 
     public TeamService(TeamRepository teamRepository, PlayerRepository playerRepository) {
@@ -27,55 +26,63 @@ public class TeamService {
         this.playerRepository = playerRepository;
     }
 
-    /**
-     * ✅ Fetch all team standings, ensuring valid placements are set.
-     */
-    public List<Team> getStandings() {
-        List<Team> teams = teamRepository.findAll();
-        return teams.stream()
-                .sorted(Comparator.comparing(
-                        team -> (team.getPlacement() == null || team.getPlacement() == 0)
-                                ? Integer.MAX_VALUE
-                                : team.getPlacement()
-                ))
-                .collect(Collectors.toList());
-    }
+    // ✨ NEW: The primary method for creating a new team and its players.
+    // This replaces the old `addTeam` method and is what TournamentService will call.
+    @Transactional
+    public Team createTeam(Team newTeam) {
+        // Generate a unique ID for the team itself
+        newTeam.setId(generateUniqueTeamId());
 
-    /**
-     * ✅ Retrieve a specific team by ID.
-     */
-    public Team getTeamById(String teamId) {
-        return teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team not found with ID: " + teamId));
-    }
-
-    /**
-     * ✅ Add a new team or update an existing team.
-     */
-    public void addTeam(Team team) {
-        if (team.getId() == null || team.getId().isEmpty()) {
-            team.setId(generateUniqueTeamId());
+        // Before saving the team, ensure its players exist in the database.
+        // This handles cases where players are new or are being created along with the team.
+        if (newTeam.getPlayer1() != null) {
+            playerRepository.save(newTeam.getPlayer1());
         }
-        teamRepository.save(team);
-    }
-
-    /**
-     * ✅ Update an existing team without changing its ID.
-     */
-    public void updateTeam(Team team) {
-        if (!teamRepository.existsById(team.getId())) {
-            throw new IllegalArgumentException("Cannot update team. Team does not exist with ID: " + team.getId());
+        if (newTeam.getPlayer2() != null) {
+            playerRepository.save(newTeam.getPlayer2());
         }
-        teamRepository.save(team);
+
+        log.info("SERVICE: Creating new team with ID: {}", newTeam.getId());
+        return teamRepository.save(newTeam);
     }
 
-    /**
-     * ✅ Delete a specific team by ID.
-     */
+    // ✨ REFINED: This is now the single, authoritative method for updating a team.
+    // It's safer for REST APIs because it uses the ID from the URL path as the source of truth.
+    @Transactional
+    public Team updateTeam(String id, Team teamDetails) {
+        // 1. Fetch the existing team from the database
+        Team existingTeam = teamRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Team not found with ID: " + id));
+
+        // 2. Update the properties of the existing team from the request body
+        existingTeam.setName(teamDetails.getName());
+
+        // 3. Handle player updates by saving them first
+        if (teamDetails.getPlayer1() != null) {
+            playerRepository.save(teamDetails.getPlayer1());
+            existingTeam.setPlayer1(teamDetails.getPlayer1());
+        } else {
+            existingTeam.setPlayer1(null);
+        }
+
+        if (teamDetails.getPlayer2() != null) {
+            playerRepository.save(teamDetails.getPlayer2());
+            existingTeam.setPlayer2(teamDetails.getPlayer2());
+        } else {
+            existingTeam.setPlayer2(null);
+        }
+
+        log.info("SERVICE: Updating team with ID: {}", id);
+        return teamRepository.save(existingTeam);
+    }
+
+    // ✅ KEPT: This method is perfect for the DELETE /api/teams/{id} endpoint.
+    @Transactional
     public void deleteTeam(String teamId) {
         if (!teamRepository.existsById(teamId)) {
-            throw new IllegalArgumentException("Team not found with ID: " + teamId);
+            throw new NoSuchElementException("Team not found with ID: " + teamId);
         }
+        log.info("SERVICE: Deleting team with ID: {}", teamId);
         teamRepository.deleteById(teamId);
     }
 
@@ -87,6 +94,17 @@ public class TeamService {
         return teams.stream()
                 .sorted(Comparator.comparing(Team::getWins).reversed()) // Sort by wins descending
                 .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    public List<Team> getStandings() {
+        List<Team> teams = teamRepository.findAll();
+        return teams.stream()
+                .sorted(Comparator.comparing(
+                        team -> (team.getPlacement() == null || team.getPlacement() == 0)
+                                ? Integer.MAX_VALUE
+                                : team.getPlacement()
+                ))
                 .collect(Collectors.toList());
     }
 

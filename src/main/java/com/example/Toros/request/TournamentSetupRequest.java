@@ -1,5 +1,6 @@
 package com.example.Toros.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -14,6 +15,8 @@ public class TournamentSetupRequest {
     private int matchDuration;
     private int breakTime;
     private Boolean confirmDelete;
+    @JsonProperty("auth0UserId")
+    private String auth0Id; // Auth0 ID of the organizer
 
     // Extended tournament properties
     private String location;

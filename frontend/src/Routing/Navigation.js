@@ -15,29 +15,24 @@ export const mainNavigation = [
         items: [
             {
                 title: "My Tournaments",
-                url: "/tournament/my",
-                description: "View and manage tournaments you’ve joined or created.",
+                url: "/tournament/list",
+                description: "View your tournaments",
             },
             {
                 title: "Create Tournament",
                 url: "/tournament/setup",
-                description: "Set up a new tournament from scratch.",
+                description: "Set up a new tournament",
             },
             {
                 title: "Manage Players",
                 url: "/players",
                 description: "View and manage your registered players.",
             },
-            {
-                title: "Live Window View",
-                url: "/tournament/live",
-                description: "View ongoing tournament matches on a public display.",
-            },
-            {
-                title: "Test Page",
-                url: "/test",
-                description: "A temporary page for layout and routing tests.",
-            },
+            // {
+            //     title: "Test Page",
+            //     url: "/test",
+            //     description: "A temporary page for layout and routing tests.",
+            // },
         ],
     },
 ];

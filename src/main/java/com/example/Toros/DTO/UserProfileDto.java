@@ -34,5 +34,8 @@ public class UserProfileDto {
     @NotBlank(message = "Skill level must not be blank")
     private String skillLevel;
 
+    @NotBlank(message = "Username must not be blank")
+    private String userName;
+
     // getters + setters omitted for brevity
 }

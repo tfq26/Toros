@@ -6,6 +6,7 @@ import TournamentSetup from '@/pages/Setup/TournamentSetup';
 import TournamentSetupSuccess from '@/pages/Setup/Pages/SuccessPage';
 import TournamentList from '@/pages/Tournament/Lists/TournamentList';
 import LiveTournament from '@/pages/Tournament/LiveTournament';
+import TournamentManagementPage from "@/pages/Tournament/Management/TournamentManagement.jsx";
 
 export default function TournamentRoutes({
                                              setTournamentSetupComplete,
@@ -35,7 +36,7 @@ export default function TournamentRoutes({
                     element={<TournamentSetupSuccess />}
                 />
                 <Route
-                    path="my"
+                    path="/list"
                     element={<TournamentList />}
                 />
                 <Route
@@ -52,6 +53,10 @@ export default function TournamentRoutes({
                             setTournamentSetupComplete={setTournamentSetupComplete}
                         />
                     }
+                />
+                <Route
+                    path="/tournament/manage/:tournamentId"
+                    element={<TournamentManagementPage />}
                 />
             </Route>
         </Routes>

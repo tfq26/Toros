@@ -1,67 +1,44 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Import Tabs components
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FaSpinner, FaPlusCircle } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 import TournamentItem from "../components/TournamentItem.jsx";
-import NoTournamentsFound from "../components/NoTournamentsFound.jsx"; // Assuming this is now a separate component
+import NoTournamentsFound from "../components/NoTournamentsFound.jsx";
 import useMyTournaments from "@/hooks/useMyTournaments.js";
 import { useResponsive } from "@/contexts/ResponsiveContext.jsx";
 
-export default function TournamentList() {
+export default function AllTournamentsPage() {
     const navigate = useNavigate();
     const { isMobile } = useResponsive();
-    const [activeTab, setActiveTab] = useState("mine"); // State to manage the active tab
 
+    // --- FIXED: Updated the destructured props from the hook ---
     const {
         status,
         tournaments,
         error,
         refetchAll,
-        refetchMine,
         handleView,
-        handleManage,
-        handleTournamentClick,
+        handleRegister, // <-- ADDED the missing function
         isAuthenticated,
-        loginWithRedirect,
     } = useMyTournaments();
+    // Removed unused 'handleManage' and 'handleTournamentClick'
 
-    // On mount and whenever activeTab changes, call the appropriate fetch
+    // On mount, fetch all tournaments
     useEffect(() => {
-        document.title = activeTab === 'all' ? "All Tournaments" : "My Tournaments";
-        if (activeTab === 'all') {
-            refetchAll();
-        } else {
-            refetchMine();
-        }
-    }, [activeTab, refetchAll, refetchMine]);
-
-    const onRefresh = () => (activeTab === 'all' ? refetchAll() : refetchMine());
+        document.title = "All Tournaments";
+        refetchAll();
+    }, [refetchAll]);
 
     const renderContent = () => {
         if (status === "loading") {
             return (
                 <div className="flex flex-col items-center justify-center gap-4 py-10">
                     <FaSpinner className="animate-spin text-4xl text-gray-400" />
-                    <p className="text-muted-foreground">
-                        {activeTab === 'all' ? "Loading all tournaments..." : "Loading your tournaments..."}
-                    </p>
-                </div>
-            );
-        }
-
-        if (status === "unauthenticated" || !isAuthenticated) {
-            return (
-                <div className="text-center py-10">
-                    <h3 className="text-xl font-semibold text-foreground">
-                        Please log in to view your tournaments.
-                    </h3>
-                    <Button onClick={() => loginWithRedirect()} className="mt-6">
-                        Log In
-                    </Button>
+                    <p className="text-muted-foreground">Loading all tournaments...</p>
                 </div>
             );
         }
@@ -70,16 +47,13 @@ export default function TournamentList() {
             return (
                 <div className="text-center py-10">
                     <p className="text-lg font-semibold text-destructive">{error}</p>
-                    <Button onClick={onRefresh} className="mt-4">
-                        Try Again
-                    </Button>
+                    <Button onClick={refetchAll} className="mt-4">Try Again</Button>
                 </div>
             );
         }
 
         if (tournaments.length === 0) {
-            // Pass the activeTab to the NoTournamentsFound component
-            return <NoTournamentsFound viewType={activeTab} onRefresh={onRefresh} />;
+            return <NoTournamentsFound viewType="all" onRefresh={refetchAll} />;
         }
 
         return (
@@ -88,9 +62,10 @@ export default function TournamentList() {
                     <TournamentItem
                         key={t.id}
                         tournament={t}
+                        // This now works because handleRegister is defined
+                        onRegister={() => handleRegister(t.id)}
+                        // Pass onView to make the whole card clickable or for a dedicated button
                         onView={() => handleView(t.id)}
-                        onManage={() => handleManage(t.id)}
-                        onClick={() => handleTournamentClick(t.id)}
                     />
                 ))}
             </ul>
@@ -99,20 +74,17 @@ export default function TournamentList() {
 
     return (
         <TooltipProvider>
-            <div className="flex flex-col items-center min-h-screen rounded-lg p-4 sm:p-6">
+            <div className="flex flex-col items-center min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6">
                 <Card className="w-full max-w-4xl">
                     <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 shadow-xl p-4 bg-secondary rounded-lg">
+                        <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4">
                             <CardTitle className="text-2xl sm:text-3xl font-bold">
-                                Tournaments
+                                All Tournaments
                             </CardTitle>
                             {isAuthenticated && (
-                                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                                    <TabsList  className={"w-full sm:w-auto bg-accent text-muted"}>
-                                        <TabsTrigger value="mine">Mine</TabsTrigger>
-                                        <TabsTrigger value="all">All</TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
+                                <Button asChild variant="outline" size="sm">
+                                    <Link to="/tournaments/my">View Mine</Link>
+                                </Button>
                             )}
                         </div>
                         {isAuthenticated && (
@@ -129,9 +101,7 @@ export default function TournamentList() {
                                         </span>
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Create a new tournament</p>
-                                </TooltipContent>
+                                <TooltipContent><p>Create a new tournament</p></TooltipContent>
                             </Tooltip>
                         )}
                     </CardHeader>

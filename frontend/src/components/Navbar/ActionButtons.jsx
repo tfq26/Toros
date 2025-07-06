@@ -18,13 +18,13 @@ export function ActionButtons() {
         <div className="flex items-center gap-2">
             <NavbarAuth />
             {isDev && (
-                <Button variant="outline" size="icon" onClick={openDevTools} aria-label="Open DevTools">
-                    <VscTools className="h-4 w-4" />
+                <Button variant="outline" size="icon" onClick={openDevTools} aria-label="Open DevTools" className={"hidden md:inline-flex cursor-pointer hover:bg-muted/50"}>
+                    <VscTools className="h-auto w-auto" />
                 </Button>
             )}
-            <Button variant="outline" size="icon" onClick={toggleDarkMode} aria-label="Toggle dark mode">
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+            {/*<Button variant="outline" size="icon" onClick={toggleDarkMode} aria-label="Toggle dark mode">*/}
+            {/*    {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}*/}
+            {/*</Button>*/}
         </div>
     );
 }

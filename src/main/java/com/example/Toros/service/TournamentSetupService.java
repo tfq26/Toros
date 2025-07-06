@@ -5,9 +5,8 @@ import com.example.Toros.model.Team;
 import com.example.Toros.model.Tournament;
 import com.example.Toros.repository.MatchRepository;
 import com.example.Toros.repository.PlayerRepository;
-import com.example.Toros.repository.TeamRepository;
 import com.example.Toros.repository.TournamentRepository;
-import com.example.Toros.request.TournamentSetupRequest; // ✨ NEW: Assuming this import
+import com.example.Toros.request.TournamentSetupRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,17 +23,14 @@ public class TournamentSetupService {
     private final MatchRepository matchRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamService teamService;
-    private final TeamRepository teamRepository;
     private final PlayerRepository playerRepository;
 
     public TournamentSetupService(MatchRepository matchRepository,
                                   TournamentRepository tournamentRepository,
-                                  TeamRepository teamRepository,
                                   PlayerRepository playerRepository,
                                   TeamService teamService) {
         this.matchRepository = matchRepository;
         this.tournamentRepository = tournamentRepository;
-        this.teamRepository = teamRepository;
         this.playerRepository = playerRepository;
         this.teamService = teamService;
     }
@@ -109,6 +105,7 @@ public class TournamentSetupService {
         tournament.setAgeGroup(request.getAgeGroup());
         tournament.setSkillLevel(request.getSkillLevel());
         tournament.setFinalPlacements(new ArrayList<>());
+        tournament.setAuth0Id(request.getAuth0Id()); // Assuming this is part of the request
 
         // 4) Setup properties map & list
         Map<String,Object> propsMap = new LinkedHashMap<>();
@@ -145,42 +142,42 @@ public class TournamentSetupService {
         List<String> teamIds = teams.stream()
                 .map(Team::getId)
                 .collect(Collectors.toList());
-        tournament.setTeams(teamIds);
+        // ✨ FIX #1: The error on line 149 is fixed here.
+        // Instead of converting teams to a list of IDs, we now set the list of full Team objects.
+        // The Tournament model is now List<Team>, so this matches perfectly.
+        tournament.setTeams(teams);
 
-        // 6) First save (to obtain tournament ID)
+        // 6) First save (to obtain tournament ID and establish relationships)
         tournament = tournamentRepository.save(tournament);
         log.info("Tournament '{}' saved [ID={}]", tournament.getName(), tournament.getId());
 
-        // 7) Load each Team from DB to gather its player IDs
-        List<Team> persistedTeams = teamRepository.findAllById(teamIds);
-        Set<String> playerIds = new HashSet<>();
-        for (Team t : persistedTeams) {
-            if (t.getPlayers() != null) {
-                playerIds.addAll(t.getPlayers());
-            }
-        }
+        // 7) ✨ REFACTORED: Associate players more efficiently
+        // We already have the full team objects, no need to re-fetch from the database.
+        Set<String> playerIds = teams.stream()
+                .flatMap(team -> team.getPlayers().stream())
+                .collect(Collectors.toSet());
 
-        // 8) Validate that each player actually exists
         List<String> validPlayerIds = playerIds.stream()
                 .filter(playerRepository::existsById)
                 .collect(Collectors.toList());
         tournament.setPlayers(validPlayerIds);
 
-        // 9) Generate matches and assign
+        // 8) Generate matches and assign
         MatchGenerationResult result = generateMatches(
                 tournament, teams, request.getNumCourts(), request.getGamesPerTeam(), request.isSkillBased(),
                 request.getStartTime(), request.getMatchDuration(), request.getBreakTime()
         );
-        tournament.setMatches(result.matchIds);
+        // ✨ FIX: Assign the list of full Match objects, not their IDs
+        tournament.setMatches(result.savedMatches);
         tournament.setEndTime(result.maxEndTime);
 
-        // 10) Final save (persists players, matches, endTime)
+        // 10) Final save (persists all relationships)
         tournament = tournamentRepository.save(tournament);
         log.info("Tournament '{}' now has {} teams, {} players, {} matches",
                 tournament.getName(),
-                teamIds.size(),
+                teams.size(),
                 validPlayerIds.size(),
-                result.matchIds.size());
+                result.savedMatches.size()); // Use the size of the correct list
 
         return tournament;
     }
@@ -268,7 +265,7 @@ public class TournamentSetupService {
                 .max(LocalDateTime::compareTo)
                 .orElse(startTime);
         MatchGenerationResult result = new MatchGenerationResult();
-        result.matchIds = matchIds;
+        result.savedMatches = savedMatches;
         result.maxEndTime = maxEndTime;
         return result;
     }
@@ -284,7 +281,7 @@ public class TournamentSetupService {
     }
 
     private static class MatchGenerationResult {
-        List<String> matchIds;
+        List<Match> savedMatches;
         LocalDateTime maxEndTime;
     }
 }

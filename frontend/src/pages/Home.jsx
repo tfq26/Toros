@@ -15,7 +15,14 @@ import {
 import { cn } from "@/lib/utils";
 import { useTheme } from '@/contexts/ThemeContext.jsx';
 
-// Data for sections - improves readability by separating data from presentation
+// Inline SVG component for the hero background
+const HeroBall = ({ className }) => (
+    <svg width="100%" height="100%" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path fill="currentColor" d="m1096.8 390c-116.4-274.8-433.2-403.2-708-286.8-273.6 117.6-402 434.4-285.6 708 116.4 274.8 433.2 402 708 285.6 274.8-116.4 403.2-433.2 285.6-706.8zm-939.6 82.801c-12 43.199-30 74.398-42 72-12-3.6016-12-40.801 0-82.801 12-43.199 30-74.398 42-72 12 3.6016 12 40.801 0 82.801zm109.2 126c33.602-14.398 74.398 9.6016 93.602 52.801 18 43.199 6 90-26.398 103.2-33.602 14.398-74.398-9.6016-93.602-52.801-19.199-42-7.1992-88.801 26.398-103.2zm120 405.6c-13.199 16.801-52.801 9.6016-88.801-16.801-36-26.398-54-62.398-40.801-80.398s52.801-9.6016 88.801 16.801c36.004 27.602 54.004 63.602 40.801 80.398zm18-638.4c-37.199 25.199-84 20.398-104.4-9.6016s-6-74.398 32.398-99.602c37.199-25.199 84-20.398 104.4 9.6016 20.402 31.203 6.0039 75.602-32.398 99.602zm84-230.4c-2.3984-18 32.398-36 76.801-40.801 44.398-4.8008 81.602 6 82.801 22.801 2.3984 18-32.398 36-76.801 40.801-44.398 4.7969-81.598-4.8008-82.801-22.801zm68.402 340.8c42-18 90 1.1992 106.8 43.199 18 42-1.1992 90-43.199 106.8-42 18-90-1.1992-106.8-43.199-16.801-40.801 2.3984-88.801 43.199-106.8zm-48 399.6c-3.6016-38.398 31.199-74.398 79.199-79.199s90 22.801 93.602 61.199c3.6016 38.398-31.199 74.398-79.199 79.199-48.004 4.8008-90.004-21.598-93.602-61.199zm145.2 223.2c-44.398 4.8008-80.398 2.3984-81.602-6-1.1992-8.3984 33.602-18 78-22.801 44.398-4.8008 80.398-2.3984 81.602 6 0 8.4023-34.801 18-78 22.801zm81.602-753.6c-39.602-20.398-58.801-62.398-43.199-93.602 15.602-31.199 61.199-40.801 100.8-21.602 39.602 20.398 58.801 62.398 43.199 93.602-15.602 31.199-61.203 40.801-100.8 21.602zm172.8 572.4c-32.398 30-73.199 40.801-88.801 22.801-16.801-18-3.6016-56.398 30-87.602 32.398-30 73.199-40.801 88.801-22.801 16.801 19.203 3.6016 57.602-30 87.602zm49.203-267.6c-18 39.602-58.801 60-91.199 45.602-32.398-14.398-44.398-58.801-26.398-98.398 18-39.602 58.801-60 91.199-45.602s44.398 58.801 26.398 98.398zm75.598-176.4c-20.398 8.3984-50.398-18-68.398-58.801s-15.602-81.602 4.8008-90c20.398-8.3984 50.398 18 68.398 58.801 16.801 40.801 14.398 81.602-4.8008 90zm45.602 290.4c-8.3984-1.1992-8.3984-38.398-1.1992-81.602 7.1992-43.199 20.398-78 28.801-76.801 8.3984 1.1992 8.3984 38.398 1.1992 81.602-8.4023 44.402-20.402 78.004-28.801 76.801z" />
+    </svg>
+);
+
+// Data for sections
 const featuresData = [
     { icon: <FaCalendarAlt size={36} />, title: "Manage Events with Ease", desc: "Create, view, and track all your tournaments and matches effortlessly, all in one intuitive platform." },
     { icon: <FaNewspaper size={36} />, title: "Stay Updated with Latest News", desc: "Get real-time updates and insightful articles on pickleball strategies, tips, and global headlines." },
@@ -32,23 +39,20 @@ const testimonialsData = [
 export default function Home() {
     const [images, setImages] = useState([]);
     const [email, setEmail] = useState("");
-    const [newsletterStatus, setNewsletterStatus] = useState("idle"); // 'idle' | 'loading' | 'success' | 'error'
+    const [newsletterStatus, setNewsletterStatus] = useState("idle");
     const { isDarkMode } = useTheme();
 
     useEffect(() => {
+        const bgColor = isDarkMode ? '1d1f20' : 'e1e3e5';
+        const textColor = isDarkMode ? 'e1e3e5' : '1d1f20';
         setImages([
-            "https://placehold.co/600x400/FFD700/000000?text=Tournament+1",
-            "https://placehold.co/600x400/FFA500/000000?text=Tournament+2",
-            "https://placehold.co/600x400/FF8C00/000000?text=Tournament+3",
-            "https://placehold.co/600x400/FF6347/000000?text=Tournament+4",
+            `https://placehold.co/600x400/${bgColor}/${textColor}?text=Tournament+1`,
+            `https://placehold.co/600x400/${bgColor}/${textColor}?text=Tournament+2`,
+            `https://placehold.co/600x400/${bgColor}/${textColor}?text=Tournament+3`,
+            `https://placehold.co/600x400/${bgColor}/${textColor}?text=Tournament+4`,
         ]);
         document.title = "Toros - The Ultimate Pickleball Tournament Experience";
-    }, []);
-
-    useEffect(() => {
-        console.log("🏠 [Home] component mounted");
-        console.log("🎨 Dark mode enabled:", isDarkMode);
-    }, []);
+    }, [isDarkMode]);
 
     const handleSubscribe = (e) => {
         e.preventDefault();
@@ -57,7 +61,6 @@ export default function Home() {
             return;
         }
         setNewsletterStatus("loading");
-        // Simulate API call
         setTimeout(() => {
             setNewsletterStatus("success");
         }, 1500);
@@ -73,8 +76,6 @@ export default function Home() {
         show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 10 } }
     };
 
-    const heroBallSrc = isDarkMode ? "/svgs/Hero_Ball_Dark.svg" : "/svgs/Hero_Ball.svg";
-
     return (
         <div className="flex flex-col items-center text-foreground min-h-screen">
             {/* 1. Hero Section */}
@@ -84,33 +85,38 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, ease: "easeOut" }}
             >
-                <motion.img
-                    src={heroBallSrc}
-                    alt="Background Spinning Pickleball"
-                    className="absolute inset-0 w-auto m-auto h-[75%] object-cover opacity-20 dark:opacity-10 scale-125"
+                <motion.div
+                    className="absolute inset-0 m-auto w-auto h-[40%] sm:h-[75%] opacity-20 dark:opacity-10 scale-125"
                     style={{ pointerEvents: 'none' }}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 15, ease: 'linear', repeat: Infinity }}
-                />
+                >
+                    <HeroBall className="w-full h-full text-primary" />
+                </motion.div>
+
                 <div className="relative z-10 max-w-4xl mx-auto">
-                    <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-6 text-gray-900 dark:text-gray-50 drop-shadow-lg leading-tight">
-                        Welcome to <span className="text-amber-500">Toros</span>
+                    {/* --- FIXED: Replaced <h6> with <span> --- */}
+                    <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-6 text-foreground drop-shadow-lg leading-tight">
+                        Welcome to <span className="text-primary font-bungee-inline">Toros</span>
                     </h1>
-                    <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-10 text-gray-700 dark:text-gray-200 drop-shadow-md font-light">
-                        Your Ultimate Destination for Pickleball Tournament Experiences.
+                    <br className="block h-20 sm:h-12" />
+                    <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-10 text-muted-foreground drop-shadow-md font-light">
+                        Your Ultimate Destination for Pickleball Tournament Experiences
                     </p>
                     <Button
-                        className="bg-amber-400 hover:bg-amber-500 text-gray-900 px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 text-xl font-semibold"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 text-xl font-semibold"
                         asChild
                     >
                         <Link to="/tournament/setup">
-                            Let’s Play!
+                            <h2>
+                                Let’s Play!
+                            </h2>
                         </Link>
                     </Button>
                 </div>
             </motion.section>
 
-            <Separator className="w-32 h-1 bg-amber-400 my-16 rounded-full" />
+            <Separator className="w-32 h-1 bg-primary my-16 rounded-full" />
 
             {/* 2. Features Section */}
             <motion.section
@@ -126,7 +132,7 @@ export default function Home() {
                         className="bg-card text-card-foreground rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border border-border"
                         variants={itemVariants}
                     >
-                        <div className="mb-5 text-amber-500">{feat.icon}</div>
+                        <div className="mb-5 text-primary">{feat.icon}</div>
                         <h3 className="text-2xl font-bold mb-3">{feat.title}</h3>
                         <p className="text-base text-muted-foreground leading-relaxed">{feat.desc}</p>
                     </motion.div>
@@ -141,7 +147,7 @@ export default function Home() {
                 whileInView="show"
                 viewport={{ once: true, amount: 0.3 }}
             >
-                <h2 className="text-4xl font-bold mb-10 text-center text-gray-900 dark:text-gray-50">Upcoming Tournaments</h2>
+                <h2 className="text-4xl font-bold mb-10 text-center text-foreground">Upcoming Tournaments</h2>
                 <Carousel
                     className="w-full relative"
                     opts={{ align: "start", loop: true }}
@@ -160,7 +166,7 @@ export default function Home() {
                                         <h4 className="font-bold text-xl mb-1">Tournament {idx + 1}</h4>
                                         <p className="text-sm text-gray-200">Starts Jan {10 + idx}, 2026</p>
                                         <Button
-                                            className="mt-4 bg-amber-400 hover:bg-amber-500 text-gray-900 text-sm px-4 py-2 rounded-lg shadow transition-all duration-200 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0"
+                                            className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground text-sm px-4 py-2 rounded-lg shadow transition-all duration-200 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0"
                                             asChild
                                         >
                                             <Link to={`/tournament/${idx + 1}`}>View Details</Link>
@@ -180,7 +186,7 @@ export default function Home() {
                     />
                 </Carousel>
                 <div className="text-center mt-12">
-                    <Link to="/tournaments" className="text-amber-600 hover:text-amber-700 hover:underline font-bold text-lg transition-colors duration-200">
+                    <Link to="/tournaments" className="text-primary hover:text-primary/90 hover:underline font-bold text-lg transition-colors duration-200">
                         View All Tournaments →
                     </Link>
                 </div>
@@ -194,7 +200,7 @@ export default function Home() {
                 whileInView="show"
                 viewport={{ once: true, amount: 0.3 }}
             >
-                <h2 className="text-4xl font-bold mb-10 text-center text-gray-900 dark:text-gray-50">What People Are Saying</h2>
+                <h2 className="text-4xl font-bold mb-10 text-center text-foreground">What People Are Saying</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {testimonialsData.map((t, i) => (
                         <motion.blockquote
@@ -202,7 +208,7 @@ export default function Home() {
                             className="bg-card text-card-foreground p-8 rounded-2xl shadow-xl border border-border relative overflow-hidden"
                             variants={itemVariants}
                         >
-                            <span aria-hidden="true" className="absolute top-0 left-0 text-9xl font-serif text-amber-200 dark:text-amber-900 opacity-20 -z-0">“</span>
+                            <span aria-hidden="true" className="absolute top-0 left-0 text-9xl font-serif text-primary/10 -z-0">“</span>
                             <p className="italic mb-6 text-lg relative z-10 leading-relaxed">“{t.quote}”</p>
                             <cite className="font-semibold block text-right text-base text-muted-foreground relative z-10">— {t.name}</cite>
                         </motion.blockquote>
@@ -218,18 +224,18 @@ export default function Home() {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
             >
-                <div className={cn('p-10 rounded-2xl shadow-2xl border-2 border-amber-400', isDarkMode ? 'bg-gray-900 text-gray-50' : 'bg-gradient-to-br from-amber-500 to-amber-600 text-white')}>
-                    <h2 className="text-3xl font-bold mb-4">
+                <div className={cn('p-10 rounded-2xl shadow-2xl border-2 border-primary', isDarkMode ? 'bg-card' : 'bg-secondary')}>
+                    <h2 className="text-3xl font-bold mb-4 text-secondary-foreground">
                         {newsletterStatus === "success" ? "You're In!" : "Stay in the Loop"}
                     </h2>
 
                     {newsletterStatus === "success" ? (
-                        <p className="text-base text-gray-100 dark:text-gray-300 leading-relaxed">
+                        <p className="text-base text-muted-foreground leading-relaxed">
                             Thanks for subscribing! Keep an eye on your inbox for the latest news and tournament alerts.
                         </p>
                     ) : (
                         <>
-                            <p className="text-base mb-8 text-gray-100 dark:text-gray-300 leading-relaxed">
+                            <p className="text-base mb-8 text-secondary-foreground leading-relaxed">
                                 Subscribe to our newsletter for exclusive tournament alerts, the latest pickleball news, and special offers.
                             </p>
                             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4">
@@ -239,25 +245,19 @@ export default function Home() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={newsletterStatus === "loading"}
-                                    className={cn(
-                                        "flex-1 px-5 py-3 rounded-full text-lg border-2",
-                                        isDarkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400 focus:border-amber-400" : "bg-white border-amber-300 text-gray-900 placeholder:text-gray-500 focus:border-amber-700"
-                                    )}
+                                    className="flex-1 px-5 py-3 rounded-full text-lg border-2 bg-background text-foreground border-foreground placeholder:text-muted-foreground"
                                 />
                                 <Button
                                     type="submit"
                                     disabled={newsletterStatus === "loading"}
-                                    className={cn(
-                                        "px-8 py-3 rounded-full text-lg font-semibold shadow-md transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 flex items-center justify-center gap-2",
-                                        isDarkMode ? "bg-amber-400 hover:bg-amber-500 text-gray-900" : "bg-gray-900 hover:bg-gray-700 text-white"
-                                    )}
+                                    className="px-8 py-3 rounded-full text-lg font-semibold shadow-md transition-all duration-300 ease-in-out transform hover:-translate-y-0.5 flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                                 >
                                     {newsletterStatus === "loading" && <FaSpinner className="animate-spin" />}
                                     {newsletterStatus === "loading" ? "Subscribing..." : "Subscribe"}
                                 </Button>
                             </form>
                             {newsletterStatus === "error" && (
-                                <p className="mt-4 text-sm text-red-200 dark:text-red-400">Please enter a valid email address.</p>
+                                <p className="mt-4 text-sm text-destructive">Please enter a valid email address.</p>
                             )}
                         </>
                     )}

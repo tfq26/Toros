@@ -23,7 +23,10 @@ import { ThemeProvider } from '@/contexts/ThemeContext.jsx';
 import { LoadingProvider } from '@/contexts/LoadingContext.jsx';
 import { AuthProvider } from '@/contexts/AuthContext.jsx';
 import { TournamentProvider } from "@/contexts/TournamentContext.jsx"; // Corrected path case for consistency
-import { SetupProvider } from "@/contexts/SetupContext.jsx"; // ✨ Added missing SetupProvider
+import { SetupProvider } from "@/contexts/SetupContext.jsx";
+import ProfilePage from "@/pages/Profile/ProfilePage.jsx";
+import {ResponsiveProvider} from "@/Contexts/ResponsiveContext.jsx";
+import TournamentManagementPage from "@/pages/Tournament/Management/TournamentManagement.jsx"; // ✨ Added missing SetupProvider
 
 const router = createBrowserRouter([
     // Route #1: Your main application with the standard layout
@@ -34,10 +37,13 @@ const router = createBrowserRouter([
         children: [
             { index: true, element: <Home /> },
             { path: 'test', element: <TestPage /> },
-            { path: 'tournament/my', element: <TournamentList /> },
+            { path: 'tournament/list', element: <TournamentList /> },
             { path: 'tournament/setup', element: <TournamentSetup /> },
             { path: 'players', element: <Players /> },
             { path: 'tournament/live/:tournamentId', element: <LiveTournament /> },
+            { path: "profile", element: <ProfilePage /> },
+            { path: 'tournament/manage/:tournamentId', element: <TournamentManagementPage /> },
+
             // ✨ REMOVED: The incorrect window view route was here
         ],
     },
@@ -60,23 +66,25 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         {/* All providers should wrap the RouterProvider */}
         <ErrorProvider>
             <ModalProvider>
-                <NotificationProvider>
-                    <NetworkProvider>
-                        <FeatureFlagProvider>
-                            <ThemeProvider>
-                                <LoadingProvider>
-                                    <AuthProvider>
-                                        <TournamentProvider>
-                                            <SetupProvider> {/* ✨ Added missing SetupProvider */}
-                                                <RouterProvider router={router} />
-                                            </SetupProvider>
-                                        </TournamentProvider>
-                                    </AuthProvider>
-                                </LoadingProvider>
-                            </ThemeProvider>
-                        </FeatureFlagProvider>
-                    </NetworkProvider>
-                </NotificationProvider>
+                <ResponsiveProvider>
+                    <NotificationProvider>
+                        <NetworkProvider>
+                            <FeatureFlagProvider>
+                                <ThemeProvider>
+                                    <LoadingProvider>
+                                        <AuthProvider>
+                                            <TournamentProvider>
+                                                <SetupProvider> {/* ✨ Added missing SetupProvider */}
+                                                    <RouterProvider router={router} />
+                                                </SetupProvider>
+                                            </TournamentProvider>
+                                        </AuthProvider>
+                                    </LoadingProvider>
+                                </ThemeProvider>
+                            </FeatureFlagProvider>
+                        </NetworkProvider>
+                    </NotificationProvider>
+                </ResponsiveProvider>
             </ModalProvider>
         </ErrorProvider>
     </React.StrictMode>

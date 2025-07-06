@@ -55,7 +55,7 @@ const TournamentSetupSuccess = () => {
                     </motion.div>
                     <motion.div variants={itemVariants}>
                         <CardDescription className="text-lg">
-                            Your tournament, "{state.tournamentName || "Unnamed Tournament"}", is ready.
+                            Your tournament, &#34;{state.tournamentName || "Unnamed Tournament"}&#34;, is ready.
                         </CardDescription>
                     </motion.div>
                 </CardHeader>
@@ -67,7 +67,7 @@ const TournamentSetupSuccess = () => {
                 <motion.div variants={itemVariants} className="p-6 pt-0">
                     {/* REFACTORED: Button now correctly functions as a Link */}
                     <Button asChild size="lg" className="w-full">
-                        <Link to="/tournament/my">Go to My Tournaments</Link>
+                        <Link to="/tournament/list">Go to My Tournaments</Link>
                     </Button>
                 </motion.div>
             </Card>

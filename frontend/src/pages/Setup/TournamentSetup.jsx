@@ -15,19 +15,33 @@ import OptionsReviewStep from "./Pages/OptionsReview.jsx";
 import SuccessPage from "./Pages/SuccessPage.jsx";
 
 const SetupWizard = () => {
-    const { user } = useAuth();
+    const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const { state, dispatch } = useSetup();
-    const navigate = useNavigate();
-
+    useNavigate();
     const [currentStep, setCurrentStep] = useState(0);
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // --- MODIFIED ---
     useEffect(() => {
-        if (user) {
+        // This effect runs when user info is available
+        if (user && user.auth0Id) {
+
+            // --- FIXED: Use a ternary operator for the name ---
+            const organizerName = (user.firstName && user.lastName)
+                ? `${user.firstName} ${user.lastName}`
+                : "Organizer Name";
+
+            // Action 1: Prefill user-friendly details like name and email
             dispatch({
                 type: 'PREFILL_USER',
-                payload: { name: user.name || "Organizer Name", email: user.email },
+                payload: { name: organizerName, email: user.email },
+            });
+
+            // Action 2: Add the essential auth0UserId to the context
+            dispatch({
+                type: 'UPDATE_FIELD',
+                payload: { field: 'auth0UserId', value: user.auth0Id }
             });
         }
     }, [user, dispatch]);
@@ -40,6 +54,14 @@ const SetupWizard = () => {
         setError(null);
         setIsSubmitting(true);
 
+        // --- CONFIRMATION ---
+        // The check now uses the auth0UserId from the context state
+        if (!state.auth0UserId) {
+            setError("Could not identify the current user. Please log in again.");
+            setIsSubmitting(false);
+            return;
+        }
+
         if (!state.startDateTime) {
             setError("Please provide a valid start date and time.");
             setCurrentStep(1);
@@ -47,28 +69,25 @@ const SetupWizard = () => {
             return;
         }
 
-        // ✨ FIXED: Create a payload that exactly matches the backend's TournamentSetupRequest DTO.
-        // This renames properties to match the Java class expectations.
+        // --- MODIFIED ---
+        // Payload creation is now cleaner. `auth0Id` is already in the state.
         const payload = {
-            ...state, // Copy all matching properties
-            skillBased: state.tiered, // Rename 'tiered' to 'skillBased'
-            startTime: state.startDateTime.toISOString(), // Rename 'startDateTime' to 'startTime' and format as ISO string
+            ...state,
+            skillBased: state.tiered,
+            startTime: state.startDateTime.toISOString(),
         };
-        // Clean up the old properties that have been renamed
+        // Clean up fields not needed by the backend
         delete payload.tiered;
         delete payload.startDateTime;
-        delete payload.dateRange; // Also remove the raw dateRange object
+        delete payload.dateRange;
 
         try {
-            console.log("Submitting tournament payload to /api/tournaments/setup:", payload);
+            // You can check your browser's console to confirm the payload is correct
+            console.log("Submitting tournament payload from context:", payload);
 
-            // This API call now sends a correctly formatted payload to the endpoint.
             const response = await axios.post('/api/tournaments/setup', payload);
-
             console.log("Server response:", response.data);
-
             handleNext();
-
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create tournament. Please try again.');
             console.error("Submission Error:", err);
@@ -86,6 +105,19 @@ const SetupWizard = () => {
     ];
 
     const progressPercentage = (currentStep / (steps.length - 2)) * 100;
+
+    if (isAuthLoading) {
+        return <p className="text-center">Loading user information...</p>;
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div className="text-center">
+                <h2 className="text-xl font-semibold">Authentication Required</h2>
+                <p className="mt-2 text-muted-foreground">Please log in to create a tournament.</p>
+            </div>
+        );
+    }
 
     return (
         <Card className="w-full max-w-2xl">

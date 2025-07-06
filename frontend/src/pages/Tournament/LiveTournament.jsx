@@ -8,14 +8,17 @@ import MatchTabs from "./MatchTabs";
 import EndTournamentModalUpdated from "@/pages/Modals/EndTournamentModalUpdated.jsx";
 import { Button } from "@/components/ui/button.jsx";
 import { Separator } from "@/components/ui/separator.jsx";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip.jsx";
 import { FaWindowMaximize, FaFlagCheckered, FaExclamationTriangle } from "react-icons/fa";
 
 // Utilities & Context
 import { fetchMatchesByTournament } from "@/utils/functions/dataUtils.js";
 import { useTournament } from "@/contexts/TournamentContext.jsx";
+import { useResponsive } from "@/contexts/ResponsiveContext.jsx";
 
 export default function LiveTournament() {
     const { tournamentId } = useParams();
+    const { isMobile } = useResponsive();
 
     // Global state from context
     const tournamentContext = useTournament();
@@ -113,14 +116,11 @@ export default function LiveTournament() {
         }
     };
 
-    // ✨ FIXED: This now opens the new URL format you requested.
     const handleOpenWindow = () => {
-        // Your router should now have a route like: /tournament/live/window/:tournamentId
         window.open(`/tournament/live/window/${tournamentId}`, '_blank', 'noopener,noreferrer');
     };
 
 
-    // Placeholder for duplicate check logic
     const checkForDuplicates = () => {
         console.log("Checking for duplicate matches...");
         alert("Duplicate check feature not yet implemented.");
@@ -131,58 +131,80 @@ export default function LiveTournament() {
     if (!tournamentConfig) return <div className="p-6 text-center text-gray-500">⚠️ No tournament data available.</div>;
 
     return (
-        <div className="flex flex-col p-4 gap-4">
-            {/* Header */}
-            <div className="flex items-center justify-between bg-card text-card-foreground p-4 rounded-lg shadow">
-                <h1 className="text-2xl font-bold">
-                    {tournamentConfig.name}
-                </h1>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleOpenWindow}>
-                        <FaWindowMaximize className="mr-2 h-4 w-4" /> Window View
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => setShowEndModal(true)}>
-                        <FaFlagCheckered className="mr-2 h-4 w-4" /> End Tournament
-                    </Button>
+        <TooltipProvider>
+            <div className="flex flex-col p-2 md:p-4 gap-4">
+                {/* --- RESPONSIVE HEADER --- */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-card text-card-foreground p-3 rounded-lg shadow gap-4">
+                    <h1 className="text-xl md:text-2xl font-bold text-center md:text-left">
+                        {tournamentConfig.name}
+                    </h1>
+                    <div className="flex items-center justify-center gap-2">
+                        {/* Window View Button */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="outline" size={isMobile ? "icon" : "sm"} onClick={handleOpenWindow}>
+                                    <FaWindowMaximize className="h-4 w-4" />
+                                    <span className="sr-only md:not-sr-only md:ml-2">Window View</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Window View</p></TooltipContent>
+                        </Tooltip>
+
+                        {/* Check Duplicates Button */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="secondary" size={isMobile ? "icon" : "sm"} onClick={checkForDuplicates}>
+                                    <FaExclamationTriangle className="h-4 w-4" />
+                                    <span className="sr-only md:not-sr-only md:ml-2">Check Duplicates</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Check Duplicate Match-ups</p></TooltipContent>
+                        </Tooltip>
+
+                        <Separator orientation="vertical" className="h-6 mx-1" />
+
+                        {/* End Tournament Button */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="destructive" size={isMobile ? "icon" : "sm"} onClick={() => setShowEndModal(true)}>
+                                    <FaFlagCheckered className="h-4 w-4" />
+                                    <span className="sr-only md:not-sr-only md:ml-2">End Tournament</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>End Tournament</p></TooltipContent>
+                        </Tooltip>
+                    </div>
                 </div>
-            </div>
 
-            {/* Main Content */}
-            <div className="flex-grow">
-                <div className="mb-4">
-                    <Button onClick={checkForDuplicates} variant="secondary">
-                        <FaExclamationTriangle className="mr-2 h-4 w-4" /> Check Duplicate Match-ups
-                    </Button>
+                {/* --- Main Content --- */}
+                <div className="flex-grow">
+                    {loadingMatches ? (
+                        <p className="text-center py-8">Loading matches…</p>
+                    ) : (
+                        <MatchTabs
+                            matches={matches}
+                            sortOrder={sortOrder}
+                            setSortOrder={setSortOrder}
+                            refreshMatches={fetchMatches}
+                            updateMatch={updateMatch}
+                        />
+                    )}
                 </div>
 
-                <Separator className="my-4" />
-
-                {loadingMatches ? (
-                    <p className="text-center py-8">Loading matches…</p>
-                ) : (
-                    <MatchTabs
-                        matches={matches}
-                        sortOrder={sortOrder}
-                        setSortOrder={setSortOrder}
-                        refreshMatches={fetchMatches}
-                        updateMatch={updateMatch}
-                    />
-                )}
+                {/* --- Modals --- */}
+                <EndTournamentModalUpdated
+                    isOpen={showEndModal}
+                    onClose={() => setShowEndModal(false)}
+                    endTournament={async () => {
+                        try {
+                            await axios.post(`/api/tournament/${tournamentConfig.id}/end`);
+                            console.log("Tournament ended.");
+                        } catch (e) {
+                            console.error("Failed to end tournament:", e);
+                        }
+                    }}
+                />
             </div>
-
-            {/* Modals and other overlays */}
-            <EndTournamentModalUpdated
-                isOpen={showEndModal}
-                onClose={() => setShowEndModal(false)}
-                endTournament={async () => {
-                    try {
-                        await axios.post(`/api/tournament/${tournamentConfig.id}/end`);
-                        console.log("Tournament ended.");
-                    } catch (e) {
-                        console.error("Failed to end tournament:", e);
-                    }
-                }}
-            />
-        </div>
+        </TooltipProvider>
     );
 }
