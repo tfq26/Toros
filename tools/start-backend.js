@@ -17,7 +17,7 @@ if (isWindows && fs.existsSync(dotenvPath)) {
 // 🧠 Auto-detect JAVA_HOME on macOS if not set
 if (isMac && !process.env.JAVA_HOME) {
     try {
-        const javaHome = execSync("/usr/libexec/java_home").toString().trim();
+        const javaHome = execSync("/usr/libexec/java_home -v 17").toString().trim();
         if (javaHome) {
             process.env.JAVA_HOME = javaHome;
             console.log("🔍 Auto-detected JAVA_HOME:", javaHome);
