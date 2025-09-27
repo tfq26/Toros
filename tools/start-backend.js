@@ -14,17 +14,21 @@ if (isWindows && fs.existsSync(dotenvPath)) {
     console.log("✅ Loaded main.env:", dotenvPath);
 }
 
-// 🧠 Auto-detect JAVA_HOME on macOS if not set
-if (isMac && !process.env.JAVA_HOME) {
-    try {
-        const javaHome = execSync("/usr/libexec/java_home").toString().trim();
-        if (javaHome) {
-            process.env.JAVA_HOME = javaHome;
-            console.log("🔍 Auto-detected JAVA_HOME:", javaHome);
+// 🧠 Auto-detect JAVA_HOME on macOS if not set, but allow override
+if (isMac) {
+    if (!process.env.JAVA_HOME) {
+        try {
+            const javaHome = execSync("/usr/libexec/java_home -v 21").toString().trim();
+            if (javaHome) {
+                process.env.JAVA_HOME = javaHome;
+                console.log("🔍 Auto-detected JAVA_HOME (Java 21):", javaHome);
+            }
+        } catch (err) {
+            console.error("❌ Could not auto-detect JAVA_HOME on macOS:", err);
+            process.exit(1);
         }
-    } catch (err) {
-        console.error("❌ Could not auto-detect JAVA_HOME on macOS:", err);
-        process.exit(1);
+    } else {
+        console.log("🔍 Using pre-set JAVA_HOME:", process.env.JAVA_HOME);
     }
 }
 
