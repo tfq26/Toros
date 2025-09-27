@@ -1,36 +1,72 @@
-// src/contexts/ThemeContext.jsx (Optional modification for ALWAYS syncing)
-
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
 const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
-    // 1. MODIFIED: Always initialize state from the OS preference, ignore localStorage.
-    const [theme, setTheme] = useState(
-        () => window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    );
+    const [theme, setThemeState] = useState(() => {
+        // Check for saved theme preference, fallback to system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) return savedTheme;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    });
+    const [isSystemTheme, setIsSystemTheme] = useState(!localStorage.getItem('theme'));
 
-    // This effect to update the DOM is still needed.
+    // Update the DOM when theme changes
     useEffect(() => {
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        // You could optionally remove saving to localStorage
-        // localStorage.setItem('theme', theme);
+        document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
-    // 2. MODIFIED: The OS change listener now ALWAYS updates the theme.
+    // Listen for system theme changes when using system preference
     useEffect(() => {
+        if (!isSystemTheme) return;
+        
         const media = window.matchMedia('(prefers-color-scheme: dark)');
-
-        // The handler no longer checks for a stored theme.
-        const handler = (e) => setTheme(e.matches ? 'dark' : 'light');
-
+        const handler = (e) => setThemeState(e.matches ? 'dark' : 'light');
+        
         media.addEventListener('change', handler);
         return () => media.removeEventListener('change', handler);
+    }, [isSystemTheme]);
+
+    // Set a specific theme
+    const setTheme = useCallback((newTheme) => {
+        if (newTheme === 'light' || newTheme === 'dark') {
+            localStorage.setItem('theme', newTheme);
+            setIsSystemTheme(false);
+            setThemeState(newTheme);
+        }
+    }, []);
+
+    // Toggle between light/dark mode
+    const toggleTheme = useCallback(() => {
+        setThemeState(prev => {
+            const newTheme = prev === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            setIsSystemTheme(false);
+            return newTheme;
+        });
+    }, []);
+
+    // Reset to system theme
+    const useSystemTheme = useCallback(() => {
+        localStorage.removeItem('theme');
+        setIsSystemTheme(true);
+        setThemeState(
+            window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        );
     }, []);
 
     return (
-        <ThemeContext.Provider value={{ theme, setTheme }}>
+        <ThemeContext.Provider 
+            value={{ 
+                theme, 
+                isSystemTheme,
+                setTheme,
+                toggleTheme,
+                useSystemTheme 
+            }}
+        >
             {children}
         </ThemeContext.Provider>
     );
@@ -40,7 +76,6 @@ ThemeProvider.propTypes = {
     children: PropTypes.node.isRequired,
 };
 
-// 3. Create and export the custom hook with a safety check
 export const useTheme = () => {
     const context = useContext(ThemeContext);
     if (context === null) {

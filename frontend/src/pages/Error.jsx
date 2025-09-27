@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useRouteError, useNavigate, useLocation, isRouteErrorResponse } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useError } from "@/contexts/ErrorContext";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -38,37 +40,86 @@ function safeJsonStringify(obj) {
     }
 }
 
+/**
+ * ErrorPage component that handles all types of errors in the application
+ * @param {Object} props - Component props
+ * @param {Error|Object} [props.error] - The error object
+ * @param {Function} [props.onRetry] - Callback function to retry the failed operation
+ */
+const ErrorPage = ({ error: propError, onRetry }) => {
+    // Make these hooks optional with try-catch to handle cases where they're used outside their providers
+    let navigate = () => console.warn('Navigate function not available');
+    let location = { pathname: '/' };
+    let routeError = null;
+    
+    try {
+        // Only use these hooks if we're inside a Router
+        const nav = useNavigate();
+        const loc = useLocation();
+        const rError = useRouteError();
+        navigate = nav;
+        location = loc;
+        routeError = rError;
+    } catch (e) {
+        console.debug('Router context not available, using fallback navigation');
+    }
+    
+    // Handle ErrorContext more gracefully
+    let contextError = null;
+    let setError = () => {}; // Default no-op function
+    try {
+        const { error, setError: setErrorFromContext } = useError?.() || {};
+        contextError = error;
+        setError = setErrorFromContext || setError;
+    } catch (e) {
+        console.debug('ErrorContext not available, using fallback error handling');
+    }
 
-export default function ErrorPage() {
-    const navigate = useNavigate();
     const [showRaw, setShowRaw] = useState(false);
-
-    // ✨ This logic safely gets an error from ANY source without crashing
-    const routeError = useRouteError();
-    const location = useLocation();
+    
+    // Get error from props, route, or context
     const navigatedError = location.state?.error;
-    const error = routeError || navigatedError;
+    const error = propError || routeError || navigatedError || contextError || {};
+    
+    // Clear the error from context when component unmounts
+    useEffect(() => {
+        return () => setError(null);
+    }, [setError]);
 
     // ✨ Safely parse details from the error object, providing defaults
-    let errorCode = "Error";
-    let message = "An unexpected error occurred.";
-    let detailedMessage = null;
+    let errorCode = error?.status || error?.code || error?.statusCode || "Error";
+    let message = error?.message || error?.statusText || "An unexpected error occurred.";
+    let detailedMessage = error?.detailed || error?.details || error?.response?.data?.message || null;
 
-    if (error) {
-        if (isRouteErrorResponse(error)) {
-            errorCode = error.status || "Routing Error";
-            message = error.statusText || "The requested page could not be found.";
-        } else if (error instanceof Error) {
-            errorCode = error.name || "Exception";
-            message = error.message || message;
-        }
-        // Check for custom properties we might have added
-        errorCode = error.city || errorCode;
-        message = error.message || message; // error.message is often the most useful
-        detailedMessage = error.detailed || error.detailedMessage || null;
+    // Handle specific error types
+    if (isRouteErrorResponse(error)) {
+        errorCode = error.status || "Routing Error";
+        message = error.statusText || "The requested page could not be found.";
+        detailedMessage = detailedMessage || `The server responded with status ${error.status}`;
+    } else if (error instanceof Error) {
+        errorCode = error.name || "Exception";
+        message = error.message || message;
     }
 
     const rawError = safeJsonStringify(error);
+
+    const handleRetry = useCallback(() => {
+        // Clear the error from context
+        setError(null);
+        
+        if (onRetry) {
+            onRetry();
+        } else {
+            // Default behavior: go back to home
+            navigate('/', { replace: true });
+        }
+    }, [onRetry, navigate, setError]);
+
+    const handleGoHome = useCallback(() => {
+        // Clear the error from context when navigating home
+        setError(null);
+        navigate('/', { replace: true });
+    }, [navigate, setError]);
 
     return (
         <motion.div
@@ -83,7 +134,16 @@ export default function ErrorPage() {
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
             >
-                <img src="/bull_emoji_03-512.webp" alt="Bull Emoji" className="h-24 w-24" />
+                <img 
+                    src="/bull_emoji_03-512.webp" 
+                    alt="Bull Emoji" 
+                    className="h-24 w-24" 
+                    onError={(e) => {
+                        // Fallback if image fails to load
+                        e.target.onerror = null;
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTEgMThoMnYtMmgtdjJ6bTEuNjEtMTMuNTRjLjQzLS4zNyAxLjA0LS4zNSAxLjQyLjA4Yy4zNy40My4zNSAxLjA0LS4wOCAxLjQyYy0xLjA1LjkxLTEuNjcgMi4xLTEuNzIgMy4zM0gxM3YyaC0ydi0uN2MwLS43LjE2LTEuMzkuNDMtMmgwYy4wMS0uMDEuMDItLjAzLjAzLS4wNGMxLjA5LS43OCAxLjU0LTIuMjQgMS4wNS0zLjVjLS4yNS0uNjQtLjc1LTEuMTYtMS4zOS0xLjQ2Yy0uNjQtLjMtMS4zNS0uMzUtMS45OS0uMTR6Ii8+PC9zdmc+';
+                    }}
+                />
             </motion.div>
 
             <motion.h1
@@ -93,12 +153,17 @@ export default function ErrorPage() {
                 {errorCode}
             </motion.h1>
 
-            <motion.p
+            <motion.div
                 variants={itemVariants}
                 className="text-xl text-gray-700 dark:text-gray-300 mb-4 text-center max-w-lg"
             >
                 {message}
-            </motion.p>
+                {detailedMessage && (
+                    <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        {detailedMessage}
+                    </div>
+                )}
+            </motion.div>
 
             {detailedMessage && (
                 <motion.div
@@ -111,35 +176,54 @@ export default function ErrorPage() {
                 </motion.div>
             )}
 
-            <motion.button
+            <motion.div 
+                className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center"
                 variants={itemVariants}
-                onClick={() => setShowRaw(prev => !prev)}
-                className="mb-4 px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition-colors"
             >
-                {showRaw ? "Hide" : "Show"} Raw Technical Details
-            </motion.button>
-
-            {showRaw && (
-                <motion.pre
-                    variants={itemVariants}
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="w-full max-w-3xl overflow-auto bg-black text-green-400 text-sm p-4 rounded-lg shadow"
+                <Button 
+                    onClick={handleGoHome}
+                    variant="default"
+                    className="w-full sm:w-auto"
                 >
-                    {rawError}
-                </motion.pre>
+                    Go Home
+                </Button>
+                
+                {(onRetry || errorCode !== '404') && (
+                    <Button
+                        onClick={handleRetry}
+                        variant={onRetry ? 'secondary' : 'outline'}
+                        className="w-full sm:w-auto"
+                    >
+                        {onRetry ? 'Try Again' : 'Reload Page'}
+                    </Button>
+                )}
+                
+                {process.env.NODE_ENV === 'development' && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowRaw(!showRaw)}
+                        className="mt-2 sm:mt-0"
+                    >
+                        {showRaw ? 'Hide Details' : 'Show Details'}
+                    </Button>
+                )}
+            </motion.div>
+            
+            {showRaw && (
+                <motion.div 
+                    className="mt-6 w-full max-w-2xl overflow-auto bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-xs"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                >
+                    <pre className="whitespace-pre-wrap break-words">
+                        {rawError}
+                    </pre>
+                </motion.div>
             )}
-
-            <motion.button
-                variants={itemVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/")}
-                className="mt-4 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg shadow-lg focus:outline-none"
-            >
-                Back to Home
-            </motion.button>
         </motion.div>
     );
-}
+};
+
+export default ErrorPage;

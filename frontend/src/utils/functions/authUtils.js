@@ -35,11 +35,21 @@ export async function getCurrentUserWithToken(token) {
     try {
         const { data } = await axios.get(`${USER_API_URL}/me`, {
             headers: { Authorization: `Bearer ${token}` },
+            timeout: 5000, // Add a 5-second timeout
         });
         return data;
     } catch (err) {
-        console.error("❌ Error fetching current user:", err);
-        throw new Error("Failed to fetch user profile.");
+        // More detailed error logging
+        if (err.code === 'ECONNABORTED') {
+            console.error("❌ Request to fetch user timed out. Is the backend server running?", err.message);
+        } else if (err.response) {
+            console.error("❌ Server responded with an error:", err.response.status, err.response.data);
+        } else if (err.request) {
+            console.error("❌ No response received from server:", err.request);
+        } else {
+            console.error("❌ Error setting up request:", err.message);
+        }
+        throw new Error(`Failed to fetch user profile. ${err.message}`);
     }
 }
 
