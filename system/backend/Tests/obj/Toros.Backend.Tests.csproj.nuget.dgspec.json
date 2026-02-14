@@ -1,0 +1,241 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/Toros.Backend.Tests.csproj": {}
+  },
+  "projects": {
+    "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj",
+        "projectName": "Toros.Backend",
+        "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj",
+        "packagesPath": "/Users/taufeeqali/.nuget/packages/",
+        "outputPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/taufeeqali/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj": {
+                "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj",
+        "projectName": "Toros.Common",
+        "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj",
+        "packagesPath": "/Users/taufeeqali/.nuget/packages/",
+        "outputPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/taufeeqali/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/Toros.Backend.Tests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/Toros.Backend.Tests.csproj",
+        "projectName": "Toros.Backend.Tests",
+        "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/Toros.Backend.Tests.csproj",
+        "packagesPath": "/Users/taufeeqali/.nuget/packages/",
+        "outputPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/taufeeqali/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj": {
+                "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj"
+              },
+              "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj": {
+                "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore.InMemory": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[10.0.3, )"
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.12.0, )"
+            },
+            "Moq": {
+              "target": "Package",
+              "version": "[4.20.72, )"
+            },
+            "coverlet.collector": {
+              "target": "Package",
+              "version": "[6.0.2, )"
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.2, )"
+            },
+            "xunit.runner.visualstudio": {
+              "target": "Package",
+              "version": "[2.8.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.306/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

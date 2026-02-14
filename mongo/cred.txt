@@ -1,4 +1,0 @@
-Mongo UserName: taufeeq26
-Mongo Password: bdY9MXzmvAIJZOoW
-
-Mongo Link: mongodb+srv://taufeeq26:bdY9MXzmvAIJZOoW@toroscluster.2stjj.mongodb.net/?retryWrites=true&w=majority&appName=TorosCluster
