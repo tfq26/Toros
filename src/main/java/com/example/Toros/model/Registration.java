@@ -1,23 +1,17 @@
 // src/main/java/com/example/Toros/model/Registration.java
 package com.example.Toros.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
-/**
- * Represents a single registration of a User (and optionally a Team) for a Tournament.
- * This class is a model for the "registrations" collection in MongoDB.
- */
-@Data // Lombok annotation to generate getters, setters, toString, etc.
-@Document(collection = "registrations") // Marks this class as a MongoDB document
+@Entity
+@Table(name = "registrations")
+@Data
 public class Registration {
 
-    /**
-     * The unique identifier for this specific registration record.
-     */
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     /**

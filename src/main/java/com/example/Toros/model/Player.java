@@ -1,18 +1,19 @@
 package com.example.Toros.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-@Document(collection = "players")
+@Entity
+@Table(name = "players")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Player {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id; // Unique identifier for the player
     private String name; // Name of the player
     private int age; // Age of the player

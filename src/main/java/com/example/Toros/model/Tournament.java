@@ -1,20 +1,20 @@
 package com.example.Toros.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Document(collection = "tournaments")
+@Entity
+@Table(name = "tournaments")
 @Data
 public class Tournament {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     private String name;
     private boolean isActive; // Indicates if the tournament is still ongoing
@@ -37,15 +37,27 @@ public class Tournament {
     private String ageGroup; // e.g., "18+", "35+", "50+"
     private String skillLevel; // e.g., "Beginner", "Intermediate", "Advanced"
     private String auth0Id; // Auth0 ID for the organizer, if applicable
-    // Store setup properties as a List<String> or Map<String, Object>
+    private String accessCode; // Access code for referees to join
+
+    @ElementCollection
     private List<String> setupProperties; // Example: ["Match Duration: 15min", "Double Elimination: true"]
-    private Map<String, Object> setupPropertiesMap; // If you prefer key-value pairs
+
+    @ElementCollection
+    private Map<String, String> setupPropertiesMap; // PostgreSQL handles Map<String, String> better as
+                                                    // ElementCollection
 
     // Now storing only IDs rather than full objects
-    @DBRef
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "tournament_id")
     private List<Team> teams = new ArrayList<>();
-    @DBRef
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "tournament_id")
     private List<Match> matches = new ArrayList<>();
+
+    @ElementCollection
     private List<String> finalPlacements; // Final ranking after tournament completion
+
+    @ElementCollection
     private List<String> players;
 }

@@ -1,27 +1,33 @@
 package com.example.Toros.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AccessLevel;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
-@Document(collection = "teams")
+@Entity
+@Table(name = "teams")
 public class Team {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private String name;
 
     // Mandatory first player
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "player1_id")
     private Player player1;
+
     // Optional second player
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "player2_id")
     private Player player2;
 
     private int teamScore;
@@ -31,14 +37,16 @@ public class Team {
     private int totalPoints;
 
     private String tournamentId;
-    private String status;      // e.g. "Registered", "Checked In"
-    private String matchId;     // current match
+    private String status; // e.g. "Registered", "Checked In"
+    private String matchId; // current match
     private String matchStatus; // e.g. "Scheduled", "In Progress"
 
     @Setter(AccessLevel.NONE)
     private Integer skillLevel; // 1=Beginner,2=Intermediate,3=Advanced
 
-    // New: list of player IDs on this team
+    @ElementCollection
+    @CollectionTable(name = "team_player_ids", joinColumns = @JoinColumn(name = "team_id"))
+    @Column(name = "player_id")
     private List<String> players = new ArrayList<>();
 
     private Integer placement;
@@ -63,19 +71,19 @@ public class Team {
 
     // Full constructor: calls our setters so skillLevel & players are correct
     public Team(String name,
-                Player player1,
-                Player player2,
-                String tournamentId,
-                String status,
-                String matchId,
-                String matchStatus,
-                Integer placement,
-                Object skillLevel,
-                int teamScore,
-                int totalPoints,
-                int wins,
-                int losses,
-                int matchesPlayed) {
+            Player player1,
+            Player player2,
+            String tournamentId,
+            String status,
+            String matchId,
+            String matchStatus,
+            Integer placement,
+            Object skillLevel,
+            int teamScore,
+            int totalPoints,
+            int wins,
+            int losses,
+            int matchesPlayed) {
 
         this.name = name;
         this.teamScore = teamScore;
@@ -88,10 +96,10 @@ public class Team {
         setPlayer2(player2);
 
         this.tournamentId = tournamentId;
-        this.status       = status;
-        this.matchId      = matchId;
-        this.matchStatus  = matchStatus;
-        this.placement    = placement;
+        this.status = status;
+        this.matchId = matchId;
+        this.matchStatus = matchStatus;
+        this.placement = placement;
         setSkillLevel(skillLevel);
     }
 
@@ -124,8 +132,10 @@ public class Team {
      */
     private void updatePlayersList() {
         List<String> ids = new ArrayList<>();
-        if (player1 != null && player1.getId() != null) ids.add(player1.getId());
-        if (player2 != null && player2.getId() != null) ids.add(player2.getId());
+        if (player1 != null && player1.getId() != null)
+            ids.add(player1.getId());
+        if (player2 != null && player2.getId() != null)
+            ids.add(player2.getId());
         this.players = ids;
     }
 
@@ -133,16 +143,20 @@ public class Team {
 
     private void recalcSkillLevel() {
         int s1 = (player1 != null && player1.getSkillLevel() != null)
-                ? player1.getSkillLevel() : 0;
+                ? player1.getSkillLevel()
+                : 0;
         int s2 = (player2 != null && player2.getSkillLevel() != null)
-                ? player2.getSkillLevel() : 0;
+                ? player2.getSkillLevel()
+                : 0;
         this.skillLevel = calculateSkillLevel(s1, s2);
     }
 
     private int calculateSkillLevel(int p1, int p2) {
         double avg = (p1 + p2) / 2.0;
-        if (avg <= 1) return 1;
-        if (avg <= 2) return 2;
+        if (avg <= 1)
+            return 1;
+        if (avg <= 2)
+            return 2;
         return 3;
     }
 
@@ -152,10 +166,10 @@ public class Team {
     public void setSkillLevel(Object value) {
         if (value instanceof String) {
             switch (((String) value).toLowerCase()) {
-                case "beginner"     -> this.skillLevel = 1;
+                case "beginner" -> this.skillLevel = 1;
                 case "intermediate" -> this.skillLevel = 2;
-                case "advanced"     -> this.skillLevel = 3;
-                default             -> this.skillLevel = 0;
+                case "advanced" -> this.skillLevel = 3;
+                default -> this.skillLevel = 0;
             }
         } else if (value instanceof Number) {
             this.skillLevel = ((Number) value).intValue();
