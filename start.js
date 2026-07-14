@@ -9,39 +9,48 @@ const frontendDir = path.join(__dirname, 'system', 'frontend');
 
 console.log('🚀 Starting Toros System...');
 
-function runProcess(name, command, args, cwd, color) {
-    const process = spawn(command, args, {
+function runProcess(name, command, args, cwd) {
+    const child = spawn(command, args, {
         cwd,
         shell: true,
-        stdio: 'inherit'
+        stdio: 'inherit',
+        env: { ...process.env, FORCE_COLOR: '1' }
     });
 
-    process.on('error', (err) => {
+    child.on('error', (err) => {
         console.error(`[${name}] Error:`, err);
     });
 
-    process.on('close', (code) => {
-        console.log(`[${name}] process exited with code ${code}`);
-    });
-
-    return process;
+    return child;
 }
 
+// Parse arguments
+const args = process.argv.slice(2);
+const startBackend = args.includes('--backend') || (!args.includes('--frontend') && !args.includes('--backend'));
+const startFrontend = args.includes('--frontend') || (!args.includes('--frontend') && !args.includes('--backend'));
+
 // 1. Start Backend
-const backend = runProcess('Backend', 'dotnet', ['run'], backendDir);
+let backend;
+if (startBackend) {
+    backend = runProcess('Backend', 'dotnet', ['run'], backendDir);
+}
 
 // 2. Start Frontend
-// Attempt to use bun if available, else npm
-const frontendCommand = 'npm'; // Default
-const frontendArgs = ['run', 'dev'];
+let frontend;
+if (startFrontend) {
+    // Check if running with bun
+    const isBun = process.argv[0].includes('bun');
+    const frontendCommand = isBun ? 'bun' : 'npm';
+    const frontendArgs = isBun ? ['run', 'dev'] : ['run', 'dev'];
 
-const frontend = runProcess('Frontend', frontendCommand, frontendArgs, frontendDir);
+    frontend = runProcess('Frontend', frontendCommand, frontendArgs, frontendDir);
+}
 
 // Handle shutdown
 const cleanup = () => {
     console.log('\n🛑 Shutting down Toros System...');
-    backend.kill();
-    frontend.kill();
+    if (backend) backend.kill();
+    if (frontend) frontend.kill();
     process.exit();
 };
 

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/Toros.Backend.Tests.csproj": {}
+    "/Users/taufeeqali/Projects/Toros/system/backend/Tests/Toros.Backend.Tests.csproj": {}
   },
   "projects": {
-    "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj": {
+    "/Users/taufeeqali/Projects/Toros/system/backend/API/Toros.Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj",
+        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/system/backend/API/Toros.Backend.csproj",
         "projectName": "Toros.Backend",
-        "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj",
+        "projectPath": "/Users/taufeeqali/Projects/Toros/system/backend/API/Toros.Backend.csproj",
         "packagesPath": "/Users/taufeeqali/.nuget/packages/",
-        "outputPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/obj/",
+        "outputPath": "/Users/taufeeqali/Projects/Toros/system/backend/API/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/taufeeqali/.nuget/NuGet/NuGet.Config"
@@ -26,8 +26,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj": {
-                "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj"
+              "/Users/taufeeqali/Projects/Toros/system/backend/Common/Toros.Common.csproj": {
+                "projectPath": "/Users/taufeeqali/Projects/Toros/system/backend/Common/Toros.Common.csproj"
               }
             }
           }
@@ -57,6 +57,10 @@
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[9.0.3, )"
+            },
+            "WorkOS.net": {
+              "target": "Package",
+              "version": "[2.10.1, )"
             }
           },
           "imports": [
@@ -82,14 +86,14 @@
         }
       }
     },
-    "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj": {
+    "/Users/taufeeqali/Projects/Toros/system/backend/Common/Toros.Common.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj",
+        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/system/backend/Common/Toros.Common.csproj",
         "projectName": "Toros.Common",
-        "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj",
+        "projectPath": "/Users/taufeeqali/Projects/Toros/system/backend/Common/Toros.Common.csproj",
         "packagesPath": "/Users/taufeeqali/.nuget/packages/",
-        "outputPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/obj/",
+        "outputPath": "/Users/taufeeqali/Projects/Toros/system/backend/Common/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/taufeeqali/.nuget/NuGet/NuGet.Config"
@@ -141,14 +145,14 @@
         }
       }
     },
-    "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/Toros.Backend.Tests.csproj": {
+    "/Users/taufeeqali/Projects/Toros/system/backend/Tests/Toros.Backend.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/Toros.Backend.Tests.csproj",
+        "projectUniqueName": "/Users/taufeeqali/Projects/Toros/system/backend/Tests/Toros.Backend.Tests.csproj",
         "projectName": "Toros.Backend.Tests",
-        "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/Toros.Backend.Tests.csproj",
+        "projectPath": "/Users/taufeeqali/Projects/Toros/system/backend/Tests/Toros.Backend.Tests.csproj",
         "packagesPath": "/Users/taufeeqali/.nuget/packages/",
-        "outputPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Tests/obj/",
+        "outputPath": "/Users/taufeeqali/Projects/Toros/system/backend/Tests/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/taufeeqali/.nuget/NuGet/NuGet.Config"
@@ -163,11 +167,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj": {
-                "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/API/Toros.Backend.csproj"
+              "/Users/taufeeqali/Projects/Toros/system/backend/API/Toros.Backend.csproj": {
+                "projectPath": "/Users/taufeeqali/Projects/Toros/system/backend/API/Toros.Backend.csproj"
               },
-              "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj": {
-                "projectPath": "/Users/taufeeqali/Projects/Toros/toros/system/backend/Common/Toros.Common.csproj"
+              "/Users/taufeeqali/Projects/Toros/system/backend/Common/Toros.Common.csproj": {
+                "projectPath": "/Users/taufeeqali/Projects/Toros/system/backend/Common/Toros.Common.csproj"
               }
             }
           }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Toros.Common.Enums;
 
 namespace Toros.Common.Models
 {
@@ -10,6 +11,10 @@ namespace Toros.Common.Models
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         public string TournamentId { get; set; } = string.Empty;
+
+        public string? StageId { get; set; }
+        [ForeignKey("StageId")]
+        public TournamentStage? Stage { get; set; }
         
         public string Team1Id { get; set; } = string.Empty;
         [ForeignKey("Team1Id")]
@@ -23,13 +28,13 @@ namespace Toros.Common.Models
         public int Team2Score { get; set; }
 
         public string? WinnerId { get; set; }
-        public string Status { get; set; } = "PENDING"; // PENDING, ONGOING, COMPLETED
+        public MatchStatus Status { get; set; } = MatchStatus.Pending;
 
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public string? CourtNumber { get; set; }
         
         public int Round { get; set; }
-        public string? BracketType { get; set; } // WINNERS, LOSERS, FINAL
+        public BracketType BracketType { get; set; } = BracketType.Winners; // Default to Winners bracket
     }
 }

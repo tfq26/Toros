@@ -20,5 +20,6 @@ public class TournamentSetupRequest
     public string AgeGroup { get; set; } = string.Empty;
     public string SkillLevel { get; set; } = string.Empty;
     public string? Auth0Id { get; set; }
+    public string? UserId { get; set; } // User ID from frontend
     public bool? ConfirmDelete { get; set; }
 }

@@ -1,4 +1,4 @@
-@Toros.Backend_HostAddress = http://localhost:5138
+@Toros.Backend_HostAddress = http://localhost:8080
 
 GET {{Toros.Backend_HostAddress}}/weatherforecast/
 Accept: application/json

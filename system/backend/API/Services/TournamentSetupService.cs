@@ -3,6 +3,7 @@ using Toros.Backend.Data;
 using Toros.Backend.DTOs;
 using Toros.Backend.Interfaces;
 using Toros.Common.Models;
+using Toros.Common.Enums;
 
 namespace Toros.Backend.Services;
 
@@ -24,7 +25,7 @@ public class TournamentSetupService : ITournamentSetupService
 
     public async Task<bool> CheckForDuplicateTournamentAsync(string tournamentName)
     {
-        return await _context.Tournaments.AnyAsync(t => t.Name == tournamentName && t.Status != "COMPLETED");
+        return await _context.Tournaments.AnyAsync(t => t.Name == tournamentName && t.Status != TournamentStatus.Completed);
     }
 
     public async Task DeleteTournamentAsync(string tournamentId)
@@ -43,7 +44,7 @@ public class TournamentSetupService : ITournamentSetupService
         _logger.LogInformation("Setting up new tournament: {TournamentName}", request.TournamentName);
 
         // 1) Duplicate check & optional delete
-        var existing = await _context.Tournaments.FirstOrDefaultAsync(t => t.Name == request.TournamentName && t.Status != "COMPLETED");
+        var existing = await _context.Tournaments.FirstOrDefaultAsync(t => t.Name == request.TournamentName && t.Status != TournamentStatus.Completed);
         if (existing != null)
         {
             if (request.ConfirmDelete == true)
@@ -57,69 +58,85 @@ public class TournamentSetupService : ITournamentSetupService
             }
         }
 
-        // 2) Generate teams
-        var teams = await _teamService.GenerateTeamsAsync();
-        if (teams.Count == 0)
-        {
-            throw new Exception("No teams available for the tournament.");
-        }
-
-        // 3) Build tournament object
+        // 2) Build tournament object (no teams required initially)
+        // Teams will be added during player registration
         var tournament = new Tournament
         {
             Name = request.TournamentName,
-            Status = "LIVE",
+            Status = TournamentStatus.Open, // Changed from Ongoing to Open for registration
             NumberOfCourts = request.NumCourts,
             Location = request.Location,
             OrganizerName = request.Organizer,
             OrganizerContact = request.ContactInfo,
-            Type = request.TournamentType,
             AgeGroup = request.AgeGroup,
             SkillLevel = request.SkillLevel,
-            Auth0Id = request.Auth0Id,
+            Format = request.Format, // Singles, Doubles, Mixed
+            Auth0Id = request.UserId ?? request.Auth0Id, // Use UserId from frontend, fallback to Auth0Id
             AccessCode = (100000 + Random.Shared.Next(900000)).ToString(),
-            Teams = teams,
-            SetupPropertiesMap = new Dictionary<string, string>
-            {
-                ["Location"] = request.Location,
-                ["Type"] = request.TournamentType,
-                ["Courts"] = request.NumCourts.ToString()
-            }
+            StartDate = request.StartTime,
+            Teams = new List<Team>() // Empty list initially
         };
 
         _context.Tournaments.Add(tournament);
+        await _context.SaveChangesAsync(); // Save to get Id
+
+        // 3) Create Initial Stage based on request type
+        Enum.TryParse<TournamentType>(request.TournamentType, true, out var tType);
+        
+        var stage = new TournamentStage
+        {
+            TournamentId = tournament.Id,
+            Name = "Stage 1",
+            SequenceOrder = 1,
+            Type = tType,
+            Status = TournamentStatus.Open
+        };
+
+        _context.TournamentStages.Add(stage);
         await _context.SaveChangesAsync();
 
-        // 4) Generate matches (Simplified for now, can expand later)
-        await GenerateMatchesAsync(tournament, teams, request);
+        // 4) Auto-assign organizer as a tournament player
+        if (!string.IsNullOrEmpty(tournament.Auth0Id))
+        {
+            var organizerPlayer = new TournamentPlayer
+            {
+                TournamentId = tournament.Id,
+                UserId = tournament.Auth0Id
+            };
+            _context.TournamentPlayers.Add(organizerPlayer);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("✅ Organizer auto-assigned to tournament");
+        }
 
-        await _context.SaveChangesAsync();
+        // 5) Matches will be generated later when teams are registered
+        // For now, just return the tournament ready for registration
+
+        _logger.LogInformation("✅ Tournament '{TournamentName}' created successfully with ID: {TournamentId}", tournament.Name, tournament.Id);
         return tournament;
     }
 
-    private async Task GenerateMatchesAsync(Tournament tournament, List<Team> teams, TournamentSetupRequest request)
+    private async Task GenerateMatchesAsync(Tournament tournament, TournamentStage stage, List<Team> teams, TournamentSetupRequest request)
     {
         // Porting the match generation logic from Java
         var matches = new List<Match>();
         var totalMatchesRequired = request.GamesPerTeam * teams.Count / 2;
-        var scheduledPairs = new HashSet<string>();
         
-        // This is a simplified version of the Java logic for brevity in this step
-        // In a real port, I'd copy the exact shuffle/pairing logic
         for (int i = 0; i < teams.Count; i++)
         {
             for (int j = i + 1; j < teams.Count; j++)
             {
-                if (matches.Count >= totalMatchesRequired) break;
+                // Simple limit for demo purposes
+                if (matches.Count >= totalMatchesRequired && totalMatchesRequired > 0) break;
 
                 var match = new Match
                 {
                     TournamentId = tournament.Id,
+                    StageId = stage.Id, // Link to Stage
                     Team1 = teams[i],
                     Team1Id = teams[i].Id,
                     Team2 = teams[j],
                     Team2Id = teams[j].Id,
-                    Status = "SCHEDULED",
+                    Status = MatchStatus.Pending,
                     CourtNumber = ((matches.Count % request.NumCourts) + 1).ToString(),
                     StartTime = request.StartTime.AddMinutes(matches.Count / request.NumCourts * (request.MatchDuration + request.BreakTime))
                 };
@@ -128,6 +145,6 @@ public class TournamentSetupService : ITournamentSetupService
         }
 
         _context.Matches.AddRange(matches);
-        tournament.Matches = matches;
+        tournament.Matches.AddRange(matches);
     }
 }

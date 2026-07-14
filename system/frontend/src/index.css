@@ -1,124 +1,73 @@
-/* --- Google Font Import --- */
-@import url('https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* --- Tailwind Imports --- */
-@import "tailwindcss";
-@import "tw-animate-css";
+@layer base {
+  :root {
+    --background: 210 40% 98%; /* Slate 50 */
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%; /* Emerald 600 */
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 1rem; /* More rounded as per inspiration */
+  }
 
-/* --- Custom Variant for Dark Mode --- */
-@custom-variant dark (&:is(.dark *));
-
-/* --- NEW: Color Palette Variables --- */
-:root {
-  /* Grays */
-  --davys-gray-500: #545454;
-  --eerie-black-500: #1d1f20;
-  --slate-gray-100: #e1e3e5;
-  --slate-gray-300: #3f464a;
-  --slate-gray-500: #69747c;
-
-  /* Greens */
-  --asparagus-500: #6baa75;
-  --sgbus-green-500: #84dd63;
-  --lime-500: #cbff4d;
+  .dark {
+    --background: 240 10% 3.9%; /* Zinc 950 */
+    --foreground: 0 0% 98%;
+    --card: 240 10% 5.9%; /* Zinc 900 */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 5.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.1 80.6% 10.3%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.1 70.6% 45.3%;
+  }
 }
 
 
-/* --- Light Theme Definition --- */
-:root {
-  --radius: 0.625rem;
 
-  /* --- Mapped from your new color palette --- */
-  --background: var(--slate-gray-100);      /* Light gray background */
-  --foreground: var(--eerie-black-500);     /* Dark text */
-  --card: #ffffff;                          /* White cards */
-  --card-foreground: var(--eerie-black-500);
-  --popover: #ffffff;
-  --popover-foreground: var(--eerie-black-500);
-  --primary: var(--asparagus-500);          /* Primary green */
-  --primary-foreground: #ffffff;            /* White text on primary */
-  --secondary: var(--slate-gray-100);
-  --secondary-foreground: var(--slate-gray-500);
-  --muted: var(--slate-gray-100);
-  --muted-foreground: var(--slate-gray-500);
-  --accent: var(--sgbus-green-500);         /* Bright green accent */
-  --accent-foreground: var(--eerie-black-500);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: var(--slate-gray-100);
-  --input: #ffffff;
-  --ring: var(--lime-500);                  /* Vibrant lime for focus rings */
-}
-
-/* --- Dark Theme Definition --- */
-.dark {
-  /* --- Mapped from your new color palette --- */
-  --background: var(--eerie-black-500);     /* Deep black background */
-  --foreground: var(--slate-gray-100);      /* Light gray text */
-  --card: var(--slate-gray-300);            /* Dark slate gray cards */
-  --card-foreground: var(--slate-gray-100);
-  --popover: var(--slate-gray-300);
-  --popover-foreground: var(--slate-gray-100);
-  --primary: var(--sgbus-green-500);        /* Bright green primary */
-  --primary-foreground: var(--eerie-black-500);
-  --secondary: var(--davys-gray-500);       /* Medium gray secondary */
-  --secondary-foreground: var(--slate-gray-100);
-  --muted: var(--davys-gray-500);
-  --muted-foreground: var(--slate-gray-500);
-  --accent: var(--lime-500);                /* Vibrant lime accent */
-  --accent-foreground: var(--eerie-black-500);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: var(--davys-gray-500);
-  --input: var(--davys-gray-500);
-  --ring: var(--lime-500);
-}
-
-/* --- ShadCN UI Theme Inline Styles (No changes needed here) --- */
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-}
-
-/* --- Custom Font Definitions --- */
-@theme {
-  --font-header: 'Bungee Inline', cursive;
-  --font-text: 'Inter', sans-serif;
-}
-
-/* --- Base Layer Styles --- */
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-    h1, h2, h3, h4, h5, h6 {
-      @apply font-header;
-    }
-
-    /* Apply text font to all normal text containers */
-    body, p, span, li, a, button {
-      @apply font-text;
-    }
+    @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* Custom Scrollbar for Premium Feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
 }

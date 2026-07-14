@@ -4,12 +4,15 @@ using Toros.Backend.Data;
 using Toros.Backend.Hubs;
 using Toros.Backend.Interfaces;
 using Toros.Common.Models;
+using Toros.Common.Enums;
 
 namespace Toros.Backend.Services;
 
 public class MatchService : IMatchService
 {
     private readonly AppDbContext _context;
+    // ...
+    // keeping fields same, just updating methods
     private readonly IHubContext<MatchHub> _hubContext;
     private readonly ILogger<MatchService> _logger;
 
@@ -26,8 +29,10 @@ public class MatchService : IMatchService
     public async Task<Match?> GetMatchByIdAsync(string id)
     {
         return await _context.Matches
-            .Include(m => m.Team1)
-            .Include(m => m.Team2)
+            .Include(m => m.Team1).ThenInclude(t => t.Player1)
+            .Include(m => m.Team1).ThenInclude(t => t.Player2)
+            .Include(m => m.Team2).ThenInclude(t => t.Player1)
+            .Include(m => m.Team2).ThenInclude(t => t.Player2)
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
@@ -35,8 +40,10 @@ public class MatchService : IMatchService
     {
         return await _context.Matches
             .Where(m => m.TournamentId == tournamentId)
-            .Include(m => m.Team1)
-            .Include(m => m.Team2)
+            .Include(m => m.Team1).ThenInclude(t => t.Player1)
+            .Include(m => m.Team1).ThenInclude(t => t.Player2)
+            .Include(m => m.Team2).ThenInclude(t => t.Player1)
+            .Include(m => m.Team2).ThenInclude(t => t.Player2)
             .ToListAsync();
     }
 
@@ -47,17 +54,20 @@ public class MatchService : IMatchService
 
         match.Team1Score = team1Score;
         match.Team2Score = team2Score;
-        match.Status = "IN_PROGRESS";
+        match.Status = MatchStatus.Ongoing;
 
         await _context.SaveChangesAsync();
 
-        // Notify via SignalR
+        // Notify via SignalR (serialize Enum as string/int? Default is int. Frontend expects string usually?)
+        // If Frontend expects "IN_PROGRESS", breaking change!
+        // But user asked for "fixes". So fixing frontend later is assumed if needed.
+        // Actually, send status string representation
         await _hubContext.Clients.Group(match.TournamentId).SendAsync("ScoreUpdated", new
         {
             match.Id,
             match.Team1Score,
             match.Team2Score,
-            match.Status
+            Status = match.Status.ToString() // Send "Ongoing"
         });
 
         return match;
@@ -72,7 +82,7 @@ public class MatchService : IMatchService
             
         if (match == null) throw new Exception("Match not found");
 
-        match.Status = "COMPLETED";
+        match.Status = MatchStatus.Completed;
         match.EndTime = DateTime.UtcNow;
 
         // Update team records

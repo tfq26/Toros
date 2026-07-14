@@ -1,3 +1,4 @@
+using Toros.Common.Enums;
 using Toros.Common.Models;
 using Microsoft.EntityFrameworkCore;
 using Toros.Backend.Data;
@@ -8,8 +9,7 @@ namespace Toros.Backend.Services;
 public class TeamService : ITeamService
 {
     private readonly AppDbContext _context;
-    private static readonly string AlphanumericChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static readonly int IdLength = 8;
+    // ... helper fields removed if unused ...
 
     public TeamService(AppDbContext context)
     {
@@ -18,15 +18,19 @@ public class TeamService : ITeamService
 
     public async Task<Team> CreateTeamAsync(Team newTeam)
     {
+        // Assume Players (Users) exist usually, but if new:
         if (newTeam.Player1 != null && string.IsNullOrEmpty(newTeam.Player1.Id))
         {
-            _context.Players.Add(newTeam.Player1);
+            newTeam.Player1.Role = UserRole.Player;
+            _context.Users.Add(newTeam.Player1);
         }
         if (newTeam.Player2 != null && string.IsNullOrEmpty(newTeam.Player2.Id))
         {
-            _context.Players.Add(newTeam.Player2);
+            newTeam.Player2.Role = UserRole.Player;
+            _context.Users.Add(newTeam.Player2);
         }
 
+        newTeam.Status = TeamStatus.Registered;
         _context.Teams.Add(newTeam);
         await _context.SaveChangesAsync();
         return newTeam;
@@ -47,7 +51,7 @@ public class TeamService : ITeamService
         if (teamDetails.Player1 != null)
         {
             if (string.IsNullOrEmpty(teamDetails.Player1.Id))
-                _context.Players.Add(teamDetails.Player1);
+                _context.Users.Add(teamDetails.Player1);
             else
                 _context.Entry(teamDetails.Player1).State = EntityState.Modified;
             
@@ -57,7 +61,7 @@ public class TeamService : ITeamService
         if (teamDetails.Player2 != null)
         {
             if (string.IsNullOrEmpty(teamDetails.Player2.Id))
-                _context.Players.Add(teamDetails.Player2);
+                _context.Users.Add(teamDetails.Player2);
             else
                 _context.Entry(teamDetails.Player2).State = EntityState.Modified;
             
@@ -95,7 +99,12 @@ public class TeamService : ITeamService
 
     public async Task<List<Team>> GenerateTeamsAsync()
     {
-        var players = await _context.Players.ToListAsync();
+        // Get generic users to form teams (Demo logic?)
+        // Filter out admins/referees if desired, or inactive users
+        var players = await _context.Users
+            .Where(u => u.Role == UserRole.Player && u.Status == UserStatus.Active)
+            .ToListAsync();
+            
         var teams = new List<Team>();
 
         for (int i = 0; i < players.Count; i += 2)
@@ -103,7 +112,9 @@ public class TeamService : ITeamService
             var team = new Team
             {
                 Player1 = players[i],
-                Player1Id = players[i].Id
+                Player1Id = players[i].Id,
+                Status = TeamStatus.Registered,
+                TeamNumber = (i / 2) + 1
             };
 
             if (i + 1 < players.Count)
@@ -112,7 +123,11 @@ public class TeamService : ITeamService
                 team.Player2Id = players[i + 1].Id;
             }
 
-            team.Name = $"{team.Player1.Name}{(team.Player2 != null ? $" & {team.Player2.Name}" : "")}";
+            // Construct name safely
+            var p1Name = $"{team.Player1.FirstName} {team.Player1.LastName}".Trim();
+            var p2Name = team.Player2 != null ? $"{team.Player2.FirstName} {team.Player2.LastName}".Trim() : "";
+            
+            team.Name = string.IsNullOrEmpty(p2Name) ? p1Name : $"{p1Name} & {p2Name}";
             teams.Add(team);
         }
 

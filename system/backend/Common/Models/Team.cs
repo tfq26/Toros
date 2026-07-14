@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Toros.Common.Enums;
 
 namespace Toros.Common.Models
 {
@@ -12,17 +13,19 @@ namespace Toros.Common.Models
         [Required]
         public string Name { get; set; } = string.Empty;
 
+        public int TeamNumber { get; set; } // Replaced Player.TeamNumber
+
         public string Player1Id { get; set; } = string.Empty;
         [ForeignKey("Player1Id")]
-        public Player Player1 { get; set; } = null!;
+        public User Player1 { get; set; } = null!;
 
         public string? Player2Id { get; set; }
         [ForeignKey("Player2Id")]
-        public Player? Player2 { get; set; }
+        public User? Player2 { get; set; }
 
         public string TournamentId { get; set; } = string.Empty;
 
-        public string Status { get; set; } = "REGISTERED"; // REGISTERED, ACTIVE, ELIMINATED
+        public TeamStatus Status { get; set; } = TeamStatus.Registered;
 
         public int Wins { get; set; }
         public int Losses { get; set; }

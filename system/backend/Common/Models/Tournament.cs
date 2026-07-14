@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Toros.Common.Enums;
 
 namespace Toros.Common.Models
 {
@@ -12,13 +13,9 @@ namespace Toros.Common.Models
         [Required]
         public string Name { get; set; } = string.Empty;
 
-        public string Type { get; set; } = "SINGLE_ELIMINATION"; // SINGLE_ELIMINATION, ROUND_ROBIN
-
         public DateTime StartDate { get; set; }
-        public string Status { get; set; } = "DRAFT"; // DRAFT, OPEN, ONGOING, COMPLETED
+        public TournamentStatus Status { get; set; } = TournamentStatus.Draft;
 
-        public string? SetupProperties { get; set; }
-        public Dictionary<string, string>? SetupPropertiesMap { get; set; }
         public string? FinalPlacements { get; set; }
         
         public string? AccessCode { get; set; }
@@ -32,10 +29,11 @@ namespace Toros.Common.Models
         public string OrganizerContact { get; set; } = string.Empty;
         public string AgeGroup { get; set; } = string.Empty;
         public string SkillLevel { get; set; } = string.Empty;
-
-        public List<string> RegisteredPlayerIds { get; set; } = new();
+        public string Format { get; set; } = "Doubles"; // Singles, Doubles, Mixed
 
         // Navigation properties
+        public List<TournamentPlayer> Players { get; set; } = new();
+        public List<TournamentStage> Stages { get; set; } = new();
         public List<Team> Teams { get; set; } = new();
         public List<Match> Matches { get; set; } = new();
     }

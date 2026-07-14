@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Toros.Backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+da4080a748ae5443ba5ab3019a7b3e69fa3607f7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+65fcc40b4ea70a8ee1a0dd924696cedeb1db11e2")]
 [assembly: System.Reflection.AssemblyProductAttribute("Toros.Backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Toros.Backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
